@@ -166,12 +166,72 @@
     }
     .refresh-row {
       display: flex;
+      flex-wrap: wrap;
       justify-content: flex-start;
       align-items: center;
+      gap: 0.65rem 0.85rem;
       margin: 0 0 0.85rem;
+      position: relative;
     }
     .btn-refresh {
       box-shadow: var(--shadow-sm);
+      border: 1px solid transparent;
+      transition: transform 0.15s, box-shadow 0.2s, background 0.25s, color 0.25s, border-color 0.25s;
+    }
+    .btn-refresh .btn-icon {
+      display: inline-flex;
+      flex-shrink: 0;
+    }
+    .btn-refresh.is-loading .btn-icon {
+      animation: spin 0.75s linear infinite;
+    }
+    .btn-refresh.is-success {
+      background: #059669 !important;
+      color: #fff !important;
+      border-color: #047857 !important;
+      box-shadow: 0 4px 16px rgba(5, 150, 105, 0.35) !important;
+      opacity: 1 !important;
+      cursor: default;
+    }
+    .btn-refresh.is-error {
+      background: #dc2626 !important;
+      color: #fff !important;
+      border-color: #b91c1c !important;
+      box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3) !important;
+      opacity: 1 !important;
+      cursor: default;
+    }
+    .refresh-toast {
+      font-size: 0.82rem;
+      font-weight: 650;
+      padding: 0.4rem 0.75rem;
+      border-radius: 999px;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .refresh-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .refresh-toast.ok {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+    .refresh-toast.err {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .btn-refresh.is-loading .btn-icon { animation: none; }
+      .refresh-toast { transition: none; }
     }
     .btn {
       appearance: none;
@@ -190,11 +250,11 @@
     .btn:active { transform: scale(0.98); }
     .btn:disabled { opacity: 0.65; cursor: wait; }
     .btn-primary {
-      background: #fff;
-      color: var(--navy);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+      background: var(--navy);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(11, 31, 58, 0.2);
     }
-    .btn-primary:hover { background: #f0f9ff; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); }
+    .btn-primary:hover { background: #123056; box-shadow: 0 6px 18px rgba(11, 31, 58, 0.28); }
     .btn-ghost {
       background: rgba(255, 255, 255, 0.1);
       color: #fff;
@@ -1320,13 +1380,16 @@
       </div>
     </div>
     <div class="refresh-row">
-      <button type="button" class="btn btn-primary btn-refresh" id="refreshBtn" onclick="loadData()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <path d="M18 4v5h-5M6 20v-5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Refresh times
+      <button type="button" class="btn btn-primary btn-refresh" id="refreshBtn" onclick="loadData(false)">
+        <span class="btn-icon" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M18 4v5h-5M6 20v-5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="btn-label" id="refreshBtnLabel">Refresh times</span>
       </button>
+      <span class="refresh-toast" id="refreshToast" role="status" aria-live="polite"></span>
     </div>
     <div class="ports" id="portGrid" aria-live="polite"></div>
 
@@ -2341,12 +2404,79 @@
       return sources;
     }
 
+    let refreshFeedbackTimer = null;
+
+    function setRefreshButtonState(state) {
+      // state: idle | loading | success | error
+      const btn = document.getElementById("refreshBtn");
+      const label = document.getElementById("refreshBtnLabel");
+      const toast = document.getElementById("refreshToast");
+      if (!btn || !label) return;
+
+      btn.classList.remove("is-loading", "is-success", "is-error");
+      if (refreshFeedbackTimer) {
+        clearTimeout(refreshFeedbackTimer);
+        refreshFeedbackTimer = null;
+      }
+
+      if (state === "loading") {
+        btn.disabled = true;
+        btn.classList.add("is-loading");
+        label.textContent = "Refreshing…";
+        if (toast) {
+          toast.classList.remove("show", "ok", "err");
+          toast.textContent = "";
+        }
+        return;
+      }
+
+      if (state === "success") {
+        btn.disabled = true;
+        btn.classList.add("is-success");
+        label.textContent = "✓ Updated";
+        if (toast) {
+          toast.textContent = "Wait times updated";
+          toast.classList.remove("err");
+          toast.classList.add("ok", "show");
+        }
+        refreshFeedbackTimer = setTimeout(() => setRefreshButtonState("idle"), 1800);
+        return;
+      }
+
+      if (state === "error") {
+        btn.disabled = true;
+        btn.classList.add("is-error");
+        label.textContent = "Failed";
+        if (toast) {
+          toast.textContent = "Could not refresh";
+          toast.classList.remove("ok");
+          toast.classList.add("err", "show");
+        }
+        refreshFeedbackTimer = setTimeout(() => setRefreshButtonState("idle"), 2200);
+        return;
+      }
+
+      // idle
+      btn.disabled = false;
+      label.textContent = "Refresh times";
+      if (toast) {
+        toast.classList.remove("show", "ok", "err");
+        toast.textContent = "";
+      }
+    }
+
     async function loadData(fromAuto) {
       if (isLoading) return;
       isLoading = true;
-      const btn = document.getElementById("refreshBtn");
       const alert = document.getElementById("alertBox");
-      if (btn) btn.disabled = true;
+      const manual = !fromAuto;
+
+      if (manual) setRefreshButtonState("loading");
+      else {
+        const btn = document.getElementById("refreshBtn");
+        if (btn) btn.disabled = true;
+      }
+
       document.getElementById("liveLabel").textContent = fromAuto ? "Auto-refreshing…" : "Refreshing…";
 
       const errors = [];
@@ -2398,10 +2528,23 @@
           alert.classList.add("show");
           console.warn("Wait times load failed:", errors);
         }
+        if (manual) setRefreshButtonState("error");
+      } else if (manual) {
+        setRefreshButtonState("success");
+      } else {
+        const btn = document.getElementById("refreshBtn");
+        if (btn && !btn.classList.contains("is-success") && !btn.classList.contains("is-error")) {
+          btn.disabled = false;
+        }
       }
 
       isLoading = false;
-      if (btn) btn.disabled = false;
+      if (!manual) {
+        const btn = document.getElementById("refreshBtn");
+        if (btn && !btn.classList.contains("is-success") && !btn.classList.contains("is-error")) {
+          btn.disabled = false;
+        }
+      }
       scheduleAutoRefresh();
     }
 
