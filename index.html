@@ -889,9 +889,9 @@
         <div class="hint" id="statLongHint">Plan extra time if needed</div>
       </div>
       <div class="stat-card">
-        <div class="kicker">Best SENTRI / Ready</div>
+        <div class="kicker">Best SENTRI / Fast</div>
         <div class="stat" id="statTrusted">—</div>
-        <div class="hint" id="statTrustedHint">Trusted traveler lanes</div>
+        <div class="hint" id="statTrustedHint">SENTRI or commercial FAST only</div>
       </div>
       <div class="stat-card">
         <div class="kicker">Active notices</div>
@@ -921,7 +921,7 @@
         <button type="button" class="filter-btn" data-filter="commercial" onclick="setFilter('commercial', this)">Commercial</button>
       </div>
     </div>
-    <p class="view-note">One row per bridge. N/A and closed lanes are omitted. SENTRI/Fast shows the best open trusted or commercial fast lane.</p>
+    <p class="view-note">One row per bridge. N/A and closed lanes are omitted. Ready Lanes appear under Passenger/Pedestrian when open. SENTRI/Fast is SENTRI and commercial FAST only (not Ready).</p>
 
     <div class="ports" id="portGrid" aria-live="polite"></div>
 
@@ -1356,7 +1356,8 @@
             if (sec.key === "passenger" && /general/i.test(lane.name)) {
               passengerWaits.push({ mins: lane.wait.minutes, port: port.meta.short });
             }
-            if (/sentri|ready|fast/i.test(lane.name)) {
+            // SENTRI / commercial FAST only — Ready is a separate program
+            if (/sentri|fast/i.test(lane.name) && !/ready/i.test(lane.name)) {
               trustedWaits.push({ mins: lane.wait.minutes, port: port.meta.short, name: lane.name });
             }
           }
@@ -1399,24 +1400,31 @@
       noticesEl.className = "stat" + (notices ? " warn" : " good");
     }
 
-    /** Pull general wait for a traffic mode (SENTRI/Fast live in their own column). */
+    /** Pull general wait for a traffic mode; Ready shown as an extra under that mode. */
     function summarizeMode(sections, modeKeyName) {
       const sec = sections.find((s) => s.key === modeKeyName);
       if (!sec) return null;
       const showable = sec.lanes.filter((l) => isShowableWait(l.wait));
       if (!showable.length) return null;
 
-      // Prefer General; prefer a numeric estimate over "update pending" when both exist
-      const ranked = showable.slice().sort((a, b) => {
+      // Primary: General (or first non-Ready/non-SENTRI/non-Fast showable lane)
+      const nonSpecial = showable.filter((l) => !/sentri|ready|fast/i.test(l.name));
+      const generalPool = nonSpecial.length ? nonSpecial : showable.filter((l) => /general/i.test(l.name));
+      const ranked = (generalPool.length ? generalPool : showable).slice().sort((a, b) => {
         const aScore = (isActiveWait(a.wait) ? 2 : 0) + (/general/i.test(a.name) ? 1 : 0);
         const bScore = (isActiveWait(b.wait) ? 2 : 0) + (/general/i.test(b.name) ? 1 : 0);
         return bScore - aScore;
       });
       const primary = ranked[0];
+      if (!primary) return null;
+
+      // Ready Lanes belong with their traffic type (e.g. Gateway pedestrian Ready), not SENTRI/Fast
+      const readyExtras = showable.filter((l) => /ready/i.test(l.name) && l !== primary);
+
       return {
         primary: primary.wait,
         primaryName: primary.name,
-        extras: [],
+        extras: readyExtras,
         open: primary.wait.lanesOpen,
         max: sec.maxLanes
       };
@@ -1427,11 +1435,12 @@
         return { html: `<span class="wait-empty">—</span>`, cls: "" };
       }
       const w = summary.primary;
-      const extraHtml = summary.extras.map((l) => {
+      const extraHtml = (summary.extras || []).map((l) => {
         const short = l.name.replace(/\s*Lane$/i, "");
+        // Ready: show name + wait clearly under General
         return `<span class="wait-extra"><span class="tag">${escapeHtml(short)}</span> ${escapeHtml(l.wait.label)}</span>`;
       }).join("");
-      const openNote = summary.open && summary.open !== "—"
+      const openNote = summary.open && summary.open !== "—" && !summary.primary.pending
         ? `<span class="wait-extra">${escapeHtml(summary.open)}${summary.max ? " / " + escapeHtml(summary.max) + " max" : ""}</span>`
         : "";
       return {
@@ -1461,24 +1470,35 @@
       return modes.some((m) => summarizeMode(port.sections, m));
     }
 
+    /** SENTRI (passenger) and FAST (commercial) only — never Ready Lanes. */
     function bestTrusted(port) {
       let trusted = null;
       let pending = null;
       for (const sec of port.sections) {
         for (const lane of sec.lanes) {
-          if (!/sentri|ready|fast/i.test(lane.name)) continue;
+          // Ready is RFID Ready Lane (separate program); do not mix into SENTRI/Fast
+          if (/ready/i.test(lane.name)) continue;
+          if (!/sentri|fast/i.test(lane.name)) continue;
           if (isActiveWait(lane.wait)) {
-            if (!trusted || lane.wait.minutes < trusted.wait.minutes) trusted = lane;
+            if (!trusted || lane.wait.minutes < trusted.wait.minutes) {
+              trusted = { lane, sectionKey: sec.key, sectionTitle: sec.title };
+            }
           } else if (lane.wait.pending && !pending) {
-            pending = lane;
+            pending = { lane, sectionKey: sec.key, sectionTitle: sec.title };
           }
         }
       }
       const pick = trusted || pending;
       if (!pick) return waitCellBlock(null);
+      const short = pick.lane.name.replace(/\s*Lane$/i, "");
+      const context = /fast/i.test(pick.lane.name)
+        ? "Commercial"
+        : /sentri/i.test(pick.lane.name)
+          ? "Passenger"
+          : pick.sectionTitle;
       return {
-        html: `${waitCellHtml(pick.wait)}<span class="wait-extra"><span class="tag">${escapeHtml(pick.name.replace(/\s*Lane$/i, ""))}</span></span>`,
-        cls: "has-" + pick.wait.cls
+        html: `${waitCellHtml(pick.lane.wait)}<span class="wait-extra"><span class="tag">${escapeHtml(short)}</span> · ${escapeHtml(context)}</span>`,
+        cls: "has-" + pick.lane.wait.cls
       };
     }
 
@@ -1521,7 +1541,7 @@
         waitCols.push({ key: "commercial", label: "Commercial" });
       }
       if (currentFilter === "all" || currentFilter === "passenger" || currentFilter === "commercial") {
-        waitCols.push({ key: "trusted", label: "SENTRI / Fast" });
+        waitCols.push({ key: "trusted", label: "SENTRI / FAST" });
       }
 
       for (const port of data.items) {
