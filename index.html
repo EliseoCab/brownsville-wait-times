@@ -1452,11 +1452,11 @@
     /**
      * Concise open line: "2 Gen · 2 Ready · 4/5 open" or "2/5 open" or "2 open"
      * Max = CBP Maximum Lanes for the whole traffic type (not General-only).
-     * Passenger: omit Ready open bits (still count Ready toward total/max) to reduce clutter.
+     * Passenger & Pedestrian: omit Ready open bits (still count Ready toward total/max).
      */
     function formatOpenLine(summary, modeKey) {
       if (!summary) return "";
-      const omitReadyDetail = modeKey === "passenger";
+      const omitReadyDetail = modeKey === "passenger" || modeKey === "pedestrian";
       const bits = [];
       let total = 0;
       let hasCounts = false;
@@ -1485,7 +1485,7 @@
       if (!hasCounts && !bits.length) return "";
 
       if (hasCounts && summary.max) {
-        // Passenger (or Gen-only): "4/5 open" when total includes Ready; else "2 Gen · 4/5 open"
+        // Passenger/Pedestrian (or Gen-only): "4/5 open" — Ready counted in total, not listed
         if (omitReadyDetail) {
           return total + "/" + summary.max + " open";
         }
