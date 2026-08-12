@@ -1868,9 +1868,24 @@
           ).join("")}</div>`
         : "";
 
-      // Auto-fit: equal share for all wait columns under every filter
+      // Auto-fit: equal wait cols; few-column filters (e.g. Pedestrian-only) stay tight
       const waitN = Math.max(waitCols.length, 1);
-      const bridgePct = waitN >= 4 ? 20 : waitN === 3 ? 24 : waitN === 2 ? 30 : 34;
+      let bridgePct;
+      let tableMax = "100%";
+      if (waitN === 1) {
+        // Pedestrian-only (or any single wait col): compact two-column table
+        bridgePct = 48;
+        tableMax = "560px";
+      } else if (waitN === 2) {
+        bridgePct = 34;
+        tableMax = "720px";
+      } else if (waitN === 3) {
+        bridgePct = 26;
+        tableMax = "920px";
+      } else {
+        bridgePct = 20;
+        tableMax = "100%";
+      }
       const waitPct = ((100 - bridgePct) / waitN).toFixed(3);
       const colgroup =
         `<col class="c-bridge" style="width:${bridgePct}%" />` +
@@ -1880,8 +1895,12 @@
         `<th scope="col">${escapeHtml(c.label)}</th>`
       ).join("");
 
+      const wrapStyle = tableMax === "100%"
+        ? ""
+        : ` style="max-width:${tableMax};margin-left:0;margin-right:auto"`;
+
       grid.innerHTML = `
-        <div class="table-wrap">
+        <div class="table-wrap"${wrapStyle}>
           <div class="asof-bar">Report time: <strong>${escapeHtml(asOfText)}</strong> · Open line: Gen/Ready booths · total/max capacity</div>
           <div class="table-scroll">
             <table class="wait-table">
