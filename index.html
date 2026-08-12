@@ -1447,13 +1447,32 @@
       return /gateway/i.test(t);
     }
 
+    /** Commercial FAST bridges: Veterans International, Los Indios */
+    function isCommercialFastPort(port) {
+      const t = (port && (port.title || "")) + " " + (port && port.meta && port.meta.short ? port.meta.short : "");
+      return /veterans|los\s*indios/i.test(t);
+    }
+
+    /** FAST open count for a port (null if unknown; 0 if closed / none open). */
+    function fastOpenCount(port) {
+      if (!port) return null;
+      for (const sec of port.sections || []) {
+        for (const lane of sec.lanes || []) {
+          if (!/fast/i.test(lane.name)) continue;
+          if (lane.wait && lane.wait.lanesOpen === "Closed") return 0;
+          if (lane.wait && lane.wait.lanesOpenCount != null) return lane.wait.lanesOpenCount;
+        }
+      }
+      return null;
+    }
+
     /**
      * Concise open line under the wait number:
      *   "2 Gen · 2 Ready · 4/5 open"  when Ready is open
      *   "2/5 open" or "2 open"        when only General has counts
-     * Max = CBP Maximum Lanes for the whole traffic type (Gen + Ready + etc.).
+     * Commercial (Veterans / Los Indios): add "N FAST open" only when N > 0 (never "0 FAST").
      */
-    function formatOpenLine(summary, modeKey) {
+    function formatOpenLine(summary, modeKey, port) {
       if (!summary) return "";
       const bits = [];
       let total = 0;
@@ -1478,17 +1497,35 @@
         }
       }
 
+      // Veterans / Los Indios commercial: note FAST only when at least one is open
+      if (modeKey === "commercial" && isCommercialFastPort(port)) {
+        const n = fastOpenCount(port);
+        if (n != null && n > 0) {
+          bits.push(n + " FAST open");
+        }
+      }
+
       if (!hasCounts && !bits.length) return "";
 
+      // If we only have a FAST note (no Gen counts), return it alone
+      if (!hasCounts && bits.length) return bits.join(" · ");
+
       if (hasCounts && summary.max) {
-        // Gen only → "2/5 open"; Gen+Ready → "2 Gen · 2 Ready · 4/5 open"
-        if (bits.length === 1 && /^(\d+) Gen$/.test(bits[0])) {
-          return total + "/" + summary.max + " open";
+        const fastBits = bits.filter((b) => /FAST/i.test(b));
+        const coreBits = bits.filter((b) => !/FAST/i.test(b));
+        let core;
+        if (coreBits.length === 1 && /^(\d+) Gen$/.test(coreBits[0])) {
+          core = total + "/" + summary.max + " open";
+        } else if (coreBits.length) {
+          core = coreBits.join(" · ") + " · " + total + "/" + summary.max + " open";
+        } else {
+          core = total + "/" + summary.max + " open";
         }
-        return bits.join(" · ") + " · " + total + "/" + summary.max + " open";
+        return fastBits.length ? core + " · " + fastBits.join(" · ") : core;
       }
-      if (hasCounts && bits.length === 1 && /^(\d+) Gen$/.test(bits[0])) {
-        return total + " open";
+      if (hasCounts && bits.filter((b) => !/FAST/i.test(b)).length === 1 && /^(\d+) Gen$/.test(bits[0])) {
+        const fastBits = bits.filter((b) => /FAST/i.test(b));
+        return (total + " open") + (fastBits.length ? " · " + fastBits.join(" · ") : "");
       }
       if (hasCounts) return bits.join(" · ") + " · " + total + " open";
       return bits.join(" · ");
@@ -1529,7 +1566,7 @@
         mainHtml = waitCellHtml(w);
       }
 
-      const openLine = formatOpenLine(summary, modeKey);
+      const openLine = formatOpenLine(summary, modeKey, port);
       const openHtml = openLine
         ? `<span class="wait-extra open-line">${escapeHtml(openLine)}</span>`
         : "";
@@ -1632,13 +1669,28 @@
           ? "Passenger"
           : pick.sectionTitle;
 
-      // Commercial filter: FAST only — never append SENTRI
+      // Commercial filter: FAST only (Veterans / Los Indios) — never SENTRI; never show "0 open"
       if (commercialOnly) {
-        const open = formatLaneOpenOnly(pick.lane.wait);
-        const openBit = open ? ` · ${escapeHtml(open)}` : "";
+        const n = pick.lane.wait.lanesOpenCount;
+        const closed = pick.lane.wait.lanesOpen === "Closed";
+        let sub;
+        if (n != null && n > 0) {
+          sub = `<span class="tag">FAST</span> ${n} open`;
+        } else if (closed || n === 0) {
+          // Concise: no "0 open"
+          sub = `<span class="tag">FAST</span> closed`;
+        } else if (pick.lane.wait.pending) {
+          sub = `<span class="tag">FAST</span> pending`;
+        } else {
+          sub = `<span class="tag">FAST</span>`;
+        }
+        // Prefer wait minutes when available; otherwise just the FAST status line
+        const main = isActiveWait(pick.lane.wait)
+          ? waitCellHtml(pick.lane.wait)
+          : `<span class="wait-empty">—</span>`;
         return {
-          html: `${waitCellHtml(pick.lane.wait)}<span class="wait-extra"><span class="tag">FAST</span> · Commercial${openBit}</span>`,
-          cls: "has-" + pick.lane.wait.cls
+          html: `${main}<span class="wait-extra">${sub}</span>`,
+          cls: isActiveWait(pick.lane.wait) ? "has-" + pick.lane.wait.cls : ""
         };
       }
 
