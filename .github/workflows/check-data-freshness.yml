@@ -1,0 +1,166 @@
+name: Check data freshness (lag alarm)
+
+on:
+  schedule:
+    # Every 15 minutes (GitHub cron can lag a few minutes)
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+
+# Fails the job when the live site is behind CBP by ~1+ hour.
+# Enable GitHub email: Settings → Notifications → Actions (Failed workflows)
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: lag-check
+  cancel-in-progress: true
+
+jobs:
+  check-lag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compare CBP feed vs live site mirror
+        id: compare
+        env:
+          CBP_URL: "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43"
+          SITE_URL: "https://eliseocab.github.io/brownsville-wait-times/data/bwt.xml"
+          # Alert if site lags CBP by this many minutes (one CBP hour + small buffer)
+          MAX_LAG_MINUTES: "75"
+        run: |
+          set -euo pipefail
+
+          curl -fsSL "$CBP_URL" -o /tmp/cbp.xml
+          curl -fsSL "$SITE_URL" -o /tmp/site.xml
+
+          python3 <<'PY'
+          import os, re, sys
+          from datetime import datetime, timezone, timedelta
+          from email.utils import parsedate_to_datetime
+
+          max_lag = int(os.environ.get("MAX_LAG_MINUTES", "75"))
+
+          def read(path):
+              with open(path, "r", encoding="utf-8", errors="replace") as f:
+                  return f.read()
+
+          def channel_pubdate(xml: str):
+              m = re.search(r"<pubDate>\s*([^<]+?)\s*</pubDate>", xml, re.I)
+              if not m:
+                  return None
+              try:
+                  dt = parsedate_to_datetime(m.group(1).strip())
+                  if dt.tzinfo is None:
+                      dt = dt.replace(tzinfo=timezone.utc)
+                  return dt.astimezone(timezone.utc)
+              except Exception:
+                  return None
+
+          def report_stamps(xml: str):
+              """Parse CBP 'At 3:00 pm CDT' style stamps into comparable UTC datetimes (today/yesterday)."""
+              # Use channel date if present for the calendar day
+              day = None
+              dm = re.search(r"Date:\s*(\d{1,2})/(\d{1,2})/(\d{4})", xml)
+              if dm:
+                  month, day_n, year = int(dm.group(1)), int(dm.group(2)), int(dm.group(3))
+                  day = (year, month, day_n)
+
+              stamps = []
+              for m in re.finditer(
+                  r"At\s+(\d{1,2}):(\d{2})\s*(am|pm)\s*CDT",
+                  xml,
+                  re.I,
+              ):
+                  hour = int(m.group(1)) % 12
+                  minute = int(m.group(2))
+                  ampm = m.group(3).lower()
+                  if ampm == "pm":
+                      hour += 12
+                  # CDT = UTC-5
+                  if day:
+                      y, mo, d = day
+                      local = datetime(y, mo, d, hour, minute, tzinfo=timezone(timedelta(hours=-5)))
+                  else:
+                      # Fall back to today in CDT
+                      now_cdt = datetime.now(timezone(timedelta(hours=-5)))
+                      local = now_cdt.replace(hour=hour, minute=minute, second=0, microsecond=0)
+                  stamps.append(local.astimezone(timezone.utc))
+              return stamps
+
+          def newest_stamp(xml: str):
+              stamps = report_stamps(xml)
+              if stamps:
+                  return max(stamps)
+              return channel_pubdate(xml)
+
+          def pending_only(xml: str) -> bool:
+              has_pending = bool(re.search(r"Update\s*Pending", xml, re.I))
+              has_delay = bool(re.search(r"\d+\s*min\s*delay", xml, re.I))
+              return has_pending and not has_delay
+
+          cbp = read("/tmp/cbp.xml")
+          site = read("/tmp/site.xml")
+
+          cbp_pending = pending_only(cbp)
+          site_pending = pending_only(site)
+
+          cbp_t = newest_stamp(cbp)
+          site_t = newest_stamp(site)
+
+          print("=== Lag check ===")
+          print(f"CBP newest report:  {cbp_t}")
+          print(f"Site newest report: {site_t}")
+          print(f"CBP pending-only:   {cbp_pending}")
+          print(f"Site pending-only:  {site_pending}")
+          print(f"Max allowed lag:    {max_lag} minutes")
+
+          # Both pending: not treated as lag (CBP itself has no times)
+          if cbp_pending and site_pending:
+              print("OK: both CBP and site are Update Pending.")
+              sys.exit(0)
+
+          if cbp_t is None:
+              print("WARN: could not parse CBP report time; skipping fail.")
+              sys.exit(0)
+
+          if site_t is None:
+              print("FAIL: site feed has no parseable report time while CBP does.")
+              with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+                  out.write("lagging=true\n")
+              sys.exit(1)
+
+          lag = (cbp_t - site_t).total_seconds() / 60.0
+          print(f"Lag (CBP - site):   {lag:.1f} minutes")
+
+          # Site ahead of CBP is fine (clock/parse noise)
+          if lag <= max_lag:
+              print("OK: site is fresh enough.")
+              with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+                  out.write("lagging=false\n")
+              sys.exit(0)
+
+          print(
+              f"FAIL: site is lagging CBP by {lag:.0f} minutes "
+              f"(threshold {max_lag} min)."
+          )
+          print("Action: run workflow 'Update CBP wait times' manually, or wait for the next scheduled run.")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write("lagging=true\n")
+              out.write(f"lag_minutes={int(lag)}\n")
+          sys.exit(1)
+          PY
+
+      - name: Trigger data refresh when lagging
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Lag detected — requesting Update CBP wait times…"
+          gh workflow run "Update CBP wait times" --repo "${{ github.repository }}" || true
+          echo "If email alerts are enabled, you should get a failure notification for this lag check."
+
+      - name: How to get email alerts
+        if: failure()
+        run: |
+          echo "::notice::Lag check failed. Enable email: GitHub avatar → Settings → Notifications → Actions → 'Send notifications for failed workflows only' (or similar)."
