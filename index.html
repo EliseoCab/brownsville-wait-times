@@ -149,15 +149,12 @@
     .hero h1 {
       font-family: var(--display);
       font-weight: 400;
-      font-size: clamp(2.35rem, 5.5vw, 3.65rem);
-      line-height: 1.08;
+      font-size: clamp(1.65rem, 4vw, 2.75rem);
+      line-height: 1.15;
       letter-spacing: -0.02em;
-      max-width: 14ch;
+      max-width: none;
       margin-bottom: 0.85rem;
-    }
-    .hero h1 em {
-      font-style: italic;
-      color: #7dd3fc;
+      white-space: nowrap;
     }
     .hero-lead {
       font-size: clamp(1rem, 2vw, 1.125rem);
@@ -611,7 +608,8 @@
       }
       .hero h1 {
         max-width: none;
-        font-size: 2.15rem;
+        font-size: clamp(1.35rem, 6.5vw, 2rem);
+        white-space: nowrap;
       }
       .hero-lead {
         font-size: 0.95rem;
@@ -869,7 +867,7 @@
         </svg>
         U.S. – Mexico Land Border · Texas
       </div>
-      <h1>Brownsville <em>Port of Entry</em></h1>
+      <h1>Brownsville Port of Entry</h1>
       <p class="hero-lead">
         Real-time estimated wait times for primary inspection at Brownsville’s four bridges—
         so you can choose the smarter crossing before you leave.
