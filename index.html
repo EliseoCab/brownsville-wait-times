@@ -840,40 +840,19 @@
       margin-top: 1.35rem;
       padding-top: 1rem;
       border-top: 1px solid rgba(255, 255, 255, 0.12);
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.5rem 0.75rem;
-      font-size: 0.8rem;
-      color: rgba(226, 232, 240, 0.65);
-    }
-    .visit-ticker .visit-label {
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      font-size: 0.68rem;
-      color: rgba(148, 163, 184, 0.95);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: rgba(226, 232, 240, 0.78);
+      line-height: 1.4;
     }
     .visit-ticker .visit-count {
       font-family: var(--display);
-      font-size: 1.45rem;
+      font-size: 1.15em;
       font-weight: 400;
-      letter-spacing: -0.02em;
       color: #7dd3fc;
       font-variant-numeric: tabular-nums;
-      line-height: 1;
-      min-width: 1.5ch;
-    }
-    .visit-ticker .visit-note {
-      font-size: 0.75rem;
-      color: rgba(148, 163, 184, 0.85);
-    }
-    .visit-ticker img.visit-badge {
-      height: 22px;
-      width: auto;
-      border-radius: 4px;
-      vertical-align: middle;
-      opacity: 0.95;
+      letter-spacing: -0.02em;
     }
 
     .empty {
@@ -1004,18 +983,7 @@
     </div>
     <div class="footer-inner" style="margin-top:0;padding-top:0">
       <div class="visit-ticker" id="visitTicker" aria-live="polite">
-        <span class="visit-label">Page visits</span>
-        <!-- Image badge increments on each load (no API key; works on GitHub Pages) -->
-        <img
-          class="visit-badge"
-          id="visitBadge"
-          alt="Page visit count"
-          height="22"
-          width="auto"
-          decoding="async"
-          referrerpolicy="no-referrer-when-downgrade"
-        />
-        <span class="visit-note" id="visitNote">all-time</span>
+        Page Visits: <span class="visit-count" id="visitCount">—</span> (All-Time)
       </div>
     </div>
   </footer>
@@ -2020,38 +1988,81 @@
     loadData(false);
 
     /**
-     * Page visit ticker for static GitHub Pages (no backend / no API key).
-     * Uses an SVG hit badge that increments and displays the count.
-     * (Previous free JSON API v1 was shut down Aug 2026.)
+     * Page visit ticker: "Page Visits: N (All-Time)"
+     * Static GitHub Pages — uses public hit counters (no backend).
      */
-    function trackPageVisit() {
-      const badge = document.getElementById("visitBadge");
-      const noteEl = document.getElementById("visitNote");
-      if (!badge) return;
+    async function trackPageVisit() {
+      const countEl = document.getElementById("visitCount");
+      if (!countEl) return;
 
       const pageUrl = "https://eliseocab.github.io/brownsville-wait-times/";
-      const primary =
-        "https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=" +
-        encodeURIComponent(pageUrl) +
-        "&count_bg=%230ea5e9&title_bg=%230b1f3a&title=visits&edge_flat=true";
-      // Secondary badge provider if primary fails to load
-      const fallback =
-        "https://hits.sh/eliseocab.github.io/brownsville-wait-times.svg" +
-        "?view=today-total&style=flat-square&label=visits&color=0ea5e9&labelColor=0b1f3a";
+      const namespace = "eliseocab-brownsville-wait-times";
+      const key = "visits";
 
-      badge.onerror = function () {
-        if (badge.dataset.triedFallback === "1") {
-          badge.style.display = "none";
-          if (noteEl) noteEl.textContent = "counter unavailable";
-          return;
+      function setCount(n) {
+        const num = Number(n);
+        if (!Number.isFinite(num) || num < 0) return false;
+        countEl.textContent = Math.floor(num).toLocaleString();
+        return true;
+      }
+
+      // 1) Prefer JSON counters (CORS-friendly public APIs)
+      const jsonEndpoints = [
+        // abacus — free, no key
+        "https://abacus.jasoncameron.dev/hit/" + namespace + "/" + key,
+        // hits.sh JSON (when available)
+        "https://hits.sh/eliseocab.github.io/brownsville-wait-times.json"
+      ];
+
+      for (const url of jsonEndpoints) {
+        try {
+          const res = await fetch(url, { mode: "cors", credentials: "omit", cache: "no-store" });
+          if (!res.ok) continue;
+          const data = await res.json();
+          const n =
+            data.value ??
+            data.count ??
+            data.total ??
+            data.hits ??
+            data?.data?.value ??
+            data?.data?.count ??
+            null;
+          if (setCount(n)) return;
+        } catch (_) { /* try next */ }
+      }
+
+      // 2) hits.seeyoufarm SVG — fetch + parse the number out of the badge
+      try {
+        const svgUrl =
+          "https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=" +
+          encodeURIComponent(pageUrl) +
+          "&count_bg=%230ea5e9&title_bg=%230b1f3a&title=visits&edge_flat=true";
+        const res = await fetch(svgUrl, { mode: "cors", credentials: "omit", cache: "no-store" });
+        if (res.ok) {
+          const svg = await res.text();
+          // Badge usually has two numbers or "visits" label + count; take largest integer
+          const nums = [...svg.matchAll(/>(\d[\d,]*)<\/text>/g)].map((m) =>
+            parseInt(String(m[1]).replace(/,/g, ""), 10)
+          ).filter((n) => Number.isFinite(n));
+          if (nums.length && setCount(Math.max(...nums))) return;
         }
-        badge.dataset.triedFallback = "1";
-        badge.src = fallback;
-      };
-      badge.onload = function () {
-        if (noteEl) noteEl.textContent = "all-time";
-      };
-      badge.src = primary;
+      } catch (_) { /* continue */ }
+
+      // 3) Last resort: still fire a badge hit via Image (increments even if we can't read it)
+      try {
+        const img = new Image();
+        img.referrerPolicy = "no-referrer-when-downgrade";
+        img.src =
+          "https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=" +
+          encodeURIComponent(pageUrl) +
+          "&count_bg=%230ea5e9&title_bg=%230b1f3a&title=visits&edge_flat=true&t=" +
+          Date.now();
+      } catch (_) { /* ignore */ }
+
+      // Keep em dash if we never got a readable total
+      if (countEl.textContent === "—" || countEl.textContent === "") {
+        countEl.textContent = "—";
+      }
     }
 
     trackPageVisit();
