@@ -162,11 +162,16 @@
       font-weight: 400;
     }
     .hero-actions {
+      display: none;
+    }
+    .refresh-row {
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
+      justify-content: flex-start;
       align-items: center;
-      margin-bottom: 2rem;
+      margin: 0 0 0.85rem;
+    }
+    .btn-refresh {
+      box-shadow: var(--shadow-sm);
     }
     .btn {
       appearance: none;
@@ -752,11 +757,11 @@
         font-size: 0.95rem;
         max-width: none;
       }
-      .hero-actions {
+      .refresh-row {
         width: 100%;
       }
-      .hero-actions .btn {
-        flex: 1 1 auto;
+      .refresh-row .btn-refresh {
+        width: 100%;
         justify-content: center;
         min-height: 44px;
       }
@@ -1256,16 +1261,6 @@
     <div class="hero-inner">
       <div class="eyebrow">U.S. – Mexico Land Border · Texas</div>
       <h1>Brownsville Port of Entry</h1>
-      <div class="hero-actions">
-        <button type="button" class="btn btn-primary" id="refreshBtn" onclick="loadData()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M18 4v5h-5M6 20v-5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Refresh times
-        </button>
-        <a class="btn btn-ghost" href="#ports">View all bridges</a>
-      </div>
       <div class="hero-meta">
         <div class="meta-chip">
           <div class="label">Last checked</div>
@@ -1305,14 +1300,14 @@
 
     <div class="alert" id="alertBox" role="status"></div>
 
-    <div class="refresh-meta" id="ports">
+    <div class="refresh-meta">
       <span class="auto-badge" title="Checks the CBP feed at 5 minutes past each hour (e.g. 1:05, 2:05)">Auto-refresh · :05 past the hour</span>
       <span>Next check in <strong id="nextRefreshInline">—</strong></span>
       <span class="dot" aria-hidden="true">·</span>
       <span>Active waits only (N/A &amp; closed hidden)</span>
     </div>
 
-    <div class="toolbar">
+    <div class="toolbar" id="ports">
       <h2 class="section-title">
         Crossing times
         <span>Estimates to primary inspection booth · CBP updates about hourly</span>
@@ -1323,6 +1318,15 @@
         <button type="button" class="filter-btn" data-filter="pedestrian" onclick="setFilter('pedestrian', this)">Pedestrian</button>
         <button type="button" class="filter-btn" data-filter="commercial" onclick="setFilter('commercial', this)">Commercial</button>
       </div>
+    </div>
+    <div class="refresh-row">
+      <button type="button" class="btn btn-primary btn-refresh" id="refreshBtn" onclick="loadData()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M18 4v5h-5M6 20v-5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Refresh times
+      </button>
     </div>
     <div class="ports" id="portGrid" aria-live="polite"></div>
 
