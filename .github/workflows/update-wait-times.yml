@@ -2,21 +2,28 @@ name: Update CBP wait times
 
 on:
   schedule:
-    # Every 15 minutes — CBP can flip lanes to "Update Pending" between hourly stamps
+    # Every 15 minutes — CBP can flip between real times and "Update Pending"
     - cron: "5,20,35,50 * * * *"
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/update-wait-times.yml"
-      - "data/**"
+
+# GITHUB_TOKEN pushes do not trigger other workflows, so this job both
+# refreshes data/bwt.xml AND deploys GitHub Pages in the same run.
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
-  update:
+  update-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,18 +34,39 @@ jobs:
           curl -fsSL \
             "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43" \
             -o data/bwt.xml
-          # Sanity check: must look like RSS with items
           grep -q "<item>" data/bwt.xml
-          wc -c data/bwt.xml
+          echo "Feed size: $(wc -c < data/bwt.xml) bytes"
+          echo "Sample:"
+          grep -oE 'Update Pending|[0-9]+ min delay' data/bwt.xml | sort | uniq -c | head -20
 
-      - name: Commit updated data
+      - name: Commit updated data (if changed)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/bwt.xml
           if git diff --staged --quiet; then
-            echo "No wait-time changes."
+            echo "No wait-time file changes to commit."
           else
             git commit -m "chore: refresh Brownsville CBP wait times"
             git push
+            echo "Committed and pushed new data/bwt.xml"
           fi
+
+      - name: Stage site files
+        run: |
+          mkdir -p _site
+          cp index.html README.md _site/
+          cp -R data _site/data
+          touch _site/.nojekyll
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
