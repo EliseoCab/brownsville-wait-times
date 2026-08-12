@@ -921,7 +921,7 @@
         <button type="button" class="filter-btn" data-filter="commercial" onclick="setFilter('commercial', this)">Commercial</button>
       </div>
     </div>
-    <p class="view-note">One row per bridge. N/A and closed lanes are omitted. Ready Lanes appear under Passenger/Pedestrian when open. SENTRI/Fast is SENTRI and commercial FAST only (not Ready).</p>
+    <p class="view-note">One row per bridge. N/A and closed are omitted. Big number = General wait; Ready is listed under that type when open. “N of M open” uses CBP Maximum Lanes for the whole type (General + Ready + SENTRI), not General alone. SENTRI/FAST column is SENTRI and commercial FAST only.</p>
 
     <div class="ports" id="portGrid" aria-live="polite"></div>
 
@@ -1449,13 +1449,42 @@
       };
     }
 
-    function formatOpenLanes(wait, maxLanes) {
+    function formatLaneOpenOnly(wait) {
       if (!wait || wait.pending) return "";
       if (wait.lanesOpen === "Closed") return "Closed";
-      if (wait.lanesOpenCount == null) return wait.lanesOpen && wait.lanesOpen !== "—" ? wait.lanesOpen : "";
-      // e.g. "2 of 5 lanes open" — never drop the reported open count
-      if (maxLanes) return wait.lanesOpenCount + " of " + maxLanes + " open";
-      return wait.lanesOpenCount + " open";
+      if (wait.lanesOpenCount != null) return wait.lanesOpenCount + " open";
+      if (wait.lanesOpen && wait.lanesOpen !== "—") return wait.lanesOpen;
+      return "";
+    }
+
+    /**
+     * CBP "Maximum Lanes" is the capacity for the whole traffic type
+     * (General + Ready + SENTRI/etc.), not General-only.
+     */
+    function sectionOpenSummary(summary) {
+      if (!summary) return "";
+      const parts = [];
+      if (summary.primary && !summary.primary.pending && summary.primary.lanesOpenCount != null) {
+        parts.push({
+          name: (summary.primaryName || "General").replace(/\s*Lane$/i, ""),
+          count: summary.primary.lanesOpenCount
+        });
+      }
+      for (const l of summary.extras || []) {
+        if (l.wait && !l.wait.pending && l.wait.lanesOpenCount != null) {
+          parts.push({
+            name: l.name.replace(/\s*Lane$/i, ""),
+            count: l.wait.lanesOpenCount
+          });
+        }
+      }
+      if (!parts.length) return "";
+      const totalOpen = parts.reduce((s, p) => s + p.count, 0);
+      const breakdown = parts.map((p) => p.name + " " + p.count).join(" · ");
+      if (summary.max) {
+        return totalOpen + " of " + summary.max + " open (" + breakdown + ")";
+      }
+      return breakdown + " open";
     }
 
     function waitCellBlock(summary) {
@@ -1463,19 +1492,19 @@
         return { html: `<span class="wait-empty">—</span>`, cls: "" };
       }
       const w = summary.primary;
-      const primaryOpen = formatOpenLanes(w, summary.max);
-      const openNote = primaryOpen
-        ? `<span class="wait-extra">${escapeHtml(primaryOpen)}</span>`
-        : "";
+      // Big number = General wait. Sub-lines = Ready wait + combined open vs max capacity.
       const extraHtml = (summary.extras || []).map((l) => {
         const short = l.name.replace(/\s*Lane$/i, "");
-        const readyOpen = formatOpenLanes(l.wait, null);
+        const readyOpen = formatLaneOpenOnly(l.wait);
         const openPart = readyOpen ? " · " + readyOpen : "";
-        // Ready: wait + its own open-lane count (Gateway often has Ready ≠ General opens)
         return `<span class="wait-extra"><span class="tag">${escapeHtml(short)}</span> ${escapeHtml(l.wait.label)}${escapeHtml(openPart)}</span>`;
       }).join("");
+      const capacityNote = sectionOpenSummary(summary);
+      const capHtml = capacityNote
+        ? `<span class="wait-extra">${escapeHtml(capacityNote)}</span>`
+        : "";
       return {
-        html: `${waitCellHtml(w)}${openNote}${extraHtml}`,
+        html: `${waitCellHtml(w)}${extraHtml}${capHtml}`,
         cls: "has-" + w.cls
       };
     }
@@ -1627,7 +1656,7 @@
 
       grid.innerHTML = `
         <div class="table-wrap">
-          <div class="asof-bar">Report time: <strong>${escapeHtml(asOfText)}</strong> · Open lanes listed under each wait</div>
+          <div class="asof-bar">Report time: <strong>${escapeHtml(asOfText)}</strong> · Open counts are per lane type; max is CBP total capacity for that traffic category</div>
           <div class="table-scroll">
             <table class="wait-table">
               <colgroup>${colgroup}</colgroup>
