@@ -1380,7 +1380,7 @@
       </div>
     </div>
     <div class="refresh-row">
-      <button type="button" class="btn btn-primary btn-refresh" id="refreshBtn" onclick="loadData(false)">
+      <button type="button" class="btn btn-primary btn-refresh" id="refreshBtn" onclick="loadData(false, true)">
         <span class="btn-icon" aria-hidden="true">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
             <path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -2465,11 +2465,12 @@
       }
     }
 
-    async function loadData(fromAuto) {
+    async function loadData(fromAuto, isUserClick) {
       if (isLoading) return;
       isLoading = true;
       const alert = document.getElementById("alertBox");
-      const manual = !fromAuto;
+      // Cool feedback only when the user taps Refresh (not initial load / auto-refresh)
+      const manual = !!isUserClick;
 
       if (manual) setRefreshButtonState("loading");
       else {
@@ -2548,7 +2549,7 @@
       scheduleAutoRefresh();
     }
 
-    loadData(false);
+    loadData(true);
 
     /**
      * Unique visitor ticker: "Page Visits: N (All-Time)"
