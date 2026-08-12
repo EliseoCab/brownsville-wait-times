@@ -528,29 +528,34 @@
     .wait-extra .tag {
       color: var(--slate);
     }
-    .dual-waits {
+    .compact-waits {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.55rem;
+      gap: 0.35rem;
     }
-    .dual-wait {
+    .compact-pair {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.15rem;
+      gap: 0.1rem;
     }
     .dual-label {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       font-weight: 800;
       letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--muted);
     }
+    .wait-extra.open-line {
+      margin-top: 0.4rem;
+      max-width: 11rem;
+      line-height: 1.3;
+    }
     .wait-table td.wait-col.has-dual {
       vertical-align: middle;
-      padding-top: 0.75rem;
-      padding-bottom: 0.75rem;
+      padding-top: 0.7rem;
+      padding-bottom: 0.7rem;
     }
     .wait-empty {
       color: var(--gray);
@@ -945,7 +950,7 @@
         <button type="button" class="filter-btn" data-filter="commercial" onclick="setFilter('commercial', this)">Commercial</button>
       </div>
     </div>
-    <p class="view-note">One row per bridge. N/A and closed are omitted. Only at Gateway Pedestrian: if General and Ready waits differ, both times show in Pedestrian. “N of M open” is total capacity for the type. SENTRI/FAST is SENTRI and commercial FAST only.</p>
+    <p class="view-note">One row per bridge. Wait is General; open line is Gen/Ready counts and total vs CBP max. Gateway Pedestrian only: Gen and Ready waits both shown when they differ. SENTRI/FAST is SENTRI and commercial FAST only.</p>
 
     <div class="ports" id="portGrid" aria-live="polite"></div>
 
@@ -1439,60 +1444,69 @@
       };
     }
 
-    function formatLaneOpenOnly(wait) {
-      if (!wait || wait.pending) return "";
-      if (wait.lanesOpen === "Closed") return "Closed";
-      if (wait.lanesOpenCount != null) return wait.lanesOpenCount + " open";
-      if (wait.lanesOpen && wait.lanesOpen !== "—") return wait.lanesOpen;
-      return "";
-    }
-
-    /**
-     * CBP "Maximum Lanes" is the capacity for the whole traffic type
-     * (General + Ready + SENTRI/etc.), not General-only.
-     */
-    function sectionOpenSummary(summary) {
-      if (!summary) return "";
-      const parts = [];
-      if (summary.primary && !summary.primary.pending && summary.primary.lanesOpenCount != null) {
-        parts.push({
-          name: (summary.primaryName || "General").replace(/\s*Lane$/i, ""),
-          count: summary.primary.lanesOpenCount
-        });
-      }
-      for (const l of summary.extras || []) {
-        if (l.wait && !l.wait.pending && l.wait.lanesOpenCount != null) {
-          parts.push({
-            name: l.name.replace(/\s*Lane$/i, ""),
-            count: l.wait.lanesOpenCount
-          });
-        }
-      }
-      if (!parts.length) return "";
-      const totalOpen = parts.reduce((s, p) => s + p.count, 0);
-      const breakdown = parts.map((p) => p.name + " " + p.count).join(" · ");
-      if (summary.max) {
-        return totalOpen + " of " + summary.max + " open (" + breakdown + ")";
-      }
-      return breakdown + " open";
-    }
-
     function isGatewayPort(port) {
       const t = (port && (port.title || "")) + " " + (port && port.meta && port.meta.short ? port.meta.short : "");
       return /gateway/i.test(t);
     }
 
     /**
-     * Dual General + Ready wait display only for Gateway Pedestrian when minutes differ.
-     * Other bridges/types keep a single General number (+ Ready open note if useful).
+     * Concise open line: "2 Gen · 2 Ready · 4/5 open" or "2/5 open" or "2 open"
+     * Max = CBP Maximum Lanes for the whole traffic type (not General-only).
+     */
+    function formatOpenLine(summary) {
+      if (!summary) return "";
+      const bits = [];
+      let total = 0;
+      let hasCounts = false;
+
+      if (summary.primary && !summary.primary.pending && summary.primary.lanesOpenCount != null) {
+        bits.push(summary.primary.lanesOpenCount + " Gen");
+        total += summary.primary.lanesOpenCount;
+        hasCounts = true;
+      } else if (summary.primary && summary.primary.lanesOpen === "Closed") {
+        bits.push("Gen closed");
+      }
+
+      for (const l of summary.extras || []) {
+        if (!/ready/i.test(l.name)) continue;
+        if (l.wait && !l.wait.pending && l.wait.lanesOpenCount != null) {
+          bits.push(l.wait.lanesOpenCount + " Ready");
+          total += l.wait.lanesOpenCount;
+          hasCounts = true;
+        } else if (l.wait && l.wait.lanesOpen === "Closed") {
+          bits.push("Ready closed");
+        }
+      }
+
+      if (!hasCounts && !bits.length) return "";
+
+      if (hasCounts && summary.max) {
+        // One Gen only → "2/5 open"; Gen+Ready → "2 Gen · 2 Ready · 4/5 open"
+        if (bits.length === 1 && /^(\d+) Gen$/.test(bits[0])) {
+          return total + "/" + summary.max + " open";
+        }
+        return bits.join(" · ") + " · " + total + "/" + summary.max + " open";
+      }
+      if (hasCounts && bits.length === 1 && /^(\d+) Gen$/.test(bits[0])) {
+        return total + " open";
+      }
+      if (hasCounts) return bits.join(" · ") + " · " + total + " open";
+      return bits.join(" · ");
+    }
+
+    /**
+     * Concise wait cell:
+     *  - Same wait: "60 min" + open line
+     *  - Gateway Pedestrian only when Gen ≠ Ready: "Gen 15 · Ready 30" + open line
      */
     function waitCellBlock(summary, modeKey, port) {
       if (!summary) {
         return { html: `<span class="wait-empty">—</span>`, cls: "" };
       }
       const w = summary.primary;
-      const readyLanes = (summary.extras || []).filter((l) => /ready/i.test(l.name));
-      const readyActive = readyLanes.find((l) => isShowableWait(l.wait));
+      const readyActive = (summary.extras || []).find(
+        (l) => /ready/i.test(l.name) && isShowableWait(l.wait)
+      );
 
       const gatewayPedDual =
         port &&
@@ -1505,48 +1519,24 @@
 
       let mainHtml;
       if (gatewayPedDual) {
-        const gOpen = formatLaneOpenOnly(w);
-        const rOpen = formatLaneOpenOnly(readyActive.wait);
-        mainHtml = `
-          <div class="dual-waits">
-            <div class="dual-wait">
-              <span class="dual-label">General</span>
-              ${waitCellHtml(w)}
-              ${gOpen ? `<span class="wait-extra">${escapeHtml(gOpen)}</span>` : ""}
-            </div>
-            <div class="dual-wait">
-              <span class="dual-label">Ready</span>
-              ${waitCellHtml(readyActive.wait)}
-              ${rOpen ? `<span class="wait-extra">${escapeHtml(rOpen)}</span>` : ""}
-            </div>
-          </div>`;
+        mainHtml = `<div class="compact-waits">
+          <span class="compact-pair"><span class="dual-label">Gen</span> ${waitCellHtml(w)}</span>
+          <span class="compact-pair"><span class="dual-label">Ready</span> ${waitCellHtml(readyActive.wait)}</span>
+        </div>`;
+      } else if (w.pending) {
+        mainHtml = waitCellHtml(w);
       } else {
-        // Default: one General wait; Ready line only when useful (open count / different status)
-        const extraHtml = readyLanes.map((l) => {
-          if (!isShowableWait(l.wait)) return "";
-          const short = l.name.replace(/\s*Lane$/i, "");
-          const readyOpen = formatLaneOpenOnly(l.wait);
-          const sameWait =
-            isActiveWait(w) && isActiveWait(l.wait) && w.minutes === l.wait.minutes;
-          if (sameWait) {
-            return readyOpen
-              ? `<span class="wait-extra"><span class="tag">${escapeHtml(short)}</span> ${escapeHtml(readyOpen)}</span>`
-              : "";
-          }
-          // Non-Gateway or non-pedestrian: still note Ready wait if it differs, but compact
-          const openPart = readyOpen ? " · " + readyOpen : "";
-          return `<span class="wait-extra"><span class="tag">${escapeHtml(short)}</span> ${escapeHtml(l.wait.label)}${escapeHtml(openPart)}</span>`;
-        }).join("");
-        mainHtml = `${waitCellHtml(w)}${extraHtml}`;
+        mainHtml = waitCellHtml(w);
       }
 
-      const capacityNote = sectionOpenSummary(summary);
-      const capHtml = capacityNote
-        ? `<span class="wait-extra">${escapeHtml(capacityNote)}</span>`
+      const openLine = formatOpenLine(summary);
+      const openHtml = openLine
+        ? `<span class="wait-extra open-line">${escapeHtml(openLine)}</span>`
         : "";
+
       return {
-        html: `${mainHtml}${capHtml}`,
-        cls: gatewayPedDual ? "has-dual has-" + w.cls : "has-" + w.cls
+        html: `${mainHtml}${openHtml}`,
+        cls: (gatewayPedDual ? "has-dual " : "") + "has-" + w.cls
       };
     }
 
@@ -1751,7 +1741,7 @@
 
       grid.innerHTML = `
         <div class="table-wrap">
-          <div class="asof-bar">Report time: <strong>${escapeHtml(asOfText)}</strong> · Open counts are per lane type; max is CBP total capacity for that traffic category</div>
+          <div class="asof-bar">Report time: <strong>${escapeHtml(asOfText)}</strong> · Open line: Gen/Ready booths · total/max capacity</div>
           <div class="table-scroll">
             <table class="wait-table">
               <colgroup>${colgroup}</colgroup>
