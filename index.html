@@ -405,8 +405,9 @@
       font-size: 0.9375rem;
       table-layout: fixed;
     }
-    .wait-table col.c-bridge { width: 24%; }
-    .wait-table col.c-wait { width: 19%; }
+    /* Widths set inline per filter so columns auto-distribute in All / Passenger / etc. */
+    .wait-table col.c-bridge,
+    .wait-table col.c-wait { width: auto; }
 
     .wait-table thead th {
       position: sticky;
@@ -1868,9 +1869,13 @@
           ).join("")}</div>`
         : "";
 
-      const colgroup = `
-        <col class="c-bridge" />
-        ${waitCols.map(() => `<col class="c-wait" />`).join("")}`;
+      // Auto-fit column widths for every filter (All has more cols; others still fill the row)
+      const waitN = Math.max(waitCols.length, 1);
+      const bridgePct = waitN >= 4 ? 22 : waitN === 3 ? 26 : waitN === 2 ? 32 : 36;
+      const waitPct = ((100 - bridgePct) / waitN).toFixed(2);
+      const colgroup =
+        `<col class="c-bridge" style="width:${bridgePct}%" />` +
+        waitCols.map(() => `<col class="c-wait" style="width:${waitPct}%" />`).join("");
 
       const headCols = waitCols.map((c) =>
         `<th scope="col">${escapeHtml(c.label)}</th>`
