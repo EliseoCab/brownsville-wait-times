@@ -1448,13 +1448,13 @@
     }
 
     /**
-     * Concise open line: "2 Gen · 2 Ready · 4/5 open" or "2/5 open" or "2 open"
-     * Max = CBP Maximum Lanes for the whole traffic type (not General-only).
-     * Passenger & Pedestrian: omit Ready open bits (still count Ready toward total/max).
+     * Concise open line under the wait number:
+     *   "2 Gen · 2 Ready · 4/5 open"  when Ready is open
+     *   "2/5 open" or "2 open"        when only General has counts
+     * Max = CBP Maximum Lanes for the whole traffic type (Gen + Ready + etc.).
      */
     function formatOpenLine(summary, modeKey) {
       if (!summary) return "";
-      const omitReadyDetail = modeKey === "passenger" || modeKey === "pedestrian";
       const bits = [];
       let total = 0;
       let hasCounts = false;
@@ -1470,12 +1470,10 @@
       for (const l of summary.extras || []) {
         if (!/ready/i.test(l.name)) continue;
         if (l.wait && !l.wait.pending && l.wait.lanesOpenCount != null) {
+          bits.push(l.wait.lanesOpenCount + " Ready");
           total += l.wait.lanesOpenCount;
           hasCounts = true;
-          if (!omitReadyDetail) {
-            bits.push(l.wait.lanesOpenCount + " Ready");
-          }
-        } else if (l.wait && l.wait.lanesOpen === "Closed" && !omitReadyDetail) {
+        } else if (l.wait && l.wait.lanesOpen === "Closed") {
           bits.push("Ready closed");
         }
       }
@@ -1483,17 +1481,11 @@
       if (!hasCounts && !bits.length) return "";
 
       if (hasCounts && summary.max) {
-        // Passenger/Pedestrian (or Gen-only): "4/5 open" — Ready counted in total, not listed
-        if (omitReadyDetail) {
-          return total + "/" + summary.max + " open";
-        }
+        // Gen only → "2/5 open"; Gen+Ready → "2 Gen · 2 Ready · 4/5 open"
         if (bits.length === 1 && /^(\d+) Gen$/.test(bits[0])) {
           return total + "/" + summary.max + " open";
         }
         return bits.join(" · ") + " · " + total + "/" + summary.max + " open";
-      }
-      if (hasCounts && omitReadyDetail) {
-        return total + " open";
       }
       if (hasCounts && bits.length === 1 && /^(\d+) Gen$/.test(bits[0])) {
         return total + " open";
