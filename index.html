@@ -1702,17 +1702,11 @@
           return `<td class="wait-col ${cell.cls}">${cell.html}</td>`;
         }).join("");
 
-        const sentriOpen = veteransSentriOpenCount(port);
-        const veteransSentriNote = sentriOpen != null
-          ? `<span class="aka" style="color:var(--sky-deep);font-weight:700">SENTRI lanes open: ${sentriOpen}</span>`
-          : "";
-
         tableRows.push(`
           <tr>
             <td class="bridge">
               ${escapeHtml(port.meta.short)}
               <span class="aka">${escapeHtml(port.meta.aka)}</span>
-              ${veteransSentriNote}
             </td>
             <td class="hours">${escapeHtml(port.hours)}</td>
             ${tdHtml}
