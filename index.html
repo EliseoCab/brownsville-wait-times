@@ -983,7 +983,7 @@
     </div>
     <div class="footer-inner" style="margin-top:0;padding-top:0">
       <div class="visit-ticker" id="visitTicker" aria-live="polite">
-        Page Visits: <span class="visit-count" id="visitCount">—</span> (All-Time)
+        Page Visits: <span class="visit-count" id="visitCount">—</span> (All-Time Unique)
       </div>
     </div>
   </footer>
@@ -1988,16 +1988,19 @@
     loadData(false);
 
     /**
-     * Page visit ticker: "Page Visits: N (All-Time)"
-     * Static GitHub Pages — uses public hit counters (no backend).
+     * Unique visitor ticker: "Page Visits: N (All-Time)"
+     * Counts each browser once (localStorage). Refresh does NOT increment.
+     * Not cross-device unique without a server/login — same person on phone + laptop = 2.
      */
     async function trackPageVisit() {
       const countEl = document.getElementById("visitCount");
       if (!countEl) return;
 
-      const pageUrl = "https://eliseocab.github.io/brownsville-wait-times/";
+      const STORAGE_KEY = "bwt-unique-visitor-v1";
       const namespace = "eliseocab-brownsville-wait-times";
-      const key = "visits";
+      // New counter key so all-time unique is not mixed with old per-refresh hits
+      const key = "unique-visitors";
+      const pageUrl = "https://eliseocab.github.io/brownsville-wait-times/unique";
 
       function setCount(n) {
         const num = Number(n);
@@ -2006,63 +2009,78 @@
         return true;
       }
 
-      // 1) Prefer JSON counters (CORS-friendly public APIs)
-      const jsonEndpoints = [
-        // abacus — free, no key
-        "https://abacus.jasoncameron.dev/hit/" + namespace + "/" + key,
-        // hits.sh JSON (when available)
-        "https://hits.sh/eliseocab.github.io/brownsville-wait-times.json"
+      function extractCount(data) {
+        if (data == null) return null;
+        return (
+          data.value ??
+          data.count ??
+          data.total ??
+          data.hits ??
+          data?.data?.value ??
+          data?.data?.count ??
+          null
+        );
+      }
+
+      let alreadyCounted = false;
+      try {
+        alreadyCounted = localStorage.getItem(STORAGE_KEY) === "1";
+      } catch (_) {
+        alreadyCounted = false;
+      }
+
+      // Increment only for a first-time visitor in this browser
+      if (!alreadyCounted) {
+        try {
+          const res = await fetch(
+            "https://abacus.jasoncameron.dev/hit/" + namespace + "/" + key,
+            { mode: "cors", credentials: "omit", cache: "no-store" }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const n = extractCount(data);
+            if (setCount(n)) {
+              try { localStorage.setItem(STORAGE_KEY, "1"); } catch (_) { /* private mode */ }
+              return;
+            }
+          }
+        } catch (_) { /* fall through */ }
+
+        // Badge increment once (unique URL path so it doesn't reuse old per-refresh series)
+        try {
+          const img = new Image();
+          img.referrerPolicy = "no-referrer-when-downgrade";
+          img.src =
+            "https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=" +
+            encodeURIComponent(pageUrl) +
+            "&count_bg=%230ea5e9&title_bg=%230b1f3a&title=visits&edge_flat=true&t=" +
+            Date.now();
+          try { localStorage.setItem(STORAGE_KEY, "1"); } catch (_) { /* ignore */ }
+        } catch (_) { /* ignore */ }
+      }
+
+      // Returning visitor (or after increment): read current total without incrementing
+      const readUrls = [
+        "https://abacus.jasoncameron.dev/get/" + namespace + "/" + key,
+        "https://abacus.jasoncameron.dev/hit/" + namespace + "/" + key + "/get"
       ];
 
-      for (const url of jsonEndpoints) {
+      for (const url of readUrls) {
         try {
           const res = await fetch(url, { mode: "cors", credentials: "omit", cache: "no-store" });
           if (!res.ok) continue;
           const data = await res.json();
-          const n =
-            data.value ??
-            data.count ??
-            data.total ??
-            data.hits ??
-            data?.data?.value ??
-            data?.data?.count ??
-            null;
-          if (setCount(n)) return;
+          if (setCount(extractCount(data))) return;
         } catch (_) { /* try next */ }
       }
 
-      // 2) hits.seeyoufarm SVG — fetch + parse the number out of the badge
-      try {
-        const svgUrl =
-          "https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=" +
-          encodeURIComponent(pageUrl) +
-          "&count_bg=%230ea5e9&title_bg=%230b1f3a&title=visits&edge_flat=true";
-        const res = await fetch(svgUrl, { mode: "cors", credentials: "omit", cache: "no-store" });
-        if (res.ok) {
-          const svg = await res.text();
-          // Badge usually has two numbers or "visits" label + count; take largest integer
-          const nums = [...svg.matchAll(/>(\d[\d,]*)<\/text>/g)].map((m) =>
-            parseInt(String(m[1]).replace(/,/g, ""), 10)
-          ).filter((n) => Number.isFinite(n));
-          if (nums.length && setCount(Math.max(...nums))) return;
-        }
-      } catch (_) { /* continue */ }
-
-      // 3) Last resort: still fire a badge hit via Image (increments even if we can't read it)
-      try {
-        const img = new Image();
-        img.referrerPolicy = "no-referrer-when-downgrade";
-        img.src =
-          "https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=" +
-          encodeURIComponent(pageUrl) +
-          "&count_bg=%230ea5e9&title_bg=%230b1f3a&title=visits&edge_flat=true&t=" +
-          Date.now();
-      } catch (_) { /* ignore */ }
-
-      // Keep em dash if we never got a readable total
-      if (countEl.textContent === "—" || countEl.textContent === "") {
-        countEl.textContent = "—";
+      // If we just counted but couldn't read a total, show at least 1 for this browser
+      if (!alreadyCounted) {
+        setCount(1);
+        return;
       }
+
+      countEl.textContent = "—";
     }
 
     trackPageVisit();
