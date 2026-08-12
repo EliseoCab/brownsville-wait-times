@@ -1131,7 +1131,7 @@
       const raw = (text || "").trim();
       const base = {
         minutes: null, num: "N/A", unit: "", label: "N/A", cls: "na",
-        pending: false, detail: "", asOf: "—", lanesOpen: "—", bar: 0
+        pending: false, detail: "", asOf: "—", lanesOpen: "—", lanesOpenCount: null, bar: 0
       };
       if (!raw || /^N\/A$/i.test(raw)) return { ...base };
       if (/update\s*pending/i.test(raw)) {
@@ -1153,15 +1153,20 @@
           lanesOpen: "Closed"
         };
       }
-      const minMatch = raw.match(/(\d+)\s*min/i);
+      // Prefer delay minutes (e.g. "60 min delay"), not clock fragments
+      const minMatch = raw.match(/(\d+)\s*min(?:ute)?s?\s*delay/i) || raw.match(/(\d+)\s*min\b/i);
       const timeMatch = raw.match(/At\s+(.+?)\s+(?=\d+\s*min)/i);
-      const lanesMatch = raw.match(/(\d+)\s*lane/i);
+      // Require "open" so we never confuse Maximum Lanes / "Lane 1" notice text
+      const lanesMatch = raw.match(/(\d+)\s*lane(?:s|\(s\))?\s*open/i);
       if (minMatch) {
         const mins = parseInt(minMatch[1], 10);
         const when = timeMatch ? timeMatch[1].trim() : "";
-        const lanesOpen = lanesMatch ? lanesMatch[1] + " open" : "—";
-        const detail = [when ? "As of " + when : "", lanesMatch ? lanesMatch[1] + " lane(s) open" : ""]
-          .filter(Boolean).join(" · ");
+        const openCount = lanesMatch ? parseInt(lanesMatch[1], 10) : null;
+        const lanesOpen = openCount != null ? openCount + " open" : "—";
+        const detail = [
+          when ? "As of " + when : "",
+          openCount != null ? openCount + " lane(s) open" : ""
+        ].filter(Boolean).join(" · ");
         return {
           minutes: mins,
           num: String(mins),
@@ -1172,6 +1177,7 @@
           detail,
           asOf: when || "—",
           lanesOpen,
+          lanesOpenCount: openCount,
           bar: Math.min(100, (mins / 120) * 100)
         };
       }
@@ -1214,16 +1220,29 @@
 
     function extractLanesFromBlock(block) {
       const lanes = [];
-      const laneRe = /(General Lanes|Sentri Lanes|Ready Lanes|Fast Lanes)\s*:\s*([^]*?)(?=(?:General|Sentri|Ready|Fast) Lanes\s*:|Maximum Lanes|Border Notice|$)/gi;
+      // Stop at next lane type, max-lanes, section title, or border notice (prevents bleed)
+      const laneRe = /(General Lanes|Sentri Lanes|Ready Lanes|Fast Lanes)\s*:\s*([^]*?)(?=(?:General|Sentri|Ready|Fast) Lanes\s*:|Maximum Lanes|Passenger Vehicles|Pedestrian|Commercial Vehicles|Border Notice|$)/gi;
       let m;
       while ((m = laneRe.exec(block)) !== null) {
-        const value = m[2].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+        let value = m[2].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+        // Drop accidental duplicate of the same lane line (XML/HTML double serialization)
+        const dup = value.match(/^(At\s+.+?\d+\s*min(?:ute)?s?\s*delay\s+\d+\s*lane(?:s|\(s\))?\s*open)\b/i);
+        if (dup) value = dup[1];
+        // Deduplicate identical lanes (same name + same wait text) later by name preference
         lanes.push({
           name: m[1].replace(/\s+Lanes$/i, " Lane"),
-          wait: parseWait(value)
+          wait: parseWait(value),
+          rawValue: value
         });
       }
-      return lanes;
+      // Keep first occurrence of each lane name within a section
+      const seen = new Set();
+      return lanes.filter((l) => {
+        const key = l.name.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
     }
 
     function parseDescription(markup) {
@@ -1430,21 +1449,33 @@
       };
     }
 
+    function formatOpenLanes(wait, maxLanes) {
+      if (!wait || wait.pending) return "";
+      if (wait.lanesOpen === "Closed") return "Closed";
+      if (wait.lanesOpenCount == null) return wait.lanesOpen && wait.lanesOpen !== "—" ? wait.lanesOpen : "";
+      // e.g. "2 of 5 lanes open" — never drop the reported open count
+      if (maxLanes) return wait.lanesOpenCount + " of " + maxLanes + " open";
+      return wait.lanesOpenCount + " open";
+    }
+
     function waitCellBlock(summary) {
       if (!summary) {
         return { html: `<span class="wait-empty">—</span>`, cls: "" };
       }
       const w = summary.primary;
+      const primaryOpen = formatOpenLanes(w, summary.max);
+      const openNote = primaryOpen
+        ? `<span class="wait-extra">${escapeHtml(primaryOpen)}</span>`
+        : "";
       const extraHtml = (summary.extras || []).map((l) => {
         const short = l.name.replace(/\s*Lane$/i, "");
-        // Ready: show name + wait clearly under General
-        return `<span class="wait-extra"><span class="tag">${escapeHtml(short)}</span> ${escapeHtml(l.wait.label)}</span>`;
+        const readyOpen = formatOpenLanes(l.wait, null);
+        const openPart = readyOpen ? " · " + readyOpen : "";
+        // Ready: wait + its own open-lane count (Gateway often has Ready ≠ General opens)
+        return `<span class="wait-extra"><span class="tag">${escapeHtml(short)}</span> ${escapeHtml(l.wait.label)}${escapeHtml(openPart)}</span>`;
       }).join("");
-      const openNote = summary.open && summary.open !== "—" && !summary.primary.pending
-        ? `<span class="wait-extra">${escapeHtml(summary.open)}${summary.max ? " / " + escapeHtml(summary.max) + " max" : ""}</span>`
-        : "";
       return {
-        html: `${waitCellHtml(w)}${extraHtml}${openNote}`,
+        html: `${waitCellHtml(w)}${openNote}${extraHtml}`,
         cls: "has-" + w.cls
       };
     }
