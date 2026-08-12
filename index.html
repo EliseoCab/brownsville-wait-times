@@ -1631,7 +1631,7 @@
             if (!/sentri|fast/i.test(lane.name)) continue;
           }
           if (isActiveWait(lane.wait)) {
-            if (!trusted || lane.wait.minutes < trusted.wait.minutes) {
+            if (!trusted || lane.wait.minutes < trusted.lane.wait.minutes) {
               trusted = { lane, sectionKey: sec.key, sectionTitle: sec.title };
             }
           } else if (lane.wait.pending && !pending) {
