@@ -1056,20 +1056,12 @@
       </div>
       <div class="hero-meta">
         <div class="meta-chip">
-          <div class="label">CBP last update</div>
-          <div class="value" id="pubDate">—</div>
-        </div>
-        <div class="meta-chip">
           <div class="label">Last checked</div>
           <div class="value" id="loadedAt">—</div>
         </div>
         <div class="meta-chip">
           <div class="label">Next auto-refresh</div>
           <div class="value" id="nextRefresh">—</div>
-        </div>
-        <div class="meta-chip">
-          <div class="label">Region</div>
-          <div class="value">Brownsville, TX</div>
         </div>
       </div>
     </div>
@@ -2067,7 +2059,6 @@
 
     function render(data, sourceLabel, isLive) {
       lastData = data;
-      document.getElementById("pubDate").textContent = data.pubDate;
       document.getElementById("loadedAt").textContent = new Date().toLocaleString(undefined, {
         dateStyle: "medium",
         timeStyle: "short"
