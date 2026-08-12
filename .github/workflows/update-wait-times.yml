@@ -1,0 +1,43 @@
+name: Update CBP wait times
+
+on:
+  schedule:
+    # 5 minutes past every hour (UTC). CBP updates ~hourly.
+    - cron: "5 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/update-wait-times.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch CBP Brownsville feed
+        run: |
+          mkdir -p data
+          curl -fsSL \
+            "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43" \
+            -o data/bwt.xml
+          # Sanity check: must look like RSS with items
+          grep -q "<item>" data/bwt.xml
+          wc -c data/bwt.xml
+
+      - name: Commit updated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/bwt.xml
+          if git diff --staged --quiet; then
+            echo "No wait-time changes."
+          else
+            git commit -m "chore: refresh Brownsville CBP wait times"
+            git push
+          fi

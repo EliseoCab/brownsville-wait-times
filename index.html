@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1f3a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="description" content="Live Brownsville Port of Entry wait times for B&amp;M, Gateway, Los Indios, and Veterans International bridges. Plan your border crossing with clear CBP estimates." />
+  <title>Brownsville Port of Entry · Wait Times</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0c1222;
+      --ink-soft: #1a2744;
+      --slate: #334155;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --line-soft: #f1f5f9;
+      --paper: #f8fafc;
+      --white: #ffffff;
+      --navy: #0b1f3a;
+      --navy-mid: #123056;
+      --sky: #0ea5e9;
+      --sky-deep: #0284c7;
+      --teal: #0d9488;
+      --green: #059669;
+      --green-bg: #ecfdf5;
+      --amber: #d97706;
+      --amber-bg: #fffbeb;
+      --orange: #ea580c;
+      --orange-bg: #fff7ed;
+      --red: #dc2626;
+      --red-bg: #fef2f2;
+      --gray: #94a3b8;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 20px 50px rgba(11, 31, 58, 0.12);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --font: "DM Sans", system-ui, -apple-system, sans-serif;
+      --display: "Instrument Serif", Georgia, serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.55;
+      min-height: 100vh;
+      min-height: 100dvh;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+
+    a { color: var(--sky-deep); text-underline-offset: 2px; }
+    a:hover { color: var(--navy); }
+
+    /* ——— Top bar ——— */
+    .topbar {
+      background: var(--navy);
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 0.8125rem;
+      font-weight: 500;
+    }
+    .topbar-inner {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0.55rem 1.25rem;
+      padding-left: max(1.25rem, env(safe-area-inset-left));
+      padding-right: max(1.25rem, env(safe-area-inset-right));
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem 1.5rem;
+    }
+    .topbar-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.6);
+      animation: pulse 2s ease infinite;
+    }
+    .pulse.cached { background: #fbbf24; box-shadow: none; animation: none; }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.55); }
+      70% { box-shadow: 0 0 0 8px rgba(52, 211, 153, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+    }
+    .topbar a {
+      color: #7dd3fc;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .topbar a:hover { color: #fff; text-decoration: underline; }
+
+    /* ——— Hero ——— */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse 80% 60% at 90% 10%, rgba(14, 165, 233, 0.22), transparent 55%),
+        radial-gradient(ellipse 50% 40% at 10% 80%, rgba(13, 148, 136, 0.18), transparent 50%),
+        linear-gradient(145deg, var(--navy) 0%, var(--navy-mid) 48%, #0a3a5c 100%);
+      color: #fff;
+      padding: clamp(2rem, 5vw, 3.25rem) 1.25rem clamp(2.5rem, 6vw, 3.75rem);
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(180deg, #000 40%, transparent);
+      pointer-events: none;
+    }
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 1160px;
+      margin: 0 auto;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #7dd3fc;
+      margin-bottom: 0.85rem;
+    }
+    .eyebrow svg { opacity: 0.9; }
+    .hero h1 {
+      font-family: var(--display);
+      font-weight: 400;
+      font-size: clamp(2.35rem, 5.5vw, 3.65rem);
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      max-width: 14ch;
+      margin-bottom: 0.85rem;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: #7dd3fc;
+    }
+    .hero-lead {
+      font-size: clamp(1rem, 2vw, 1.125rem);
+      color: rgba(226, 232, 240, 0.9);
+      max-width: 42ch;
+      margin-bottom: 1.75rem;
+      font-weight: 400;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    .btn {
+      appearance: none;
+      border: none;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      padding: 0.7rem 1.25rem;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.65; cursor: wait; }
+    .btn-primary {
+      background: #fff;
+      color: var(--navy);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    }
+    .btn-primary:hover { background: #f0f9ff; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); }
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+    .btn-ghost:hover { background: rgba(255, 255, 255, 0.16); }
+    .btn-light {
+      background: var(--white);
+      color: var(--navy);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-light:hover { border-color: #cbd5e1; background: var(--line-soft); }
+
+    .hero-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+      max-width: 720px;
+    }
+    .meta-chip {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(8px);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+    }
+    .meta-chip .label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(148, 163, 184, 0.95);
+      margin-bottom: 0.2rem;
+    }
+    .meta-chip .value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #f8fafc;
+    }
+
+    /* ——— Main ——— */
+    .main {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0 1.25rem 4rem;
+    }
+
+    /* Summary strip overlapping hero */
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.85rem;
+      margin-top: -1.75rem;
+      margin-bottom: 2rem;
+      position: relative;
+      z-index: 2;
+    }
+    @media (max-width: 900px) {
+      .summary { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 420px) {
+      .summary { grid-template-columns: 1fr; }
+    }
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.15rem;
+      box-shadow: var(--shadow);
+    }
+    .stat-card .kicker {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+    .stat-card .stat {
+      font-size: clamp(2rem, 4vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-card .stat.good { color: var(--green); }
+    .stat-card .stat.warn { color: var(--orange); }
+    .stat-card .stat.bad { color: var(--red); }
+    .stat-card .hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+    .section-title span {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-top: 0.15rem;
+      letter-spacing: 0;
+    }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.3rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .filter-btn {
+      appearance: none;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--slate);
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .filter-btn:hover { background: var(--line-soft); color: var(--ink); }
+    .filter-btn.active {
+      background: var(--navy);
+      color: #fff;
+    }
+
+    .alert {
+      display: none;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.9rem 1rem;
+      border-radius: var(--radius-sm);
+      background: var(--amber-bg);
+      border: 1px solid #fde68a;
+      color: #92400e;
+      font-size: 0.875rem;
+      margin-bottom: 1.25rem;
+    }
+    .alert.show { display: flex; }
+    .alert strong { display: block; margin-bottom: 0.15rem; }
+
+    .refresh-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem 1rem;
+      margin-bottom: 1rem;
+      padding: 0.7rem 0.95rem;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font-size: 0.8125rem;
+      color: var(--muted);
+      box-shadow: var(--shadow-sm);
+    }
+    .refresh-meta strong { color: var(--ink); font-weight: 700; }
+    .refresh-meta .dot { color: var(--line); }
+    .auto-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-weight: 700;
+      color: var(--sky-deep);
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+    }
+    .view-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin: -0.35rem 0 1rem;
+    }
+
+    /* Wait times table — one row per bridge */
+    .table-wrap {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    table.wait-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9375rem;
+      table-layout: fixed;
+    }
+    .wait-table col.c-bridge { width: 22%; }
+    .wait-table col.c-hours { width: 14%; }
+    .wait-table col.c-wait { width: 16%; }
+
+    .wait-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--navy);
+      color: #e2e8f0;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 0.85rem 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .wait-table thead th.th-bridge,
+    .wait-table thead th.th-hours {
+      text-align: left;
+      padding-left: 1.15rem;
+    }
+    .wait-table tbody tr {
+      border-bottom: 1px solid var(--line);
+      transition: background 0.12s;
+    }
+    .wait-table tbody tr:last-child { border-bottom: none; }
+    .wait-table tbody tr:hover { background: #f8fafc; }
+    .wait-table td {
+      padding: 1rem 0.75rem;
+      vertical-align: middle;
+      color: var(--slate);
+    }
+    .wait-table td.bridge {
+      text-align: left;
+      padding-left: 1.15rem;
+      font-weight: 750;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .wait-table td.bridge .aka {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-top: 0.2rem;
+      line-height: 1.3;
+    }
+    .wait-table td.hours {
+      text-align: left;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--sky-deep);
+      white-space: nowrap;
+    }
+    .wait-table td.wait-col {
+      text-align: center;
+      border-left: 1px solid var(--line-soft);
+    }
+    .wait-table td.wait-col.has-low { background: rgba(236, 253, 245, 0.65); }
+    .wait-table td.wait-col.has-med { background: rgba(255, 251, 235, 0.7); }
+    .wait-table td.wait-col.has-high { background: rgba(255, 247, 237, 0.75); }
+    .wait-table td.wait-col.has-severe { background: rgba(254, 242, 242, 0.8); }
+
+    .wait-cell {
+      display: inline-flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 0.15rem;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    .wait-cell .num {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+    .wait-cell .unit {
+      font-size: 0.8rem;
+      font-weight: 700;
+      opacity: 0.75;
+    }
+    .wait-cell.low .num,
+    .wait-cell.low .unit { color: var(--green); }
+    .wait-cell.med .num,
+    .wait-cell.med .unit { color: var(--amber); }
+    .wait-cell.high .num,
+    .wait-cell.high .unit { color: var(--orange); }
+    .wait-cell.severe .num,
+    .wait-cell.severe .unit { color: var(--red); }
+
+    .wait-extra {
+      display: block;
+      margin-top: 0.35rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      line-height: 1.25;
+    }
+    .wait-extra .tag {
+      color: var(--slate);
+    }
+    .wait-empty {
+      color: var(--gray);
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    .asof-bar {
+      padding: 0.55rem 1.15rem;
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .asof-bar strong { color: var(--ink); font-weight: 700; }
+
+    .notices-block {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    .notice {
+      padding: 0.85rem 1rem;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #eff6ff, #f0f9ff);
+      border: 1px solid #bfdbfe;
+      font-size: 0.875rem;
+      color: #1e3a5f;
+    }
+    .notice-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--sky-deep);
+      margin-bottom: 0.25rem;
+    }
+    .notice .bridge-tag {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    @media print {
+      .hero { padding-bottom: 1.5rem; }
+      .summary { break-inside: avoid; }
+      .table-wrap { box-shadow: none; break-inside: avoid; }
+    }
+
+    /* ——— Mobile layout (table only, scrollable) ——— */
+    @media (max-width: 720px) {
+      .hero {
+        padding: 1.5rem 1rem 2rem;
+      }
+      .hero h1 {
+        max-width: none;
+        font-size: 2.15rem;
+      }
+      .hero-lead {
+        font-size: 0.95rem;
+        max-width: none;
+      }
+      .hero-actions {
+        width: 100%;
+      }
+      .hero-actions .btn {
+        flex: 1 1 auto;
+        justify-content: center;
+        min-height: 44px;
+      }
+      .hero-meta {
+        grid-template-columns: 1fr 1fr;
+        max-width: none;
+      }
+      .meta-chip .value {
+        font-size: 0.85rem;
+        word-break: break-word;
+      }
+
+      .main {
+        padding: 0 0.9rem 3rem;
+      }
+      .summary {
+        margin-top: -1.25rem;
+        gap: 0.65rem;
+      }
+      .stat-card {
+        padding: 0.9rem 0.95rem;
+      }
+      .stat-card .stat {
+        font-size: 1.65rem;
+      }
+
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.85rem;
+      }
+      .section-title { font-size: 1.2rem; }
+      .filters {
+        width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .filters::-webkit-scrollbar { display: none; }
+      .filter-btn {
+        flex: 0 0 auto;
+        min-height: 40px;
+        padding: 0.5rem 0.95rem;
+      }
+
+      .refresh-meta {
+        font-size: 0.78rem;
+        gap: 0.4rem 0.65rem;
+      }
+
+      .below {
+        grid-template-columns: 1fr;
+        margin-top: 1.5rem;
+      }
+      .panel { padding: 1.1rem 1rem; }
+
+      .footer-inner {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .footer-links {
+        flex-direction: column;
+        gap: 0.65rem;
+      }
+      footer {
+        padding: 1.5rem 1rem calc(1.5rem + env(safe-area-inset-bottom));
+      }
+
+      .topbar-inner {
+        font-size: 0.75rem;
+        padding-top: max(0.55rem, env(safe-area-inset-top));
+      }
+    }
+
+    @media (max-width: 380px) {
+      .hero-meta { grid-template-columns: 1fr; }
+      .summary { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      table.wait-table { min-width: 640px; }
+      .wait-cell .num { font-size: 1.35rem; }
+      .wait-table thead th,
+      .wait-table td { padding: 0.7rem 0.55rem; }
+      .wait-table td.bridge { padding-left: 0.85rem; }
+      .wait-table thead th.th-bridge,
+      .wait-table thead th.th-hours { padding-left: 0.85rem; }
+    }
+
+    /* Guide / tips */
+    .below {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 1.15rem;
+      margin-top: 2.25rem;
+    }
+    @media (max-width: 800px) {
+      .below { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1.35rem 1.4rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .panel h2 {
+      font-size: 1.1rem;
+      font-weight: 750;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.85rem;
+      color: var(--ink);
+    }
+    .tips {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .tips li {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 0.65rem;
+      align-items: start;
+      font-size: 0.9rem;
+      color: var(--slate);
+    }
+    .tips .num {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--navy);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+    }
+    .tips strong { color: var(--ink); font-weight: 650; }
+
+    .legend-grid {
+      display: grid;
+      gap: 0.55rem;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-size: 0.875rem;
+      color: var(--slate);
+      padding: 0.55rem 0.65rem;
+      border-radius: 10px;
+      background: var(--paper);
+      border: 1px solid var(--line-soft);
+    }
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .swatch.low { background: var(--green); }
+    .swatch.med { background: var(--amber); }
+    .swatch.high { background: var(--orange); }
+    .swatch.severe { background: var(--red); }
+    .swatch.na { background: var(--gray); }
+
+    .disclaimer {
+      margin-top: 1.75rem;
+      padding: 1rem 1.15rem;
+      border-radius: var(--radius-sm);
+      background: var(--line-soft);
+      border: 1px solid var(--line);
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--navy);
+      color: rgba(226, 232, 240, 0.75);
+      padding: 2rem 1.25rem;
+      margin-top: 1rem;
+    }
+    .footer-inner {
+      max-width: 1160px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1.25rem;
+      align-items: flex-start;
+    }
+    .footer-brand {
+      font-family: var(--display);
+      font-size: 1.35rem;
+      color: #fff;
+      margin-bottom: 0.35rem;
+    }
+    .footer-brand span { color: #7dd3fc; font-style: italic; }
+    footer p { font-size: 0.85rem; max-width: 40ch; }
+    footer a { color: #7dd3fc; text-decoration: none; font-weight: 600; }
+    footer a:hover { text-decoration: underline; color: #fff; }
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+      font-size: 0.875rem;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pulse { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-live">
+        <span class="pulse" id="livePulse" aria-hidden="true"></span>
+        <span id="liveLabel">Checking CBP feed…</span>
+      </div>
+      <div>
+        Official data ·
+        <a href="https://bwt.cbp.gov" target="_blank" rel="noopener">bwt.cbp.gov</a>
+      </div>
+    </div>
+  </div>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 2L3 7v6c0 5 3.5 8.5 9 10 5.5-1.5 9-5 9-10V7l-9-5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+        U.S. – Mexico Land Border · Texas
+      </div>
+      <h1>Brownsville <em>Port of Entry</em></h1>
+      <p class="hero-lead">
+        Real-time estimated wait times for primary inspection at Brownsville’s four bridges—
+        so you can choose the smarter crossing before you leave.
+      </p>
+      <div class="hero-actions">
+        <button type="button" class="btn btn-primary" id="refreshBtn" onclick="loadData()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M18 4v5h-5M6 20v-5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Refresh times
+        </button>
+        <a class="btn btn-ghost" href="#ports">View all bridges</a>
+      </div>
+      <div class="hero-meta">
+        <div class="meta-chip">
+          <div class="label">CBP last update</div>
+          <div class="value" id="pubDate">—</div>
+        </div>
+        <div class="meta-chip">
+          <div class="label">Last checked</div>
+          <div class="value" id="loadedAt">—</div>
+        </div>
+        <div class="meta-chip">
+          <div class="label">Next auto-refresh</div>
+          <div class="value" id="nextRefresh">—</div>
+        </div>
+        <div class="meta-chip">
+          <div class="label">Region</div>
+          <div class="value">Brownsville, TX</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="summary" aria-label="At a glance">
+      <div class="stat-card">
+        <div class="kicker">Shortest passenger wait</div>
+        <div class="stat" id="statShort">—</div>
+        <div class="hint" id="statShortHint">Across open general lanes</div>
+      </div>
+      <div class="stat-card">
+        <div class="kicker">Longest passenger wait</div>
+        <div class="stat" id="statLong">—</div>
+        <div class="hint" id="statLongHint">Plan extra time if needed</div>
+      </div>
+      <div class="stat-card">
+        <div class="kicker">Best SENTRI / Ready</div>
+        <div class="stat" id="statTrusted">—</div>
+        <div class="hint" id="statTrustedHint">Trusted traveler lanes</div>
+      </div>
+      <div class="stat-card">
+        <div class="kicker">Active notices</div>
+        <div class="stat" id="statNotices">—</div>
+        <div class="hint">Border advisories from CBP</div>
+      </div>
+    </section>
+
+    <div class="alert" id="alertBox" role="status"></div>
+
+    <div class="refresh-meta" id="ports">
+      <span class="auto-badge" title="Checks the CBP feed at 5 minutes past each hour (e.g. 1:05, 2:05)">Auto-refresh · :05 past the hour</span>
+      <span>Next check in <strong id="nextRefreshInline">—</strong></span>
+      <span class="dot" aria-hidden="true">·</span>
+      <span>Active waits only (N/A &amp; closed hidden)</span>
+    </div>
+
+    <div class="toolbar">
+      <h2 class="section-title">
+        Crossing times
+        <span>Estimates to primary inspection booth · CBP updates about hourly</span>
+      </h2>
+      <div class="filters" role="tablist" aria-label="Filter by traffic type">
+        <button type="button" class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All</button>
+        <button type="button" class="filter-btn" data-filter="passenger" onclick="setFilter('passenger', this)">Passenger</button>
+        <button type="button" class="filter-btn" data-filter="pedestrian" onclick="setFilter('pedestrian', this)">Pedestrian</button>
+        <button type="button" class="filter-btn" data-filter="commercial" onclick="setFilter('commercial', this)">Commercial</button>
+      </div>
+    </div>
+    <p class="view-note">One row per bridge. N/A and closed lanes are omitted. SENTRI/Fast shows the best open trusted or commercial fast lane.</p>
+
+    <div class="ports" id="portGrid" aria-live="polite"></div>
+
+    <div class="below">
+      <section class="panel">
+        <h2>Crossing tips</h2>
+        <ul class="tips">
+          <li>
+            <span class="num">1</span>
+            <div><strong>Compare bridges, not just minutes.</strong> A longer drive to a quieter crossing can beat a short hop into a 90‑minute queue.</div>
+          </li>
+          <li>
+            <span class="num">2</span>
+            <div><strong>SENTRI &amp; Ready Lanes</strong> often move faster when open—check eligibility and lane status before you go.</div>
+          </li>
+          <li>
+            <span class="num">3</span>
+            <div><strong>Documents ready.</strong> Passport or passport card, vehicle registration, and any permits speed primary inspection.</div>
+          </li>
+          <li>
+            <span class="num">4</span>
+            <div><strong>Tune AM 1610</strong> for local border radio updates when available near the bridges.</div>
+          </li>
+        </ul>
+      </section>
+      <section class="panel">
+        <h2>How to read wait levels</h2>
+        <div class="legend-grid">
+          <div class="legend-item"><span class="swatch low"></span> <strong>Low</strong> — 0–15 minutes</div>
+          <div class="legend-item"><span class="swatch med"></span> <strong>Moderate</strong> — 16–30 minutes</div>
+          <div class="legend-item"><span class="swatch high"></span> <strong>High</strong> — 31–60 minutes</div>
+          <div class="legend-item"><span class="swatch severe"></span> <strong>Severe</strong> — over 60 minutes</div>
+          <div class="legend-item"><span class="swatch na"></span> <strong>N/A or closed</strong> — hidden from the list</div>
+        </div>
+      </section>
+    </div>
+
+    <p class="disclaimer">
+      Wait times are <strong>estimates</strong> published by U.S. Customs and Border Protection for reaching the primary inspection booth—the first point of contact when entering the United States. Actual delays can change quickly due to traffic, staffing, inspections, and special operations. This page is an independent viewer of the public CBP feed and is not affiliated with CBP or DHS.
+    </p>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">Brownsville <span>border times</span></div>
+        <p>Clear wait estimates for B&amp;M, Gateway, Los Indios, and Veterans International bridges.</p>
+      </div>
+      <div class="footer-links">
+        <a href="https://bwt.cbp.gov" target="_blank" rel="noopener">CBP Border Wait Times</a>
+        <a href="https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43" target="_blank" rel="noopener">Raw RSS feed</a>
+        <a href="https://www.cbp.gov/travel/us-citizens/trusted-traveler-programs" target="_blank" rel="noopener">Trusted Traveler</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const FEED_URL = "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43";
+    // Same-origin mirror updated by GitHub Actions (avoids CBP CORS on GitHub Pages)
+    const LOCAL_FEED_URL = "data/bwt.xml";
+
+    const PORT_META = {
+      "Brownsville - B&M": {
+        short: "B&M Bridge",
+        aka: "Brownsville & Matamoros Bridge",
+        blurb: "Downtown pedestrian-friendly crossing linking Brownsville and Matamoros."
+      },
+      "Brownsville - Gateway": {
+        short: "Gateway Bridge",
+        aka: "Puente Internacional Gateway",
+        blurb: "Primary downtown vehicle & pedestrian bridge—often the busiest corridor."
+      },
+      "Brownsville - Los Indios": {
+        short: "Los Indios",
+        aka: "Free Trade Bridge",
+        blurb: "West-side free trade bridge with commercial focus and typically lighter passenger traffic."
+      },
+      "Brownsville - Veterans International": {
+        short: "Veterans International",
+        aka: "Veterans Bridge at Los Tomates",
+        blurb: "Major expressway connection (US‑77/83) with commercial, passenger, and SENTRI options."
+      }
+    };
+
+    const FALLBACK_RSS = `<?xml version='1.0' encoding='UTF-8'?><rss version='2.0'><channel><title>CBP Border Wait Times</title><link>https://bwt.cbp.gov</link><description>Estimated wait times</description><pubDate>Tue, 11 Aug 2026 23:28:01 EST</pubDate><item><title>Brownsville - B&amp;M</title><description>Hours: 24 hrs/day <br/> Date: 8/11/2026 <br/> <h4><b> Passenger Vehicles </b></h4>  Maximum Lanes: 4 <br/>General Lanes: At 4:00 pm CDT 60 min delay 2 lane(s) open  <br/>Sentri Lanes:  N/A  <br/>Ready Lanes:  Lanes Closed  <br/> <h4><b> Pedestrian </b></h4>  Maximum Lanes: 2 <br/>General Lanes: At 4:00 pm CDT 10 min delay 1 lane(s) open  <br/>Ready Lanes:  N/A  <br/></description></item><item><title>Brownsville - Gateway</title><description>Hours: 24 hrs/day <br/> Date: 8/11/2026 <br/> <h4><b> Passenger Vehicles </b></h4>  Maximum Lanes: 5 <br/>General Lanes: At 4:00 pm CDT 60 min delay 4 lane(s) open  <br/>Sentri Lanes:  N/A  <br/>Ready Lanes:  Lanes Closed  <br/> <h4><b> Pedestrian </b></h4>  Maximum Lanes: 5 <br/>General Lanes: At 4:00 pm CDT 40 min delay 2 lane(s) open  <br/>Ready Lanes:  Lanes Closed  <br/><b>Border Notice: </b>Ready Lane is now operational at Gateway Bridge - Lane 1.  Tune in to AM 1610 for border crossing information.</description></item><item><title>Brownsville - Los Indios</title><description>Hours: 6 am-10 pm <br/> Date: 8/11/2026 <br/> <h4><b> Commercial Vehicles </b></h4>  Maximum Lanes: 4 <br/>General Lanes: At 4:00 pm CDT 5 min delay 1 lane(s) open  <br/>Fast Lanes:  Lanes Closed  <br/> <h4><b> Passenger Vehicles </b></h4>  Maximum Lanes: 4 <br/>General Lanes: At 4:00 pm CDT 5 min delay 1 lane(s) open  <br/>Sentri Lanes:  N/A  <br/>Ready Lanes:  Lanes Closed  <br/></description></item><item><title>Brownsville - Veterans International</title><description>Hours: 6 am-Midnight <br/> Date: 8/11/2026 <br/> <h4><b> Commercial Vehicles </b></h4>  Maximum Lanes: 4 <br/>General Lanes: At 4:00 pm CDT 5 min delay 3 lane(s) open  <br/>Fast Lanes: At 4:00 pm CDT 0 min delay 1 lane(s) open  <br/> <h4><b> Passenger Vehicles </b></h4>  Maximum Lanes: 8 <br/>General Lanes: At 4:00 pm CDT 90 min delay 3 lane(s) open  <br/>Sentri Lanes: At 4:00 pm CDT 5 min delay 2 lane(s) open  <br/>Ready Lanes:  Lanes Closed  <br/> <h4><b> Pedestrian </b></h4>  Maximum Lanes: 1 <br/>General Lanes: At 4:00 pm CDT 0 min delay 1 lane(s) open  <br/>Ready Lanes:  N/A  <br/></description></item></channel></rss>`;
+
+    let currentFilter = "all";
+    let lastData = null;
+    let refreshTimer = null;
+    let countdownTimer = null;
+    let nextRefreshAt = null;
+    let isLoading = false;
+
+    function isActiveWait(w) {
+      // Keep only real numeric waits; drop N/A and closed
+      return w && w.minutes != null;
+    }
+
+    /** Next clock time at :05 past the hour (CBP updates ~hourly). */
+    function getNextHourlyRefreshAt() {
+      const d = new Date();
+      const next = new Date(d);
+      next.setSeconds(0, 0);
+      if (d.getMinutes() < 5) {
+        // Before :05 this hour → refresh at this hour's :05
+        next.setMinutes(5);
+      } else {
+        // At or after :05 → next hour's :05
+        next.setHours(next.getHours() + 1);
+        next.setMinutes(5);
+      }
+      return next.getTime();
+    }
+
+    function formatCountdown(msLeft) {
+      const sec = Math.max(0, Math.ceil(msLeft / 1000));
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      if (h > 0) {
+        return h + ":" + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+      }
+      return m + ":" + String(s).padStart(2, "0");
+    }
+
+    function formatClockTime(ts) {
+      return new Date(ts).toLocaleTimeString(undefined, {
+        hour: "numeric",
+        minute: "2-digit"
+      });
+    }
+
+    function updateCountdown() {
+      const a = document.getElementById("nextRefresh");
+      const b = document.getElementById("nextRefreshInline");
+      if (!nextRefreshAt) {
+        if (a) a.textContent = "—";
+        if (b) b.textContent = "—";
+        return;
+      }
+      const msLeft = nextRefreshAt - Date.now();
+      if (msLeft <= 0) {
+        if (a) a.textContent = "now";
+        if (b) b.textContent = "now";
+        return;
+      }
+      const countdown = formatCountdown(msLeft);
+      const clock = formatClockTime(nextRefreshAt);
+      if (a) a.textContent = clock + " (" + countdown + ")";
+      if (b) b.textContent = countdown + " · " + clock;
+    }
+
+    function scheduleAutoRefresh() {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      if (countdownTimer) clearInterval(countdownTimer);
+
+      nextRefreshAt = getNextHourlyRefreshAt();
+      const delay = Math.max(1000, nextRefreshAt - Date.now());
+
+      refreshTimer = setTimeout(() => {
+        if (document.visibilityState === "visible") {
+          loadData(true);
+        } else {
+          // Tab hidden: reschedule for the following :05 without hammering
+          scheduleAutoRefresh();
+        }
+      }, delay);
+
+      countdownTimer = setInterval(updateCountdown, 1000);
+      updateCountdown();
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && nextRefreshAt && Date.now() >= nextRefreshAt) {
+        loadData(true);
+      }
+    });
+
+    function decodeHtml(html) {
+      const t = document.createElement("textarea");
+      t.innerHTML = html;
+      return t.value;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function waitClass(minutes) {
+      if (minutes == null) return "na";
+      if (minutes <= 15) return "low";
+      if (minutes <= 30) return "med";
+      if (minutes <= 60) return "high";
+      return "severe";
+    }
+
+    function parseWait(text) {
+      const raw = (text || "").trim();
+      if (!raw || /^N\/A$/i.test(raw)) {
+        return {
+          minutes: null, num: "N/A", unit: "", label: "N/A", cls: "na",
+          detail: "", asOf: "—", lanesOpen: "—", bar: 0
+        };
+      }
+      if (/lanes?\s*closed/i.test(raw)) {
+        return {
+          minutes: null, num: "Closed", unit: "", label: "Closed", cls: "na",
+          detail: "Lanes closed", asOf: "—", lanesOpen: "Closed", bar: 0
+        };
+      }
+      const minMatch = raw.match(/(\d+)\s*min/i);
+      const timeMatch = raw.match(/At\s+(.+?)\s+(?=\d+\s*min)/i);
+      const lanesMatch = raw.match(/(\d+)\s*lane/i);
+      if (minMatch) {
+        const mins = parseInt(minMatch[1], 10);
+        const when = timeMatch ? timeMatch[1].trim() : "";
+        const lanesOpen = lanesMatch ? lanesMatch[1] + " open" : "—";
+        const detail = [when ? "As of " + when : "", lanesMatch ? lanesMatch[1] + " lane(s) open" : ""]
+          .filter(Boolean).join(" · ");
+        return {
+          minutes: mins,
+          num: String(mins),
+          unit: "min",
+          label: mins + " min",
+          cls: waitClass(mins),
+          detail,
+          asOf: when || "—",
+          lanesOpen,
+          bar: Math.min(100, (mins / 120) * 100)
+        };
+      }
+      return {
+        minutes: null, num: raw, unit: "", label: raw, cls: "na",
+        detail: "", asOf: "—", lanesOpen: "—", bar: 0
+      };
+    }
+
+    function waitCellHtml(w) {
+      if (w.minutes == null) {
+        return `<span class="wait-cell ${w.cls}" aria-label="${escapeHtml(w.label)}"><span class="num">${escapeHtml(w.num)}</span></span>`;
+      }
+      return `<span class="wait-cell ${w.cls}" aria-label="${escapeHtml(w.label)} wait"><span class="num">${escapeHtml(w.num)}</span><span class="unit">min</span></span>`;
+    }
+
+    function modeKey(title) {
+      const t = title.toLowerCase();
+      if (t.includes("pedestrian")) return "pedestrian";
+      if (t.includes("commercial")) return "commercial";
+      if (t.includes("passenger")) return "passenger";
+      return "other";
+    }
+
+    /** RSS embeds HTML inside <description>; XML parsers turn tags into child nodes. */
+    function getDescriptionMarkup(descEl) {
+      if (!descEl) return "";
+      const hasElementChildren = [...descEl.childNodes].some((n) => n.nodeType === 1);
+      if (hasElementChildren) {
+        return Array.from(descEl.childNodes)
+          .map((n) => {
+            if (n.nodeType === 3 || n.nodeType === 4) return n.textContent || "";
+            return new XMLSerializer().serializeToString(n);
+          })
+          .join("");
+      }
+      return descEl.textContent || "";
+    }
+
+    function extractLanesFromBlock(block) {
+      const lanes = [];
+      const laneRe = /(General Lanes|Sentri Lanes|Ready Lanes|Fast Lanes)\s*:\s*([^]*?)(?=(?:General|Sentri|Ready|Fast) Lanes\s*:|Maximum Lanes|Border Notice|$)/gi;
+      let m;
+      while ((m = laneRe.exec(block)) !== null) {
+        const value = m[2].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+        lanes.push({
+          name: m[1].replace(/\s+Lanes$/i, " Lane"),
+          wait: parseWait(value)
+        });
+      }
+      return lanes;
+    }
+
+    function parseDescription(markup) {
+      const text = decodeHtml(markup || "");
+      const plain = text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+
+      const hoursMatch = plain.match(/Hours:\s*([^]+?)(?=\s+Date:|$)/i) || text.match(/Hours:\s*([^<]+)/i);
+      const dateMatch = plain.match(/Date:\s*([0-9/\-]+)/i) || text.match(/Date:\s*([^<]+)/i);
+
+      const sections = [];
+
+      // Prefer HTML section splits (when tags are preserved)
+      const htmlParts = text.split(/<h4(?:\s[^>]*)?><b>\s*/i).slice(1);
+      if (htmlParts.length) {
+        for (const part of htmlParts) {
+          const titleEnd = part.search(/<\/b>\s*<\/h4>/i);
+          if (titleEnd < 0) continue;
+          const title = part.slice(0, titleEnd).replace(/<[^>]+>/g, "").trim();
+          const body = part.slice(titleEnd).replace(/^<\/b>\s*<\/h4>/i, "");
+          const bodyClean = body.split(/Border Notice:/i)[0];
+          const maxMatch = bodyClean.match(/Maximum Lanes:\s*(\d+)/i);
+          sections.push({
+            title,
+            key: modeKey(title),
+            maxLanes: maxMatch ? maxMatch[1] : null,
+            lanes: extractLanesFromBlock(bodyClean)
+          });
+        }
+      }
+
+      // Plain-text fallback (browser XML parse strips tags into text nodes only)
+      if (!sections.length) {
+        const sectionRe = /(Passenger Vehicles|Pedestrian|Commercial Vehicles)\s*(.*?)(?=(?:Passenger Vehicles|Pedestrian|Commercial Vehicles|Border Notice:)|$)/gi;
+        let sm;
+        while ((sm = sectionRe.exec(plain)) !== null) {
+          const title = sm[1].trim();
+          const body = sm[2];
+          const maxMatch = body.match(/Maximum Lanes:\s*(\d+)/i);
+          const lanes = extractLanesFromBlock(body);
+          if (lanes.length || maxMatch) {
+            sections.push({
+              title,
+              key: modeKey(title),
+              maxLanes: maxMatch ? maxMatch[1] : null,
+              lanes
+            });
+          }
+        }
+      }
+
+      let notice = null;
+      const n = plain.match(/Border Notice:\s*(.+)/i);
+      if (n) notice = n[1].replace(/\s+/g, " ").trim();
+
+      return {
+        hours: hoursMatch ? hoursMatch[1].trim() : "—",
+        date: dateMatch ? dateMatch[1].trim() : "—",
+        sections,
+        notice
+      };
+    }
+
+    function parseRss(xmlText) {
+      const doc = new DOMParser().parseFromString(xmlText, "text/xml");
+      const channel = doc.querySelector("channel");
+      const pubDate = channel?.querySelector("pubDate")?.textContent?.trim() || "—";
+      const items = [...doc.querySelectorAll("item")].map((item) => {
+        let title = item.querySelector("title")?.textContent?.trim() || "Unknown";
+        title = title.replace(/\s+/g, " ");
+        // Normalize &amp; from feed titles for PORT_META lookup
+        const titleKey = title
+          .replace(/&amp;/g, "&")
+          .replace(/&/g, "&");
+        const description = getDescriptionMarkup(item.querySelector("description"));
+        const parsed = parseDescription(description);
+        const meta = PORT_META[titleKey] || PORT_META[title] || {
+          short: titleKey.replace(/^Brownsville\s*-\s*/i, ""),
+          aka: titleKey,
+          blurb: "Brownsville Port of Entry crossing."
+        };
+        const passengerGeneral = findLaneMinutes(parsed.sections, "passenger", "General");
+        const overallLevel = passengerGeneral != null
+          ? waitClass(passengerGeneral)
+          : worstLevel(parsed.sections);
+        return { title: titleKey, meta, overallLevel, passengerGeneral, ...parsed };
+      });
+      return { pubDate, items };
+    }
+
+    function findLaneMinutes(sections, mode, laneNamePart) {
+      for (const sec of sections) {
+        if (sec.key !== mode) continue;
+        for (const lane of sec.lanes) {
+          if (lane.name.toLowerCase().includes(laneNamePart.toLowerCase()) && lane.wait.minutes != null) {
+            return lane.wait.minutes;
+          }
+        }
+      }
+      return null;
+    }
+
+    function worstLevel(sections) {
+      const order = { low: 1, med: 2, high: 3, severe: 4, na: 0 };
+      let worst = "na";
+      for (const sec of sections) {
+        for (const lane of sec.lanes) {
+          if (order[lane.wait.cls] > order[worst]) worst = lane.wait.cls;
+        }
+      }
+      return worst;
+    }
+
+    function setFilter(filter, btn) {
+      currentFilter = filter;
+      document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      if (lastData) renderPorts(lastData);
+    }
+
+    function updateSummary(data) {
+      const passengerWaits = [];
+      const trustedWaits = [];
+      let notices = 0;
+
+      for (const port of data.items) {
+        if (port.notice) notices++;
+        for (const sec of port.sections) {
+          for (const lane of sec.lanes) {
+            if (lane.wait.minutes == null) continue;
+            if (sec.key === "passenger" && /general/i.test(lane.name)) {
+              passengerWaits.push({ mins: lane.wait.minutes, port: port.meta.short });
+            }
+            if (/sentri|ready|fast/i.test(lane.name)) {
+              trustedWaits.push({ mins: lane.wait.minutes, port: port.meta.short, name: lane.name });
+            }
+          }
+        }
+      }
+
+      const shortEl = document.getElementById("statShort");
+      const longEl = document.getElementById("statLong");
+      const trustedEl = document.getElementById("statTrusted");
+      const noticesEl = document.getElementById("statNotices");
+
+      if (passengerWaits.length) {
+        passengerWaits.sort((a, b) => a.mins - b.mins);
+        const best = passengerWaits[0];
+        const worst = passengerWaits[passengerWaits.length - 1];
+        shortEl.textContent = best.mins + " min";
+        shortEl.className = "stat " + (best.mins <= 15 ? "good" : best.mins <= 45 ? "warn" : "bad");
+        document.getElementById("statShortHint").textContent = best.port + " · general lanes";
+        longEl.textContent = worst.mins + " min";
+        longEl.className = "stat " + (worst.mins <= 15 ? "good" : worst.mins <= 45 ? "warn" : "bad");
+        document.getElementById("statLongHint").textContent = worst.port + " · general lanes";
+      } else {
+        shortEl.textContent = "—";
+        longEl.textContent = "—";
+      }
+
+      if (trustedWaits.length) {
+        trustedWaits.sort((a, b) => a.mins - b.mins);
+        const t = trustedWaits[0];
+        trustedEl.textContent = t.mins + " min";
+        trustedEl.className = "stat " + (t.mins <= 15 ? "good" : "warn");
+        document.getElementById("statTrustedHint").textContent = t.port + " · " + t.name;
+      } else {
+        trustedEl.textContent = "N/A";
+        trustedEl.className = "stat";
+        document.getElementById("statTrustedHint").textContent = "No open trusted lanes reported";
+      }
+
+      noticesEl.textContent = String(notices);
+      noticesEl.className = "stat" + (notices ? " warn" : " good");
+    }
+
+    /** Pull active general wait for a traffic mode (SENTRI/Fast live in their own column). */
+    function summarizeMode(sections, modeKeyName) {
+      const sec = sections.find((s) => s.key === modeKeyName);
+      if (!sec) return null;
+      const active = sec.lanes.filter((l) => isActiveWait(l.wait));
+      if (!active.length) return null;
+
+      // Prefer General for the main number; skip trusted/fast here to avoid double-listing
+      const general = active.find((l) => /general/i.test(l.name));
+      const primary = general || active.find((l) => !/sentri|ready|fast/i.test(l.name)) || active[0];
+      return {
+        primary: primary.wait,
+        primaryName: primary.name,
+        extras: [],
+        open: primary.wait.lanesOpen,
+        max: sec.maxLanes
+      };
+    }
+
+    function waitCellBlock(summary) {
+      if (!summary) {
+        return { html: `<span class="wait-empty">—</span>`, cls: "" };
+      }
+      const w = summary.primary;
+      const extraHtml = summary.extras.map((l) => {
+        const short = l.name.replace(/\s*Lane$/i, "");
+        return `<span class="wait-extra"><span class="tag">${escapeHtml(short)}</span> ${escapeHtml(l.wait.label)}</span>`;
+      }).join("");
+      const openNote = summary.open && summary.open !== "—"
+        ? `<span class="wait-extra">${escapeHtml(summary.open)}${summary.max ? " / " + escapeHtml(summary.max) + " max" : ""}</span>`
+        : "";
+      return {
+        html: `${waitCellHtml(w)}${extraHtml}${openNote}`,
+        cls: "has-" + w.cls
+      };
+    }
+
+    function collectAsOf(data) {
+      const times = new Set();
+      for (const port of data.items) {
+        for (const sec of port.sections) {
+          for (const lane of sec.lanes) {
+            if (isActiveWait(lane.wait) && lane.wait.asOf && lane.wait.asOf !== "—") {
+              times.add(lane.wait.asOf);
+            }
+          }
+        }
+      }
+      return [...times];
+    }
+
+    function portHasActiveForFilter(port) {
+      const modes = currentFilter === "all"
+        ? ["passenger", "pedestrian", "commercial"]
+        : [currentFilter];
+      return modes.some((m) => summarizeMode(port.sections, m));
+    }
+
+    function bestTrusted(port) {
+      let trusted = null;
+      for (const sec of port.sections) {
+        for (const lane of sec.lanes) {
+          if (!isActiveWait(lane.wait)) continue;
+          if (!/sentri|ready|fast/i.test(lane.name)) continue;
+          if (!trusted || lane.wait.minutes < trusted.wait.minutes) {
+            trusted = lane;
+          }
+        }
+      }
+      if (!trusted) return waitCellBlock(null);
+      return {
+        html: `${waitCellHtml(trusted.wait)}<span class="wait-extra"><span class="tag">${escapeHtml(trusted.name.replace(/\s*Lane$/i, ""))}</span></span>`,
+        cls: "has-" + trusted.wait.cls
+      };
+    }
+
+    function renderPorts(data) {
+      const grid = document.getElementById("portGrid");
+      const notices = [];
+      const tableRows = [];
+
+      const asOfList = collectAsOf(data);
+      const asOfText = asOfList.length === 1
+        ? asOfList[0]
+        : asOfList.length > 1
+          ? asOfList.join(" · ")
+          : "—";
+
+      // Columns for wait types (bridge + hours always first)
+      const waitCols = [];
+      if (currentFilter === "all" || currentFilter === "passenger") {
+        waitCols.push({ key: "passenger", label: "Passenger" });
+      }
+      if (currentFilter === "all" || currentFilter === "pedestrian") {
+        waitCols.push({ key: "pedestrian", label: "Pedestrian" });
+      }
+      if (currentFilter === "all" || currentFilter === "commercial") {
+        waitCols.push({ key: "commercial", label: "Commercial" });
+      }
+      if (currentFilter === "all" || currentFilter === "passenger" || currentFilter === "commercial") {
+        waitCols.push({ key: "trusted", label: "SENTRI / Fast" });
+      }
+
+      for (const port of data.items) {
+        if (!portHasActiveForFilter(port)) continue;
+
+        if (port.notice) {
+          notices.push({ bridge: port.meta.short, text: port.notice });
+        }
+
+        const cells = {
+          passenger: waitCellBlock(summarizeMode(port.sections, "passenger")),
+          pedestrian: waitCellBlock(summarizeMode(port.sections, "pedestrian")),
+          commercial: waitCellBlock(summarizeMode(port.sections, "commercial")),
+          trusted: bestTrusted(port)
+        };
+
+        const tdHtml = waitCols.map((c) => {
+          const cell = cells[c.key];
+          return `<td class="wait-col ${cell.cls}">${cell.html}</td>`;
+        }).join("");
+
+        tableRows.push(`
+          <tr>
+            <td class="bridge">
+              ${escapeHtml(port.meta.short)}
+              <span class="aka">${escapeHtml(port.meta.aka)}</span>
+            </td>
+            <td class="hours">${escapeHtml(port.hours)}</td>
+            ${tdHtml}
+          </tr>`);
+      }
+
+      if (!tableRows.length) {
+        grid.innerHTML = `<p class="empty">No active wait times for this filter. N/A and closed lanes are hidden.</p>`;
+        return;
+      }
+
+      const noticesHtml = notices.length
+        ? `<div class="notices-block">${notices.map((n) =>
+            `<div class="notice"><div class="notice-label">Border notice</div><span class="bridge-tag">${escapeHtml(n.bridge)}:</span> ${escapeHtml(n.text)}</div>`
+          ).join("")}</div>`
+        : "";
+
+      const colgroup = `
+        <col class="c-bridge" />
+        <col class="c-hours" />
+        ${waitCols.map(() => `<col class="c-wait" />`).join("")}`;
+
+      const headCols = waitCols.map((c) =>
+        `<th scope="col">${escapeHtml(c.label)}</th>`
+      ).join("");
+
+      grid.innerHTML = `
+        <div class="table-wrap">
+          <div class="asof-bar">Report time: <strong>${escapeHtml(asOfText)}</strong> · Open lanes listed under each wait</div>
+          <div class="table-scroll">
+            <table class="wait-table">
+              <colgroup>${colgroup}</colgroup>
+              <thead>
+                <tr>
+                  <th scope="col" class="th-bridge">Bridge</th>
+                  <th scope="col" class="th-hours">Hours</th>
+                  ${headCols}
+                </tr>
+              </thead>
+              <tbody>
+                ${tableRows.join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        ${noticesHtml}`;
+    }
+
+    function render(data, sourceLabel, isLive) {
+      lastData = data;
+      document.getElementById("pubDate").textContent = data.pubDate;
+      document.getElementById("loadedAt").textContent = new Date().toLocaleString(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short"
+      });
+      document.getElementById("liveLabel").textContent = sourceLabel;
+      const pulse = document.getElementById("livePulse");
+      pulse.classList.toggle("cached", !isLive);
+      updateSummary(data);
+      renderPorts(data);
+    }
+
+    async function fetchText(url) {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error("HTTP " + res.status + " for " + url);
+      return res.text();
+    }
+
+    async function loadData(fromAuto) {
+      if (isLoading) return;
+      isLoading = true;
+      const btn = document.getElementById("refreshBtn");
+      const alert = document.getElementById("alertBox");
+      if (btn) btn.disabled = true;
+      document.getElementById("liveLabel").textContent = fromAuto ? "Auto-refreshing…" : "Refreshing…";
+
+      try {
+        let text = null;
+        let sourceLabel = "";
+        let isLive = true;
+
+        // 1) Prefer same-origin mirror (GitHub Pages + Actions)
+        try {
+          text = await fetchText(LOCAL_FEED_URL);
+          sourceLabel = fromAuto ? "Live · data mirror auto-refreshed" : "Live · CBP data mirror";
+        } catch (_) {
+          // 2) Direct CBP feed (works when CORS allows)
+          text = await fetchText(FEED_URL);
+          sourceLabel = fromAuto ? "Live · CBP auto-refreshed" : "Live · CBP feed connected";
+        }
+
+        render(parseRss(text), sourceLabel, isLive);
+        alert.classList.remove("show");
+      } catch (e) {
+        // Keep previous live data if we already have it and this was an auto refresh failure
+        if (lastData && fromAuto) {
+          document.getElementById("liveLabel").textContent = "Live · refresh failed, showing last good data";
+          document.getElementById("livePulse").classList.add("cached");
+        } else {
+          render(parseRss(FALLBACK_RSS), "Snapshot · offline fallback", false);
+          alert.innerHTML =
+            "<div><strong>Showing embedded snapshot</strong>Could not load the CBP data mirror or live feed. If this is GitHub Pages, wait for the hourly Actions update, or check the official CBP site.</div>";
+          alert.classList.add("show");
+        }
+      } finally {
+        isLoading = false;
+        if (btn) btn.disabled = false;
+        scheduleAutoRefresh();
+      }
+    }
+
+    loadData(false);
+  </script>
+</body>
+</html>
