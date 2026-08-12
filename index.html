@@ -394,6 +394,7 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow: hidden;
+      width: 100%;
     }
     .table-scroll {
       overflow-x: auto;
@@ -408,6 +409,39 @@
     /* Widths set inline per filter so columns auto-distribute in All / Passenger / etc. */
     .wait-table col.c-bridge,
     .wait-table col.c-wait { width: auto; }
+
+    /* Few-column filters (Pedestrian-only, etc.): hug content, not full viewport */
+    .table-wrap.table-tight {
+      width: fit-content;
+      max-width: 100%;
+    }
+    .table-wrap.table-tight .wait-table {
+      width: max-content;
+      max-width: 100%;
+      table-layout: auto;
+    }
+    .table-wrap.table-tight .wait-table th,
+    .table-wrap.table-tight .wait-table td {
+      width: auto;
+      white-space: nowrap;
+    }
+    .table-wrap.table-tight .wait-table td.bridge {
+      padding-right: 0.85rem;
+      max-width: 11rem;
+      white-space: normal;
+    }
+    .table-wrap.table-tight .wait-table td.wait-col {
+      padding-left: 0.65rem;
+      padding-right: 0.65rem;
+      min-width: 0;
+    }
+    .table-wrap.table-tight .wait-stack {
+      min-width: 4.5rem;
+    }
+    .table-wrap.table-tight .wait-extra.open-line {
+      white-space: normal;
+      max-width: 7.5rem;
+    }
 
     .wait-table thead th {
       position: sticky;
@@ -714,6 +748,73 @@
       .topbar-inner {
         font-size: 0.75rem;
         padding-top: max(0.55rem, env(safe-area-inset-top));
+      }
+
+      /* Extra-tight few-column filters on phones */
+      .table-wrap.table-tight {
+        width: 100%;
+        max-width: 100%;
+      }
+      .table-wrap.table-tight .wait-table {
+        width: 100%;
+        table-layout: fixed;
+        font-size: 0.82rem;
+      }
+      .table-wrap.table-tight .wait-table col.c-bridge { width: 42% !important; }
+      .table-wrap.table-tight .wait-table col.c-wait { width: 58% !important; }
+      .table-wrap.table-tight.table-tight-2 col.c-bridge { width: 36% !important; }
+      .table-wrap.table-tight.table-tight-2 col.c-wait { width: 32% !important; }
+      .table-wrap.table-tight .wait-table th,
+      .table-wrap.table-tight .wait-table td {
+        padding: 0.5rem 0.4rem;
+        white-space: normal;
+      }
+      .table-wrap.table-tight .wait-table td.bridge {
+        padding-left: 0.55rem;
+        padding-right: 0.4rem;
+        max-width: none;
+        font-size: 0.88rem;
+      }
+      .table-wrap.table-tight .wait-table td.bridge .hours-line {
+        font-size: 0.68rem;
+        margin-top: 0.15rem;
+      }
+      .table-wrap.table-tight .wait-table td.wait-col {
+        padding-left: 0.35rem;
+        padding-right: 0.45rem;
+      }
+      .table-wrap.table-tight .wait-cell .num {
+        font-size: 1.25rem;
+      }
+      .table-wrap.table-tight .wait-cell .unit {
+        font-size: 0.7rem;
+      }
+      .table-wrap.table-tight .wait-extra,
+      .table-wrap.table-tight .wait-extra.open-line {
+        font-size: 0.65rem;
+        max-width: 100%;
+        line-height: 1.25;
+      }
+      .table-wrap.table-tight .wait-stack {
+        min-width: 0;
+        gap: 0.2rem;
+      }
+      .table-wrap.table-tight .asof-bar {
+        font-size: 0.7rem;
+        padding: 0.45rem 0.55rem;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .main {
+        padding-left: 0.55rem;
+        padding-right: 0.55rem;
+      }
+      .table-wrap.table-tight .wait-table {
+        font-size: 0.78rem;
+      }
+      .table-wrap.table-tight .wait-cell .num {
+        font-size: 1.15rem;
       }
     }
 
@@ -1868,24 +1969,14 @@
           ).join("")}</div>`
         : "";
 
-      // Auto-fit: equal wait cols; few-column filters (e.g. Pedestrian-only) stay tight
+      // Auto-fit: few-column filters (Pedestrian) hug content; All stays full width
       const waitN = Math.max(waitCols.length, 1);
+      const tight = waitN <= 2;
       let bridgePct;
-      let tableMax = "100%";
-      if (waitN === 1) {
-        // Pedestrian-only (or any single wait col): compact two-column table
-        bridgePct = 48;
-        tableMax = "560px";
-      } else if (waitN === 2) {
-        bridgePct = 34;
-        tableMax = "720px";
-      } else if (waitN === 3) {
-        bridgePct = 26;
-        tableMax = "920px";
-      } else {
-        bridgePct = 20;
-        tableMax = "100%";
-      }
+      if (waitN === 1) bridgePct = 46;
+      else if (waitN === 2) bridgePct = 32;
+      else if (waitN === 3) bridgePct = 24;
+      else bridgePct = 20;
       const waitPct = ((100 - bridgePct) / waitN).toFixed(3);
       const colgroup =
         `<col class="c-bridge" style="width:${bridgePct}%" />` +
@@ -1895,13 +1986,13 @@
         `<th scope="col">${escapeHtml(c.label)}</th>`
       ).join("");
 
-      const wrapStyle = tableMax === "100%"
-        ? ""
-        : ` style="max-width:${tableMax};margin-left:0;margin-right:auto"`;
+      const tightClass = tight
+        ? ` table-tight${waitN === 2 ? " table-tight-2" : waitN === 1 ? " table-tight-1" : ""}`
+        : "";
 
       grid.innerHTML = `
-        <div class="table-wrap"${wrapStyle}>
-          <div class="asof-bar">Report time: <strong>${escapeHtml(asOfText)}</strong> · Open line: Gen/Ready booths · total/max capacity</div>
+        <div class="table-wrap${tightClass}">
+          <div class="asof-bar">Report time: <strong>${escapeHtml(asOfText)}</strong></div>
           <div class="table-scroll">
             <table class="wait-table">
               <colgroup>${colgroup}</colgroup>
