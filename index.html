@@ -1737,16 +1737,10 @@
         asOfText = "—";
       }
 
-      // Columns for wait types (bridge + hours always first)
+      // Columns: Bridge · Hours · Passenger · SENTRI/FAST · Pedestrian · Commercial
       const waitCols = [];
       if (currentFilter === "all" || currentFilter === "passenger") {
         waitCols.push({ key: "passenger", label: "Passenger" });
-      }
-      if (currentFilter === "all" || currentFilter === "pedestrian") {
-        waitCols.push({ key: "pedestrian", label: "Pedestrian" });
-      }
-      if (currentFilter === "all" || currentFilter === "commercial") {
-        waitCols.push({ key: "commercial", label: "Commercial" });
       }
       if (currentFilter === "commercial") {
         waitCols.push({ key: "trusted", label: "FAST" });
@@ -1754,6 +1748,12 @@
         waitCols.push({ key: "trusted", label: "SENTRI" });
       } else if (currentFilter === "all") {
         waitCols.push({ key: "trusted", label: "SENTRI / FAST" });
+      }
+      if (currentFilter === "all" || currentFilter === "pedestrian") {
+        waitCols.push({ key: "pedestrian", label: "Pedestrian" });
+      }
+      if (currentFilter === "all" || currentFilter === "commercial") {
+        waitCols.push({ key: "commercial", label: "Commercial" });
       }
 
       for (const port of data.items) {
