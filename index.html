@@ -460,12 +460,25 @@
     }
     .wait-table td.wait-col {
       text-align: center;
+      vertical-align: middle;
       border-left: 1px solid var(--line-soft);
     }
     .wait-table td.wait-col.has-low { background: rgba(236, 253, 245, 0.65); }
     .wait-table td.wait-col.has-med { background: rgba(255, 251, 235, 0.7); }
     .wait-table td.wait-col.has-high { background: rgba(255, 247, 237, 0.75); }
     .wait-table td.wait-col.has-severe { background: rgba(254, 242, 242, 0.8); }
+
+    /* Stack wait + open lines centered in every filter view */
+    .wait-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      width: 100%;
+      text-align: center;
+      margin: 0 auto;
+    }
 
     .wait-cell {
       display: inline-flex;
@@ -474,6 +487,7 @@
       gap: 0.15rem;
       font-variant-numeric: tabular-nums;
       line-height: 1;
+      margin: 0 auto;
     }
     .wait-cell .num {
       font-size: 1.75rem;
@@ -511,11 +525,13 @@
 
     .wait-extra {
       display: block;
-      margin-top: 0.35rem;
+      margin: 0 auto;
       font-size: 0.72rem;
       font-weight: 600;
       color: var(--muted);
-      line-height: 1.25;
+      line-height: 1.3;
+      text-align: center;
+      max-width: 100%;
     }
     .wait-extra .tag {
       color: var(--slate);
@@ -524,13 +540,18 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 0.35rem;
+      width: 100%;
+      text-align: center;
     }
     .compact-pair {
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 0.1rem;
+      text-align: center;
     }
     .dual-label {
       font-size: 0.62rem;
@@ -538,11 +559,14 @@
       letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--muted);
+      text-align: center;
     }
     .wait-extra.open-line {
-      margin-top: 0.4rem;
-      max-width: 11rem;
-      line-height: 1.3;
+      margin-top: 0.15rem;
+      line-height: 1.35;
+      text-align: center;
+      white-space: normal;
+      word-break: break-word;
     }
     .wait-table td.wait-col.has-dual {
       vertical-align: middle;
@@ -550,6 +574,9 @@
       padding-bottom: 0.7rem;
     }
     .wait-empty {
+      display: block;
+      text-align: center;
+      width: 100%;
       color: var(--gray);
       font-size: 0.95rem;
       font-weight: 600;
@@ -1602,7 +1629,7 @@
         : "";
 
       return {
-        html: `${mainHtml}${openHtml}`,
+        html: `<div class="wait-stack">${mainHtml}${openHtml}</div>`,
         cls: (gatewayPedDual ? "has-dual " : "") + "has-" + w.cls
       };
     }
@@ -1812,7 +1839,11 @@
 
         const tdHtml = waitCols.map((c) => {
           const cell = cells[c.key];
-          return `<td class="wait-col ${cell.cls}">${cell.html}</td>`;
+          // Always wrap so open lines stay center-justified in every filter
+          const inner = cell.html.includes("wait-stack")
+            ? cell.html
+            : `<div class="wait-stack">${cell.html}</div>`;
+          return `<td class="wait-col ${cell.cls}">${inner}</td>`;
         }).join("");
 
         const hoursLabel = formatHoursOfOperation(port.hours);
@@ -1837,10 +1868,10 @@
           ).join("")}</div>`
         : "";
 
-      // Auto-fit column widths for every filter (All has more cols; others still fill the row)
+      // Auto-fit: equal share for all wait columns under every filter
       const waitN = Math.max(waitCols.length, 1);
-      const bridgePct = waitN >= 4 ? 22 : waitN === 3 ? 26 : waitN === 2 ? 32 : 36;
-      const waitPct = ((100 - bridgePct) / waitN).toFixed(2);
+      const bridgePct = waitN >= 4 ? 20 : waitN === 3 ? 24 : waitN === 2 ? 30 : 34;
+      const waitPct = ((100 - bridgePct) / waitN).toFixed(3);
       const colgroup =
         `<col class="c-bridge" style="width:${bridgePct}%" />` +
         waitCols.map(() => `<col class="c-wait" style="width:${waitPct}%" />`).join("");
