@@ -2,12 +2,12 @@ name: Update CBP wait times
 
 on:
   schedule:
-    # Every 15 minutes — CBP can flip between real times and "Update Pending"
-    - cron: "5,20,35,50 * * * *"
+    # Every 10 minutes (GitHub cron can lag a few minutes)
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
-# GITHUB_TOKEN pushes do not trigger other workflows, so this job both
-# refreshes data/bwt.xml AND deploys GitHub Pages in the same run.
+# Always fetch CBP + deploy Pages in the same job.
+# GITHUB_TOKEN pushes do not trigger other workflows.
 
 permissions:
   contents: write
@@ -15,8 +15,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: pages-deploy
+  cancel-in-progress: false
 
 jobs:
   update-and-deploy:
@@ -36,8 +36,9 @@ jobs:
             -o data/bwt.xml
           grep -q "<item>" data/bwt.xml
           echo "Feed size: $(wc -c < data/bwt.xml) bytes"
-          echo "Sample:"
-          grep -oE 'Update Pending|[0-9]+ min delay' data/bwt.xml | sort | uniq -c | head -20
+          echo "pubDate: $(grep -o '<pubDate>[^<]*' data/bwt.xml | head -1)"
+          echo "Sample times:"
+          grep -oE 'At [0-9:]+ [ap]m CDT|[0-9]+ min delay|Update Pending' data/bwt.xml | head -20
 
       - name: Commit updated data (if changed)
         run: |
@@ -52,15 +53,18 @@ jobs:
             echo "Committed and pushed new data/bwt.xml"
           fi
 
-      - name: Stage site files
+      - name: Stage site files (always use freshly fetched feed)
         run: |
           mkdir -p _site
           cp index.html README.md _site/
-          cp -R data _site/data
+          mkdir -p _site/data
+          cp data/bwt.xml _site/data/bwt.xml
           touch _site/.nojekyll
+          echo "Deploying feed:"
+          grep -o '<pubDate>[^<]*' _site/data/bwt.xml | head -1
 
       - name: Configure Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

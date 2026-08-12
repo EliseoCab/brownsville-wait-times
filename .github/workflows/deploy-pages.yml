@@ -3,10 +3,12 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: [main]
+    paths-ignore:
+      # Data-only bot commits are deployed by "Update CBP wait times"
+      - "data/**"
   workflow_dispatch:
 
-# Use Actions-based Pages instead of legacy branch deploy.
-# Avoids flaky internal pages-build-deployment / deploy-pages@v5 cert errors.
+# Code pushes also re-fetch CBP so we never overwrite Pages with stale data/bwt.xml
 
 permissions:
   contents: read
@@ -14,8 +16,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: pages-deploy
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -27,15 +29,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Fetch latest CBP feed
+        run: |
+          mkdir -p data
+          curl -fsSL \
+            "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43" \
+            -o data/bwt.xml
+          grep -q "<item>" data/bwt.xml
+          echo "Deploying feed:"
+          grep -o '<pubDate>[^<]*' data/bwt.xml | head -1
+
       - name: Stage site files
         run: |
-          mkdir -p _site
+          mkdir -p _site/data
           cp index.html README.md _site/
-          cp -R data _site/data
+          cp data/bwt.xml _site/data/bwt.xml
           touch _site/.nojekyll
 
       - name: Configure Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
