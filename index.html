@@ -489,37 +489,39 @@
     .wait-table col.c-bridge,
     .wait-table col.c-wait { width: auto; }
 
-    /* Few-column filters (Pedestrian-only, etc.): hug content, not full viewport */
+    /* Few-column filters (Vehicles / Pedestrian / Commercial): uniform bridge + wait widths */
     .table-wrap.table-tight {
-      width: fit-content;
+      width: 100%;
       max-width: 100%;
     }
     .table-wrap.table-tight .wait-table {
-      width: max-content;
-      max-width: 100%;
-      table-layout: auto;
-    }
-    .table-wrap.table-tight .wait-table th,
-    .table-wrap.table-tight .wait-table td {
-      width: auto;
-      white-space: nowrap;
+      width: 100%;
+      table-layout: fixed;
     }
     .table-wrap.table-tight .wait-table td.bridge {
-      padding-right: 0.85rem;
-      max-width: 11rem;
+      width: 42%;
       white-space: normal;
+      padding-right: 0.75rem;
     }
     .table-wrap.table-tight .wait-table td.wait-col {
-      padding-left: 0.65rem;
-      padding-right: 0.65rem;
+      width: auto;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
       min-width: 0;
     }
+    /* One wait col (Pedestrian): 42% / 58% */
+    .table-wrap.table-tight-1 .wait-table col.c-bridge { width: 42% !important; }
+    .table-wrap.table-tight-1 .wait-table col.c-wait { width: 58% !important; }
+    /* Two wait cols (Vehicles+SENTRI or Commercial+FAST): equal wait columns */
+    .table-wrap.table-tight-2 .wait-table col.c-bridge { width: 36% !important; }
+    .table-wrap.table-tight-2 .wait-table col.c-wait { width: 32% !important; }
     .table-wrap.table-tight .wait-stack {
-      min-width: 4.5rem;
+      min-width: 0;
+      width: 100%;
     }
     .table-wrap.table-tight .wait-extra.open-line {
       white-space: normal;
-      max-width: 7.5rem;
+      max-width: 100%;
     }
 
     .wait-table thead th {
@@ -855,9 +857,10 @@
       overflow: hidden;
     }
     .m-row {
+      /* Same layout for Vehicles / Pedestrian / Commercial: name left, fixed wait strip right */
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 0.45rem 0.55rem;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.5rem 0.65rem;
       align-items: center;
       width: 100%;
       max-width: 100%;
@@ -871,7 +874,6 @@
     }
     .m-row > * {
       min-width: 0;
-      max-width: 100%;
       overflow: hidden;
     }
     .m-row-bridge {
@@ -895,23 +897,25 @@
       word-break: break-word;
     }
     .m-row-waits {
-      display: grid;
-      grid-auto-flow: column;
-      grid-auto-columns: minmax(0, 1fr);
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: stretch;
+      justify-content: flex-end;
       gap: 0.35rem;
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
+      width: auto;
+      flex: 0 0 auto;
       text-align: center;
-      justify-items: stretch;
       overflow: hidden;
     }
     .m-wait-block {
-      width: 100%;
-      min-width: 0;
-      max-width: 100%;
+      /* Identical fixed width for every wait chip (Vehicles, Ped, Commercial, SENTRI, FAST) */
+      flex: 0 0 5.5rem;
+      width: 5.5rem;
+      min-width: 5.5rem;
+      max-width: 5.5rem;
       box-sizing: border-box;
-      padding: 0.4rem 0.3rem;
+      padding: 0.4rem 0.25rem;
       border-radius: 10px;
       background: var(--paper);
       border: 1px solid var(--line-soft);
@@ -1034,14 +1038,17 @@
       }
       .m-row {
         padding: 0.55rem 0.5rem;
-        gap: 0.35rem 0.4rem;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 0.4rem 0.5rem;
+        grid-template-columns: minmax(0, 1fr) auto;
       }
       .m-row-bridge { font-size: 0.84rem; }
       .m-row-hours { font-size: 0.6rem; }
       .m-wait-block {
+        flex: 0 0 5.15rem;
+        width: 5.15rem;
+        min-width: 5.15rem;
+        max-width: 5.15rem;
         padding: 0.3rem 0.2rem;
-        width: 100%;
         overflow: hidden;
       }
       .m-wait-block .wait-cell .num { font-size: 1.1rem; }
