@@ -396,6 +396,85 @@
       overflow: hidden;
       width: 100%;
     }
+
+    /* All filter: floating rounded cards for wait cells; blue column titles kept */
+    .table-wrap.table-cards {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      overflow: visible;
+    }
+    .table-wrap.table-cards .asof-bar {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 0.35rem;
+    }
+    .table-wrap.table-cards .table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0.15rem 0.1rem 0.5rem;
+    }
+    .table-wrap.table-cards .wait-table {
+      border-collapse: separate;
+      border-spacing: 0.55rem 0.65rem;
+      background: transparent;
+    }
+    .table-wrap.table-cards .wait-table thead th {
+      background: var(--navy);
+      color: #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(11, 31, 58, 0.18);
+      border-bottom: none;
+      padding: 0.75rem 0.65rem;
+    }
+    .table-wrap.table-cards .wait-table thead th.th-bridge {
+      border-radius: 12px;
+    }
+    .table-wrap.table-cards .wait-table tbody tr {
+      background: transparent;
+      border: none;
+    }
+    .table-wrap.table-cards .wait-table tbody tr:hover {
+      background: transparent;
+    }
+    .table-wrap.table-cards .wait-table tbody td.bridge {
+      background: var(--white);
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(15, 23, 42, 0.07);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      padding: 0.9rem 0.85rem;
+    }
+    .table-wrap.table-cards .wait-table tbody td.wait-col {
+      background: var(--white);
+      border-radius: 14px;
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      border-left: 1px solid rgba(226, 232, 240, 0.85);
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+      padding: 0.85rem 0.65rem;
+      vertical-align: middle;
+    }
+    .table-wrap.table-cards .wait-table tbody td.wait-col.has-low {
+      background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 70%);
+      box-shadow: 0 4px 16px rgba(5, 150, 105, 0.1);
+    }
+    .table-wrap.table-cards .wait-table tbody td.wait-col.has-med {
+      background: linear-gradient(180deg, #fffbeb 0%, #ffffff 70%);
+      box-shadow: 0 4px 16px rgba(217, 119, 6, 0.1);
+    }
+    .table-wrap.table-cards .wait-table tbody td.wait-col.has-high {
+      background: linear-gradient(180deg, #fff7ed 0%, #ffffff 70%);
+      box-shadow: 0 4px 16px rgba(234, 88, 12, 0.1);
+    }
+    .table-wrap.table-cards .wait-table tbody td.wait-col.has-severe {
+      background: linear-gradient(180deg, #fef2f2 0%, #ffffff 70%);
+      box-shadow: 0 4px 16px rgba(220, 38, 38, 0.1);
+    }
+    .table-wrap.table-cards .wait-table tbody tr:hover td.bridge,
+    .table-wrap.table-cards .wait-table tbody tr:hover td.wait-col {
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.11);
+    }
     .table-scroll {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
@@ -834,6 +913,30 @@
     .m-wait-block.has-high { background: rgba(255, 247, 237, 0.95); }
     .m-wait-block.has-severe { background: rgba(254, 242, 242, 0.95); }
 
+    @media (max-width: 720px) {
+      .table-wrap.table-cards .wait-table {
+        border-spacing: 0.4rem 0.55rem;
+        min-width: 0;
+      }
+      .table-wrap.table-cards .wait-table thead th {
+        border-radius: 10px;
+        font-size: 0.62rem;
+        padding: 0.55rem 0.4rem;
+      }
+      .table-wrap.table-cards .wait-table tbody td.bridge,
+      .table-wrap.table-cards .wait-table tbody td.wait-col {
+        border-radius: 12px;
+        padding: 0.65rem 0.5rem;
+        box-shadow: 0 3px 12px rgba(15, 23, 42, 0.08);
+      }
+      .table-wrap.table-cards .wait-cell .num {
+        font-size: 1.3rem;
+      }
+      .table-wrap.table-cards .wait-extra.open-line {
+        font-size: 0.62rem;
+      }
+    }
+
     @media (max-width: 400px) {
       .main {
         padding-left: 0.55rem;
@@ -855,6 +958,7 @@
 
     @media (max-width: 640px) {
       table.wait-table { min-width: 640px; }
+      .table-wrap.table-cards table.wait-table { min-width: 580px; }
       .wait-cell .num { font-size: 1.35rem; }
       .wait-table thead th,
       .wait-table td { padding: 0.7rem 0.55rem; }
@@ -2032,9 +2136,11 @@
       const tightClass = tight
         ? ` table-tight table-tight-${waitN}`
         : "";
+      // All filter: floating rounded wait cards (blue header pills kept)
+      const cardsClass = currentFilter === "all" ? " table-cards" : "";
 
       grid.innerHTML = `
-        <div class="table-wrap${tightClass}">
+        <div class="table-wrap${tightClass}${cardsClass}">
           <div class="asof-bar">Report time: <strong>${escapeHtml(asOfText)}</strong></div>
           <div class="table-scroll">
             <table class="wait-table">
