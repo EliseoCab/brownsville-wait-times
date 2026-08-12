@@ -1756,7 +1756,13 @@
         waitCols.push({ key: "commercial", label: "Commercial" });
       }
 
-      for (const port of data.items) {
+      const portsSorted = data.items.slice().sort((a, b) => {
+        const an = (a.meta && a.meta.short ? a.meta.short : a.title || "").toLowerCase();
+        const bn = (b.meta && b.meta.short ? b.meta.short : b.title || "").toLowerCase();
+        return an.localeCompare(bn);
+      });
+
+      for (const port of portsSorted) {
         if (!portHasActiveForFilter(port)) continue;
 
         if (port.notice) {
