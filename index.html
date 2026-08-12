@@ -925,40 +925,6 @@
 
     <div class="ports" id="portGrid" aria-live="polite"></div>
 
-    <div class="below">
-      <section class="panel">
-        <h2>Crossing tips</h2>
-        <ul class="tips">
-          <li>
-            <span class="num">1</span>
-            <div><strong>Compare bridges, not just minutes.</strong> A longer drive to a quieter crossing can beat a short hop into a 90‑minute queue.</div>
-          </li>
-          <li>
-            <span class="num">2</span>
-            <div><strong>SENTRI &amp; Ready Lanes</strong> often move faster when open—check eligibility and lane status before you go.</div>
-          </li>
-          <li>
-            <span class="num">3</span>
-            <div><strong>Documents ready.</strong> Passport or passport card, vehicle registration, and any permits speed primary inspection.</div>
-          </li>
-          <li>
-            <span class="num">4</span>
-            <div><strong>Tune AM 1610</strong> for local border radio updates when available near the bridges.</div>
-          </li>
-        </ul>
-      </section>
-      <section class="panel">
-        <h2>How to read wait levels</h2>
-        <div class="legend-grid">
-          <div class="legend-item"><span class="swatch low"></span> <strong>Low</strong> — 0–15 minutes</div>
-          <div class="legend-item"><span class="swatch med"></span> <strong>Moderate</strong> — 16–30 minutes</div>
-          <div class="legend-item"><span class="swatch high"></span> <strong>High</strong> — 31–60 minutes</div>
-          <div class="legend-item"><span class="swatch severe"></span> <strong>Severe</strong> — over 60 minutes</div>
-          <div class="legend-item"><span class="swatch na"></span> <strong>N/A or closed</strong> — hidden from the list</div>
-        </div>
-      </section>
-    </div>
-
     <p class="disclaimer">
       Wait times are <strong>estimates</strong> published by U.S. Customs and Border Protection for reaching the primary inspection booth—the first point of contact when entering the United States. Actual delays can change quickly due to traffic, staffing, inspections, and special operations. This page is an independent viewer of the public CBP feed and is not affiliated with CBP or DHS.
     </p>
@@ -1530,6 +1496,26 @@
       return modes.some((m) => summarizeMode(port.sections, m));
     }
 
+    function isVeteransPort(port) {
+      const t = (port.title || "") + " " + (port.meta && port.meta.short ? port.meta.short : "");
+      return /veterans/i.test(t);
+    }
+
+    /** SENTRI open-lane count for Veterans International only. */
+    function veteransSentriOpenCount(port) {
+      if (!isVeteransPort(port)) return null;
+      for (const sec of port.sections) {
+        for (const lane of sec.lanes) {
+          if (!/sentri/i.test(lane.name)) continue;
+          if (lane.wait && lane.wait.lanesOpenCount != null) {
+            return lane.wait.lanesOpenCount;
+          }
+          if (lane.wait && lane.wait.lanesOpen === "Closed") return 0;
+        }
+      }
+      return null;
+    }
+
     /** SENTRI (passenger) and FAST (commercial) only — never Ready Lanes. */
     function bestTrusted(port) {
       let trusted = null;
@@ -1549,15 +1535,43 @@
         }
       }
       const pick = trusted || pending;
-      if (!pick) return waitCellBlock(null);
+      if (!pick) {
+        // Veterans: still show SENTRI open count even if wait is N/A
+        if (isVeteransPort(port)) {
+          const n = veteransSentriOpenCount(port);
+          if (n != null) {
+            return {
+              html: `<span class="wait-empty">—</span><span class="wait-extra"><span class="tag">SENTRI</span> ${n} open</span>`,
+              cls: ""
+            };
+          }
+        }
+        return waitCellBlock(null);
+      }
       const short = pick.lane.name.replace(/\s*Lane$/i, "");
       const context = /fast/i.test(pick.lane.name)
         ? "Commercial"
         : /sentri/i.test(pick.lane.name)
           ? "Passenger"
           : pick.sectionTitle;
+      let extra = `<span class="tag">${escapeHtml(short)}</span> · ${escapeHtml(context)}`;
+      // Veterans only: always surface SENTRI lanes open in this row
+      if (isVeteransPort(port) && /sentri/i.test(pick.lane.name)) {
+        const n = pick.lane.wait.lanesOpenCount != null
+          ? pick.lane.wait.lanesOpenCount
+          : veteransSentriOpenCount(port);
+        if (n != null) {
+          extra = `<span class="tag">SENTRI</span> ${n} open`;
+        }
+      } else if (isVeteransPort(port) && /fast/i.test(pick.lane.name)) {
+        // If FAST wins the column, still append Veterans SENTRI open count
+        const n = veteransSentriOpenCount(port);
+        if (n != null) {
+          extra = `<span class="tag">${escapeHtml(short)}</span> · ${escapeHtml(context)} · <span class="tag">SENTRI</span> ${n} open`;
+        }
+      }
       return {
-        html: `${waitCellHtml(pick.lane.wait)}<span class="wait-extra"><span class="tag">${escapeHtml(short)}</span> · ${escapeHtml(context)}</span>`,
+        html: `${waitCellHtml(pick.lane.wait)}<span class="wait-extra">${extra}</span>`,
         cls: "has-" + pick.lane.wait.cls
       };
     }
@@ -1623,11 +1637,17 @@
           return `<td class="wait-col ${cell.cls}">${cell.html}</td>`;
         }).join("");
 
+        const sentriOpen = veteransSentriOpenCount(port);
+        const veteransSentriNote = sentriOpen != null
+          ? `<span class="aka" style="color:var(--sky-deep);font-weight:700">SENTRI lanes open: ${sentriOpen}</span>`
+          : "";
+
         tableRows.push(`
           <tr>
             <td class="bridge">
               ${escapeHtml(port.meta.short)}
               <span class="aka">${escapeHtml(port.meta.aka)}</span>
+              ${veteransSentriNote}
             </td>
             <td class="hours">${escapeHtml(port.hours)}</td>
             ${tdHtml}
