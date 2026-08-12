@@ -975,7 +975,7 @@
       },
       "Brownsville - Gateway": {
         short: "Gateway Bridge",
-        aka: "Puente Internacional Gateway",
+        aka: "International Gateway Bridge",
         blurb: "Primary downtown vehicle & pedestrian bridge—often the busiest corridor."
       },
       "Brownsville - Los Indios": {
@@ -1741,10 +1741,8 @@
       }
       if (currentFilter === "commercial") {
         waitCols.push({ key: "trusted", label: "FAST" });
-      } else if (currentFilter === "passenger") {
+      } else if (currentFilter === "all" || currentFilter === "passenger") {
         waitCols.push({ key: "trusted", label: "SENTRI" });
-      } else if (currentFilter === "all") {
-        waitCols.push({ key: "trusted", label: "SENTRI / FAST" });
       }
       if (currentFilter === "all" || currentFilter === "pedestrian") {
         waitCols.push({ key: "pedestrian", label: "Pedestrian" });
