@@ -810,11 +810,22 @@
     }
     .footer-brand {
       font-family: var(--display);
-      font-size: 1.35rem;
+      font-size: clamp(1.35rem, 2.5vw, 1.7rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
       color: #fff;
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.45rem;
     }
-    .footer-brand span { color: #7dd3fc; font-style: italic; }
+    .footer-tagline {
+      font-family: var(--font);
+      font-size: 0.9rem;
+      font-weight: 500;
+      line-height: 1.45;
+      color: rgba(226, 232, 240, 0.82);
+      max-width: 36rem;
+      margin: 0;
+    }
     footer p { font-size: 0.85rem; max-width: 40ch; }
     footer a { color: #7dd3fc; text-decoration: none; font-weight: 600; }
     footer a:hover { text-decoration: underline; color: #fff; }
@@ -942,8 +953,8 @@
   <footer>
     <div class="footer-inner">
       <div>
-        <div class="footer-brand">Brownsville <span>border times</span></div>
-        <p>Clear wait estimates for B&amp;M, Gateway, Los Indios, and Veterans International bridges.</p>
+        <div class="footer-brand">Brownsville Border Wait Times</div>
+        <p class="footer-tagline">Real-time CBP estimates for B&amp;M, Gateway, Los Indios, and Veterans International bridges.</p>
       </div>
       <div class="footer-links">
         <span>Source: <a href="https://bwt.cbp.gov" target="_blank" rel="noopener">CBP Border Wait Times (bwt.cbp.gov)</a></span>
