@@ -945,7 +945,7 @@
         <button type="button" class="filter-btn" data-filter="commercial" onclick="setFilter('commercial', this)">Commercial</button>
       </div>
     </div>
-    <p class="view-note">One row per bridge. N/A and closed are omitted. If General and Ready waits differ (e.g. Gateway pedestrian), both times show in that traffic column only. “N of M open” is total capacity for the type (General + Ready + SENTRI). SENTRI/FAST is SENTRI and commercial FAST only.</p>
+    <p class="view-note">One row per bridge. N/A and closed are omitted. Only at Gateway Pedestrian: if General and Ready waits differ, both times show in Pedestrian. “N of M open” is total capacity for the type. SENTRI/FAST is SENTRI and commercial FAST only.</p>
 
     <div class="ports" id="portGrid" aria-live="polite"></div>
 
@@ -1477,7 +1477,16 @@
       return breakdown + " open";
     }
 
-    function waitCellBlock(summary, modeKey) {
+    function isGatewayPort(port) {
+      const t = (port && (port.title || "")) + " " + (port && port.meta && port.meta.short ? port.meta.short : "");
+      return /gateway/i.test(t);
+    }
+
+    /**
+     * Dual General + Ready wait display only for Gateway Pedestrian when minutes differ.
+     * Other bridges/types keep a single General number (+ Ready open note if useful).
+     */
+    function waitCellBlock(summary, modeKey, port) {
       if (!summary) {
         return { html: `<span class="wait-empty">—</span>`, cls: "" };
       }
@@ -1485,16 +1494,17 @@
       const readyLanes = (summary.extras || []).filter((l) => /ready/i.test(l.name));
       const readyActive = readyLanes.find((l) => isShowableWait(l.wait));
 
-      // When General and Ready waits differ (common on Gateway pedestrian),
-      // show both wait times clearly in this traffic column only.
-      const waitsDiffer =
+      const gatewayPedDual =
+        port &&
+        isGatewayPort(port) &&
+        modeKey === "pedestrian" &&
         readyActive &&
         isActiveWait(w) &&
         isActiveWait(readyActive.wait) &&
         w.minutes !== readyActive.wait.minutes;
 
       let mainHtml;
-      if (waitsDiffer) {
+      if (gatewayPedDual) {
         const gOpen = formatLaneOpenOnly(w);
         const rOpen = formatLaneOpenOnly(readyActive.wait);
         mainHtml = `
@@ -1511,19 +1521,19 @@
             </div>
           </div>`;
       } else {
-        // Same wait (or no Ready time): one big General number; Ready only if open count/status useful
+        // Default: one General wait; Ready line only when useful (open count / different status)
         const extraHtml = readyLanes.map((l) => {
           if (!isShowableWait(l.wait)) return "";
-          // If wait matches General, skip repeating the same minutes; still show Ready open if present
-          const sameWait =
-            isActiveWait(w) && isActiveWait(l.wait) && w.minutes === l.wait.minutes;
           const short = l.name.replace(/\s*Lane$/i, "");
           const readyOpen = formatLaneOpenOnly(l.wait);
+          const sameWait =
+            isActiveWait(w) && isActiveWait(l.wait) && w.minutes === l.wait.minutes;
           if (sameWait) {
             return readyOpen
               ? `<span class="wait-extra"><span class="tag">${escapeHtml(short)}</span> ${escapeHtml(readyOpen)}</span>`
               : "";
           }
+          // Non-Gateway or non-pedestrian: still note Ready wait if it differs, but compact
           const openPart = readyOpen ? " · " + readyOpen : "";
           return `<span class="wait-extra"><span class="tag">${escapeHtml(short)}</span> ${escapeHtml(l.wait.label)}${escapeHtml(openPart)}</span>`;
         }).join("");
@@ -1536,7 +1546,7 @@
         : "";
       return {
         html: `${mainHtml}${capHtml}`,
-        cls: waitsDiffer ? "has-dual has-" + w.cls : "has-" + w.cls
+        cls: gatewayPedDual ? "has-dual has-" + w.cls : "has-" + w.cls
       };
     }
 
@@ -1691,9 +1701,9 @@
         }
 
         const cells = {
-          passenger: waitCellBlock(summarizeMode(port.sections, "passenger"), "passenger"),
-          pedestrian: waitCellBlock(summarizeMode(port.sections, "pedestrian"), "pedestrian"),
-          commercial: waitCellBlock(summarizeMode(port.sections, "commercial"), "commercial"),
+          passenger: waitCellBlock(summarizeMode(port.sections, "passenger"), "passenger", port),
+          pedestrian: waitCellBlock(summarizeMode(port.sections, "pedestrian"), "pedestrian", port),
+          commercial: waitCellBlock(summarizeMode(port.sections, "commercial"), "commercial", port),
           trusted: bestTrusted(port)
         };
 
