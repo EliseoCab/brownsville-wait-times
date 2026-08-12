@@ -750,72 +750,102 @@
         padding-top: max(0.55rem, env(safe-area-inset-top));
       }
 
-      /* Extra-tight few-column filters on phones */
-      .table-wrap.table-tight {
-        width: 100%;
-        max-width: 100%;
+      /* Few-column filters: hide wide table, show compact phone cards */
+      .table-wrap.table-tight .table-scroll {
+        display: none !important;
       }
-      .table-wrap.table-tight .wait-table {
-        width: 100%;
-        table-layout: fixed;
-        font-size: 0.82rem;
-      }
-      .table-wrap.table-tight .wait-table col.c-bridge { width: 42% !important; }
-      .table-wrap.table-tight .wait-table col.c-wait { width: 58% !important; }
-      .table-wrap.table-tight.table-tight-2 col.c-bridge { width: 36% !important; }
-      .table-wrap.table-tight.table-tight-2 col.c-wait { width: 32% !important; }
-      .table-wrap.table-tight .wait-table th,
-      .table-wrap.table-tight .wait-table td {
-        padding: 0.5rem 0.4rem;
-        white-space: normal;
-      }
-      .table-wrap.table-tight .wait-table td.bridge {
-        padding-left: 0.55rem;
-        padding-right: 0.4rem;
-        max-width: none;
-        font-size: 0.88rem;
-      }
-      .table-wrap.table-tight .wait-table td.bridge .hours-line {
-        font-size: 0.68rem;
-        margin-top: 0.15rem;
-      }
-      .table-wrap.table-tight .wait-table td.wait-col {
-        padding-left: 0.35rem;
-        padding-right: 0.45rem;
-      }
-      .table-wrap.table-tight .wait-cell .num {
-        font-size: 1.25rem;
-      }
-      .table-wrap.table-tight .wait-cell .unit {
-        font-size: 0.7rem;
-      }
-      .table-wrap.table-tight .wait-extra,
-      .table-wrap.table-tight .wait-extra.open-line {
-        font-size: 0.65rem;
-        max-width: 100%;
-        line-height: 1.25;
-      }
-      .table-wrap.table-tight .wait-stack {
-        min-width: 0;
-        gap: 0.2rem;
+      .table-wrap.table-tight .mobile-cards {
+        display: flex !important;
       }
       .table-wrap.table-tight .asof-bar {
         font-size: 0.7rem;
-        padding: 0.45rem 0.55rem;
+        padding: 0.45rem 0.65rem;
       }
     }
+
+    /* Compact cards for Pedestrian / few-column filters on phone */
+    .mobile-cards {
+      display: none;
+      flex-direction: column;
+      gap: 0.55rem;
+      padding: 0.65rem;
+      background: var(--paper);
+    }
+    .m-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.5rem 0.75rem;
+      align-items: center;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 0.7rem 0.75rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .m-row-bridge {
+      font-size: 0.95rem;
+      font-weight: 750;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .m-row-hours {
+      display: block;
+      margin-top: 0.2rem;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--sky-deep);
+    }
+    .m-row-waits {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 0.45rem;
+      text-align: center;
+    }
+    .m-wait-block {
+      min-width: 4.25rem;
+      padding: 0.35rem 0.4rem;
+      border-radius: 8px;
+      background: var(--paper);
+      border: 1px solid var(--line-soft);
+    }
+    .m-wait-block .m-lab {
+      display: block;
+      font-size: 0.58rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.15rem;
+    }
+    .m-wait-block .wait-stack {
+      gap: 0.15rem;
+    }
+    .m-wait-block .wait-cell .num {
+      font-size: 1.35rem;
+    }
+    .m-wait-block .wait-extra {
+      font-size: 0.62rem;
+      max-width: 5.5rem;
+    }
+    .m-wait-block.has-low { background: rgba(236, 253, 245, 0.9); }
+    .m-wait-block.has-med { background: rgba(255, 251, 235, 0.95); }
+    .m-wait-block.has-high { background: rgba(255, 247, 237, 0.95); }
+    .m-wait-block.has-severe { background: rgba(254, 242, 242, 0.95); }
 
     @media (max-width: 400px) {
       .main {
         padding-left: 0.55rem;
         padding-right: 0.55rem;
       }
-      .table-wrap.table-tight .wait-table {
-        font-size: 0.78rem;
+      .m-row {
+        padding: 0.6rem 0.55rem;
+        gap: 0.4rem 0.5rem;
       }
-      .table-wrap.table-tight .wait-cell .num {
-        font-size: 1.15rem;
-      }
+      .m-row-bridge { font-size: 0.88rem; }
+      .m-wait-block { min-width: 3.75rem; padding: 0.3rem; }
+      .m-wait-block .wait-cell .num { font-size: 1.2rem; }
     }
 
     @media (max-width: 380px) {
@@ -1924,6 +1954,8 @@
         return an.localeCompare(bn);
       });
 
+      const mobileCards = [];
+
       for (const port of portsSorted) {
         if (!portHasActiveForFilter(port)) continue;
 
@@ -1940,7 +1972,6 @@
 
         const tdHtml = waitCols.map((c) => {
           const cell = cells[c.key];
-          // Always wrap so open lines stay center-justified in every filter
           const inner = cell.html.includes("wait-stack")
             ? cell.html
             : `<div class="wait-stack">${cell.html}</div>`;
@@ -1956,6 +1987,27 @@
             </td>
             ${tdHtml}
           </tr>`);
+
+        // Compact phone cards (used for Pedestrian / few-column filters)
+        const waitBlocks = waitCols.map((c) => {
+          const cell = cells[c.key];
+          const inner = cell.html.includes("wait-stack")
+            ? cell.html
+            : `<div class="wait-stack">${cell.html}</div>`;
+          return `<div class="m-wait-block ${cell.cls}">
+            <span class="m-lab">${escapeHtml(c.label)}</span>
+            ${inner}
+          </div>`;
+        }).join("");
+
+        mobileCards.push(`
+          <article class="m-row">
+            <div>
+              <div class="m-row-bridge">${escapeHtml(port.meta.short)}</div>
+              <span class="m-row-hours">${escapeHtml(hoursLabel)}</span>
+            </div>
+            <div class="m-row-waits">${waitBlocks}</div>
+          </article>`);
       }
 
       if (!tableRows.length) {
@@ -1969,7 +2021,6 @@
           ).join("")}</div>`
         : "";
 
-      // Auto-fit: few-column filters (Pedestrian) hug content; All stays full width
       const waitN = Math.max(waitCols.length, 1);
       const tight = waitN <= 2;
       let bridgePct;
@@ -1987,7 +2038,7 @@
       ).join("");
 
       const tightClass = tight
-        ? ` table-tight${waitN === 2 ? " table-tight-2" : waitN === 1 ? " table-tight-1" : ""}`
+        ? ` table-tight table-tight-${waitN}`
         : "";
 
       grid.innerHTML = `
@@ -2006,6 +2057,9 @@
                 ${tableRows.join("")}
               </tbody>
             </table>
+          </div>
+          <div class="mobile-cards">
+            ${mobileCards.join("")}
           </div>
         </div>
         ${noticesHtml}`;
