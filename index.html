@@ -71,19 +71,19 @@
     .topbar-inner {
       max-width: 1160px;
       margin: 0 auto;
-      padding: 0.55rem 1.25rem;
+      padding: 0.4rem 1.25rem;
       padding-left: max(1.25rem, env(safe-area-inset-left));
       padding-right: max(1.25rem, env(safe-area-inset-right));
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 0.5rem 1.5rem;
+      gap: 0.35rem 1.25rem;
     }
     .topbar-live {
       display: inline-flex;
       align-items: center;
-      gap: 0.45rem;
+      gap: 0.35rem;
     }
     .pulse {
       width: 8px;
@@ -115,7 +115,7 @@
         radial-gradient(ellipse 50% 40% at 10% 80%, rgba(13, 148, 136, 0.18), transparent 50%),
         linear-gradient(145deg, var(--navy) 0%, var(--navy-mid) 48%, #0a3a5c 100%);
       color: #fff;
-      padding: clamp(2rem, 5vw, 3.25rem) 1.25rem clamp(2.5rem, 6vw, 3.75rem);
+      padding: clamp(0.85rem, 2.5vw, 1.35rem) 1.25rem clamp(2rem, 5vw, 3rem);
     }
     .hero::after {
       content: "";
@@ -135,17 +135,15 @@
       margin: 0 auto;
     }
     .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.75rem;
+      display: block;
+      font-size: 0.72rem;
       font-weight: 700;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       color: #7dd3fc;
-      margin-bottom: 0.85rem;
+      margin: 0 0 0.45rem;
+      line-height: 1.3;
     }
-    .eyebrow svg { opacity: 0.9; }
     .hero h1 {
       font-family: var(--display);
       font-weight: 400;
@@ -604,7 +602,7 @@
     /* ——— Mobile layout (table only, scrollable) ——— */
     @media (max-width: 720px) {
       .hero {
-        padding: 1.5rem 1rem 2rem;
+        padding: 0.85rem 1rem 1.75rem;
       }
       .hero h1 {
         max-width: none;
@@ -853,7 +851,7 @@
         <span id="liveLabel">Checking CBP feed…</span>
       </div>
       <div>
-        Official data ·
+        Official CBP data ·
         <a href="https://bwt.cbp.gov" target="_blank" rel="noopener">bwt.cbp.gov</a>
       </div>
     </div>
@@ -861,12 +859,7 @@
 
   <header class="hero">
     <div class="hero-inner">
-      <div class="eyebrow">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M12 2L3 7v6c0 5 3.5 8.5 9 10 5.5-1.5 9-5 9-10V7l-9-5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-        </svg>
-        U.S. – Mexico Land Border · Texas
-      </div>
+      <div class="eyebrow">U.S. – Mexico Land Border · Texas</div>
       <h1>Brownsville Port of Entry</h1>
       <p class="hero-lead">
         Real-time estimated wait times for primary inspection at Brownsville’s four bridges—
@@ -962,7 +955,7 @@
         <p>Clear wait estimates for B&amp;M, Gateway, Los Indios, and Veterans International bridges.</p>
       </div>
       <div class="footer-links">
-        <a href="https://bwt.cbp.gov" target="_blank" rel="noopener">CBP Border Wait Times</a>
+        <span>Source: <a href="https://bwt.cbp.gov" target="_blank" rel="noopener">CBP Border Wait Times (bwt.cbp.gov)</a></span>
         <a href="https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43" target="_blank" rel="noopener">Raw RSS feed</a>
         <a href="https://www.cbp.gov/travel/trusted-traveler-programs" target="_blank" rel="noopener">Trusted Traveler</a>
       </div>
