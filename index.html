@@ -1969,18 +1969,34 @@
       };
     }
 
+    /** Parse "3:00 pm CDT" / "11:00 am CDT" into minutes since midnight for ordering. */
+    function asOfSortKey(asOf) {
+      if (!asOf || asOf === "—") return -1;
+      const m = String(asOf).match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
+      if (!m) return -1;
+      let h = parseInt(m[1], 10) % 12;
+      const min = parseInt(m[2], 10);
+      if (m[3].toLowerCase() === "pm") h += 12;
+      return h * 60 + min;
+    }
+
+    /** Single report time for the bar — newest "As of" across all active lanes (never list two). */
     function collectAsOf(data) {
-      const times = new Set();
+      let best = null;
+      let bestKey = -1;
       for (const port of data.items) {
         for (const sec of port.sections) {
           for (const lane of sec.lanes) {
-            if (isActiveWait(lane.wait) && lane.wait.asOf && lane.wait.asOf !== "—") {
-              times.add(lane.wait.asOf);
+            if (!isActiveWait(lane.wait) || !lane.wait.asOf || lane.wait.asOf === "—") continue;
+            const key = asOfSortKey(lane.wait.asOf);
+            if (key >= bestKey) {
+              bestKey = key;
+              best = lane.wait.asOf;
             }
           }
         }
       }
-      return [...times];
+      return best;
     }
 
     function portHasActiveForFilter(port) {
@@ -2113,7 +2129,7 @@
       const notices = [];
       const tableRows = [];
 
-      const asOfList = collectAsOf(data);
+      const newestAsOf = collectAsOf(data);
       let pendingCount = 0;
       let numericCount = 0;
       for (const port of data.items) {
@@ -2127,10 +2143,9 @@
       let asOfText;
       if (numericCount === 0 && pendingCount > 0) {
         asOfText = "Update pending from CBP (no new wait estimates yet)";
-      } else if (asOfList.length === 1) {
-        asOfText = asOfList[0];
-      } else if (asOfList.length > 1) {
-        asOfText = asOfList.join(" · ") + (pendingCount ? " · some lanes update pending" : "");
+      } else if (newestAsOf) {
+        // One report time only (newest across bridges) — avoids "4:00 · 3:00" glitch
+        asOfText = newestAsOf;
       } else {
         asOfText = "—";
       }
