@@ -1581,15 +1581,27 @@
       return null;
     }
 
-    /** SENTRI (passenger) and FAST (commercial) only — never Ready Lanes. */
+    /**
+     * SENTRI (passenger) and FAST (commercial) only — never Ready Lanes.
+     * Commercial filter: FAST only (Veterans / Los Indios) — never SENTRI open counts.
+     */
     function bestTrusted(port) {
+      const commercialOnly = currentFilter === "commercial";
+      const passengerOnly = currentFilter === "passenger";
+
       let trusted = null;
       let pending = null;
       for (const sec of port.sections) {
         for (const lane of sec.lanes) {
-          // Ready is RFID Ready Lane (separate program); do not mix into SENTRI/Fast
           if (/ready/i.test(lane.name)) continue;
-          if (!/sentri|fast/i.test(lane.name)) continue;
+          if (commercialOnly) {
+            if (!/fast/i.test(lane.name)) continue;
+          } else if (passengerOnly) {
+            if (!/sentri/i.test(lane.name)) continue;
+          } else {
+            // All filter: SENTRI or FAST
+            if (!/sentri|fast/i.test(lane.name)) continue;
+          }
           if (isActiveWait(lane.wait)) {
             if (!trusted || lane.wait.minutes < trusted.wait.minutes) {
               trusted = { lane, sectionKey: sec.key, sectionTitle: sec.title };
@@ -1601,8 +1613,8 @@
       }
       const pick = trusted || pending;
       if (!pick) {
-        // Veterans: still show SENTRI open count even if wait is N/A
-        if (isVeteransPort(port)) {
+        // Veterans SENTRI open only when not on Commercial filter (SENTRI is passenger)
+        if (!commercialOnly && isVeteransPort(port)) {
           const n = veteransSentriOpenCount(port);
           if (n != null) {
             return {
@@ -1611,7 +1623,7 @@
             };
           }
         }
-        return waitCellBlock(null);
+        return { html: `<span class="wait-empty">—</span>`, cls: "" };
       }
       const short = pick.lane.name.replace(/\s*Lane$/i, "");
       const context = /fast/i.test(pick.lane.name)
@@ -1619,20 +1631,25 @@
         : /sentri/i.test(pick.lane.name)
           ? "Passenger"
           : pick.sectionTitle;
+
+      // Commercial filter: FAST only — never append SENTRI
+      if (commercialOnly) {
+        const open = formatLaneOpenOnly(pick.lane.wait);
+        const openBit = open ? ` · ${escapeHtml(open)}` : "";
+        return {
+          html: `${waitCellHtml(pick.lane.wait)}<span class="wait-extra"><span class="tag">FAST</span> · Commercial${openBit}</span>`,
+          cls: "has-" + pick.lane.wait.cls
+        };
+      }
+
       let extra = `<span class="tag">${escapeHtml(short)}</span> · ${escapeHtml(context)}`;
-      // Veterans only: always surface SENTRI lanes open in this row
+      // Veterans SENTRI open count (All / Passenger only — not Commercial)
       if (isVeteransPort(port) && /sentri/i.test(pick.lane.name)) {
         const n = pick.lane.wait.lanesOpenCount != null
           ? pick.lane.wait.lanesOpenCount
           : veteransSentriOpenCount(port);
         if (n != null) {
           extra = `<span class="tag">SENTRI</span> ${n} open`;
-        }
-      } else if (isVeteransPort(port) && /fast/i.test(pick.lane.name)) {
-        // If FAST wins the column, still append Veterans SENTRI open count
-        const n = veteransSentriOpenCount(port);
-        if (n != null) {
-          extra = `<span class="tag">${escapeHtml(short)}</span> · ${escapeHtml(context)} · <span class="tag">SENTRI</span> ${n} open`;
         }
       }
       return {
@@ -1679,7 +1696,11 @@
       if (currentFilter === "all" || currentFilter === "commercial") {
         waitCols.push({ key: "commercial", label: "Commercial" });
       }
-      if (currentFilter === "all" || currentFilter === "passenger" || currentFilter === "commercial") {
+      if (currentFilter === "commercial") {
+        waitCols.push({ key: "trusted", label: "FAST" });
+      } else if (currentFilter === "passenger") {
+        waitCols.push({ key: "trusted", label: "SENTRI" });
+      } else if (currentFilter === "all") {
         waitCols.push({ key: "trusted", label: "SENTRI / FAST" });
       }
 
