@@ -528,6 +528,30 @@
     .wait-extra .tag {
       color: var(--slate);
     }
+    .dual-waits {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.55rem;
+    }
+    .dual-wait {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15rem;
+    }
+    .dual-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .wait-table td.wait-col.has-dual {
+      vertical-align: middle;
+      padding-top: 0.75rem;
+      padding-bottom: 0.75rem;
+    }
     .wait-empty {
       color: var(--gray);
       font-size: 0.95rem;
@@ -921,7 +945,7 @@
         <button type="button" class="filter-btn" data-filter="commercial" onclick="setFilter('commercial', this)">Commercial</button>
       </div>
     </div>
-    <p class="view-note">One row per bridge. N/A and closed are omitted. Big number = General wait; Ready is listed under that type when open. “N of M open” uses CBP Maximum Lanes for the whole type (General + Ready + SENTRI), not General alone. SENTRI/FAST column is SENTRI and commercial FAST only.</p>
+    <p class="view-note">One row per bridge. N/A and closed are omitted. If General and Ready waits differ (e.g. Gateway pedestrian), both times show in that traffic column only. “N of M open” is total capacity for the type (General + Ready + SENTRI). SENTRI/FAST is SENTRI and commercial FAST only.</p>
 
     <div class="ports" id="portGrid" aria-live="polite"></div>
 
@@ -1453,25 +1477,66 @@
       return breakdown + " open";
     }
 
-    function waitCellBlock(summary) {
+    function waitCellBlock(summary, modeKey) {
       if (!summary) {
         return { html: `<span class="wait-empty">—</span>`, cls: "" };
       }
       const w = summary.primary;
-      // Big number = General wait. Sub-lines = Ready wait + combined open vs max capacity.
-      const extraHtml = (summary.extras || []).map((l) => {
-        const short = l.name.replace(/\s*Lane$/i, "");
-        const readyOpen = formatLaneOpenOnly(l.wait);
-        const openPart = readyOpen ? " · " + readyOpen : "";
-        return `<span class="wait-extra"><span class="tag">${escapeHtml(short)}</span> ${escapeHtml(l.wait.label)}${escapeHtml(openPart)}</span>`;
-      }).join("");
+      const readyLanes = (summary.extras || []).filter((l) => /ready/i.test(l.name));
+      const readyActive = readyLanes.find((l) => isShowableWait(l.wait));
+
+      // When General and Ready waits differ (common on Gateway pedestrian),
+      // show both wait times clearly in this traffic column only.
+      const waitsDiffer =
+        readyActive &&
+        isActiveWait(w) &&
+        isActiveWait(readyActive.wait) &&
+        w.minutes !== readyActive.wait.minutes;
+
+      let mainHtml;
+      if (waitsDiffer) {
+        const gOpen = formatLaneOpenOnly(w);
+        const rOpen = formatLaneOpenOnly(readyActive.wait);
+        mainHtml = `
+          <div class="dual-waits">
+            <div class="dual-wait">
+              <span class="dual-label">General</span>
+              ${waitCellHtml(w)}
+              ${gOpen ? `<span class="wait-extra">${escapeHtml(gOpen)}</span>` : ""}
+            </div>
+            <div class="dual-wait">
+              <span class="dual-label">Ready</span>
+              ${waitCellHtml(readyActive.wait)}
+              ${rOpen ? `<span class="wait-extra">${escapeHtml(rOpen)}</span>` : ""}
+            </div>
+          </div>`;
+      } else {
+        // Same wait (or no Ready time): one big General number; Ready only if open count/status useful
+        const extraHtml = readyLanes.map((l) => {
+          if (!isShowableWait(l.wait)) return "";
+          // If wait matches General, skip repeating the same minutes; still show Ready open if present
+          const sameWait =
+            isActiveWait(w) && isActiveWait(l.wait) && w.minutes === l.wait.minutes;
+          const short = l.name.replace(/\s*Lane$/i, "");
+          const readyOpen = formatLaneOpenOnly(l.wait);
+          if (sameWait) {
+            return readyOpen
+              ? `<span class="wait-extra"><span class="tag">${escapeHtml(short)}</span> ${escapeHtml(readyOpen)}</span>`
+              : "";
+          }
+          const openPart = readyOpen ? " · " + readyOpen : "";
+          return `<span class="wait-extra"><span class="tag">${escapeHtml(short)}</span> ${escapeHtml(l.wait.label)}${escapeHtml(openPart)}</span>`;
+        }).join("");
+        mainHtml = `${waitCellHtml(w)}${extraHtml}`;
+      }
+
       const capacityNote = sectionOpenSummary(summary);
       const capHtml = capacityNote
         ? `<span class="wait-extra">${escapeHtml(capacityNote)}</span>`
         : "";
       return {
-        html: `${waitCellHtml(w)}${extraHtml}${capHtml}`,
-        cls: "has-" + w.cls
+        html: `${mainHtml}${capHtml}`,
+        cls: waitsDiffer ? "has-dual has-" + w.cls : "has-" + w.cls
       };
     }
 
@@ -1626,9 +1691,9 @@
         }
 
         const cells = {
-          passenger: waitCellBlock(summarizeMode(port.sections, "passenger")),
-          pedestrian: waitCellBlock(summarizeMode(port.sections, "pedestrian")),
-          commercial: waitCellBlock(summarizeMode(port.sections, "commercial")),
+          passenger: waitCellBlock(summarizeMode(port.sections, "passenger"), "passenger"),
+          pedestrian: waitCellBlock(summarizeMode(port.sections, "pedestrian"), "pedestrian"),
+          commercial: waitCellBlock(summarizeMode(port.sections, "commercial"), "commercial"),
           trusted: bestTrusted(port)
         };
 
