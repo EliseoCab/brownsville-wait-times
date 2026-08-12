@@ -2225,12 +2225,13 @@
           ).join("")}</div>`
         : "";
 
+      // Vehicles / Pedestrian / Commercial: same tight uniform layout; All is full card table
       const waitN = Math.max(waitCols.length, 1);
-      const tight = waitN <= 2;
+      const tight = currentFilter !== "all";
       let bridgePct;
-      if (waitN === 1) bridgePct = 46;
-      else if (waitN === 2) bridgePct = 32;
-      else if (waitN === 3) bridgePct = 24;
+      if (waitN === 1) bridgePct = 42;
+      else if (waitN === 2) bridgePct = 36;
+      else if (waitN === 3) bridgePct = 28;
       else bridgePct = 20;
       const waitPct = ((100 - bridgePct) / waitN).toFixed(3);
       const colgroup =
