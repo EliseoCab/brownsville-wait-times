@@ -1452,9 +1452,11 @@
     /**
      * Concise open line: "2 Gen · 2 Ready · 4/5 open" or "2/5 open" or "2 open"
      * Max = CBP Maximum Lanes for the whole traffic type (not General-only).
+     * Passenger: omit Ready open bits (still count Ready toward total/max) to reduce clutter.
      */
-    function formatOpenLine(summary) {
+    function formatOpenLine(summary, modeKey) {
       if (!summary) return "";
+      const omitReadyDetail = modeKey === "passenger";
       const bits = [];
       let total = 0;
       let hasCounts = false;
@@ -1470,10 +1472,12 @@
       for (const l of summary.extras || []) {
         if (!/ready/i.test(l.name)) continue;
         if (l.wait && !l.wait.pending && l.wait.lanesOpenCount != null) {
-          bits.push(l.wait.lanesOpenCount + " Ready");
           total += l.wait.lanesOpenCount;
           hasCounts = true;
-        } else if (l.wait && l.wait.lanesOpen === "Closed") {
+          if (!omitReadyDetail) {
+            bits.push(l.wait.lanesOpenCount + " Ready");
+          }
+        } else if (l.wait && l.wait.lanesOpen === "Closed" && !omitReadyDetail) {
           bits.push("Ready closed");
         }
       }
@@ -1481,11 +1485,17 @@
       if (!hasCounts && !bits.length) return "";
 
       if (hasCounts && summary.max) {
-        // One Gen only → "2/5 open"; Gen+Ready → "2 Gen · 2 Ready · 4/5 open"
+        // Passenger (or Gen-only): "4/5 open" when total includes Ready; else "2 Gen · 4/5 open"
+        if (omitReadyDetail) {
+          return total + "/" + summary.max + " open";
+        }
         if (bits.length === 1 && /^(\d+) Gen$/.test(bits[0])) {
           return total + "/" + summary.max + " open";
         }
         return bits.join(" · ") + " · " + total + "/" + summary.max + " open";
+      }
+      if (hasCounts && omitReadyDetail) {
+        return total + " open";
       }
       if (hasCounts && bits.length === 1 && /^(\d+) Gen$/.test(bits[0])) {
         return total + " open";
@@ -1529,7 +1539,7 @@
         mainHtml = waitCellHtml(w);
       }
 
-      const openLine = formatOpenLine(summary);
+      const openLine = formatOpenLine(summary, modeKey);
       const openHtml = openLine
         ? `<span class="wait-extra open-line">${escapeHtml(openLine)}</span>`
         : "";
