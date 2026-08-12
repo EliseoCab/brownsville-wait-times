@@ -501,6 +501,21 @@
     .wait-cell.high .unit { color: var(--orange); }
     .wait-cell.severe .num,
     .wait-cell.severe .unit { color: var(--red); }
+    .wait-cell.na .num,
+    .wait-cell.pending .num {
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--gray);
+      max-width: 7.5rem;
+      line-height: 1.2;
+      white-space: normal;
+    }
+    .wait-cell.pending .num { color: #b45309; }
+    .wait-cell.na .unit,
+    .wait-cell.pending .unit { display: none; }
+    .wait-table td.wait-col.has-pending { background: #fffbeb; }
 
     .wait-extra {
       display: block;
@@ -991,7 +1006,7 @@
       }
     };
 
-    const FALLBACK_RSS = `<?xml version='1.0' encoding='UTF-8'?><rss version='2.0'><channel><title>CBP Border Wait Times</title><link>https://bwt.cbp.gov</link><description>Estimated wait times</description><pubDate>Tue, 11 Aug 2026 23:28:01 EST</pubDate><item><title>Brownsville - B&amp;M</title><description>Hours: 24 hrs/day <br/> Date: 8/11/2026 <br/> <h4><b> Passenger Vehicles </b></h4>  Maximum Lanes: 4 <br/>General Lanes: At 4:00 pm CDT 60 min delay 2 lane(s) open  <br/>Sentri Lanes:  N/A  <br/>Ready Lanes:  Lanes Closed  <br/> <h4><b> Pedestrian </b></h4>  Maximum Lanes: 2 <br/>General Lanes: At 4:00 pm CDT 10 min delay 1 lane(s) open  <br/>Ready Lanes:  N/A  <br/></description></item><item><title>Brownsville - Gateway</title><description>Hours: 24 hrs/day <br/> Date: 8/11/2026 <br/> <h4><b> Passenger Vehicles </b></h4>  Maximum Lanes: 5 <br/>General Lanes: At 4:00 pm CDT 60 min delay 4 lane(s) open  <br/>Sentri Lanes:  N/A  <br/>Ready Lanes:  Lanes Closed  <br/> <h4><b> Pedestrian </b></h4>  Maximum Lanes: 5 <br/>General Lanes: At 4:00 pm CDT 40 min delay 2 lane(s) open  <br/>Ready Lanes:  Lanes Closed  <br/><b>Border Notice: </b>Ready Lane is now operational at Gateway Bridge - Lane 1.  Tune in to AM 1610 for border crossing information.</description></item><item><title>Brownsville - Los Indios</title><description>Hours: 6 am-10 pm <br/> Date: 8/11/2026 <br/> <h4><b> Commercial Vehicles </b></h4>  Maximum Lanes: 4 <br/>General Lanes: At 4:00 pm CDT 5 min delay 1 lane(s) open  <br/>Fast Lanes:  Lanes Closed  <br/> <h4><b> Passenger Vehicles </b></h4>  Maximum Lanes: 4 <br/>General Lanes: At 4:00 pm CDT 5 min delay 1 lane(s) open  <br/>Sentri Lanes:  N/A  <br/>Ready Lanes:  Lanes Closed  <br/></description></item><item><title>Brownsville - Veterans International</title><description>Hours: 6 am-Midnight <br/> Date: 8/11/2026 <br/> <h4><b> Commercial Vehicles </b></h4>  Maximum Lanes: 4 <br/>General Lanes: At 4:00 pm CDT 5 min delay 3 lane(s) open  <br/>Fast Lanes: At 4:00 pm CDT 0 min delay 1 lane(s) open  <br/> <h4><b> Passenger Vehicles </b></h4>  Maximum Lanes: 8 <br/>General Lanes: At 4:00 pm CDT 90 min delay 3 lane(s) open  <br/>Sentri Lanes: At 4:00 pm CDT 5 min delay 2 lane(s) open  <br/>Ready Lanes:  Lanes Closed  <br/> <h4><b> Pedestrian </b></h4>  Maximum Lanes: 1 <br/>General Lanes: At 4:00 pm CDT 0 min delay 1 lane(s) open  <br/>Ready Lanes:  N/A  <br/></description></item></channel></rss>`;
+    const FALLBACK_RSS = `<?xml version='1.0' encoding='UTF-8'?><rss version='2.0'><channel><title>CBP Border Wait Times</title><link>https://bwt.cbp.gov</link><description>Estimated wait times for reaching the primary inspection booth, the first point of contact with CBP when crossing the Canada/U.S. and Mexico/U.S. land borders. Each border location updates its estimated wait times hourly. </description><pubDate>Wed, 12 Aug 2026 01:15:38 EST</pubDate><item><title>Brownsville - B&amp;M</title><description>Hours: 24 hrs/day <br/> Date: 8/12/2026 <br/> <h4><b> Passenger Vehicles </b></h4>  Maximum Lanes: 4 <br/>General Lanes:  Update Pending  <br/>Sentri Lanes:  Update Pending  <br/>Ready Lanes:  Update Pending  <br/> <h4><b> Pedestrian </b></h4>  Maximum Lanes: 2 <br/>General Lanes:  Update Pending  <br/>Ready Lanes:  Update Pending  <br/></description><link>https://bwt.cbp.gov/ViewAllPorts</link><pubDate>Wed, 12 Aug 2026 01:15:38 EST</pubDate><guid>https://bwt.cbp.gov/ViewAllPorts</guid></item><item><title>Brownsville - Gateway</title><description>Hours: 24 hrs/day <br/> Date: 8/12/2026 <br/> <h4><b> Passenger Vehicles </b></h4>  Maximum Lanes: 5 <br/>General Lanes:  Update Pending  <br/>Sentri Lanes:  Update Pending  <br/>Ready Lanes:  Update Pending  <br/> <h4><b> Pedestrian </b></h4>  Maximum Lanes: 5 <br/>General Lanes:  Update Pending  <br/>Ready Lanes:  Update Pending  <br/><b>Border Notice: </b>Ready Lane is now operational at Gateway Bridge - Lane 1.  Tune in to AM 1610 for border crossing information.</description><link>https://bwt.cbp.gov/ViewAllPorts</link><pubDate>Wed, 12 Aug 2026 01:15:38 EST</pubDate><guid>https://bwt.cbp.gov/ViewAllPorts</guid></item><item><title>Brownsville - Los Indios</title><description>Hours: 6 am-10 pm <br/> Date: 8/12/2026 <br/> <h4><b> Commercial Vehicles </b></h4>  Maximum Lanes: 4 <br/>General Lanes:  Update Pending  <br/>Fast Lanes:  Update Pending  <br/> <h4><b> Passenger Vehicles </b></h4>  Maximum Lanes: 4 <br/>General Lanes:  Update Pending  <br/>Sentri Lanes:  Update Pending  <br/>Ready Lanes:  Update Pending  <br/></description><link>https://bwt.cbp.gov/ViewAllPorts</link><pubDate>Wed, 12 Aug 2026 01:15:38 EST</pubDate><guid>https://bwt.cbp.gov/ViewAllPorts</guid></item><item><title>Brownsville - Veterans International</title><description>Hours: 6 am-Midnight <br/> Date: 8/12/2026 <br/> <h4><b> Commercial Vehicles </b></h4>  Maximum Lanes: 4 <br/>General Lanes:  Update Pending  <br/>Fast Lanes:  Update Pending  <br/> <h4><b> Passenger Vehicles </b></h4>  Maximum Lanes: 8 <br/>General Lanes:  Update Pending  <br/>Sentri Lanes:  Update Pending  <br/>Ready Lanes:  Update Pending  <br/> <h4><b> Pedestrian </b></h4>  Maximum Lanes: 1 <br/>General Lanes:  Update Pending  <br/>Ready Lanes:  Update Pending  <br/></description><link>https://bwt.cbp.gov/ViewAllPorts</link><pubDate>Wed, 12 Aug 2026 01:15:38 EST</pubDate><guid>https://bwt.cbp.gov/ViewAllPorts</guid></item></channel></rss>`;
 
     let currentFilter = "all";
     let lastData = null;
@@ -1001,8 +1016,13 @@
     let isLoading = false;
 
     function isActiveWait(w) {
-      // Keep only real numeric waits; drop N/A and closed
+      // Real numeric wait estimates only
       return w && w.minutes != null;
+    }
+
+    function isShowableWait(w) {
+      // Show numeric waits and CBP "Update Pending" (not N/A / closed)
+      return w && (w.minutes != null || w.pending);
     }
 
     /** Next clock time at :05 past the hour (CBP updates ~hourly). */
@@ -1109,16 +1129,28 @@
 
     function parseWait(text) {
       const raw = (text || "").trim();
-      if (!raw || /^N\/A$/i.test(raw)) {
+      const base = {
+        minutes: null, num: "N/A", unit: "", label: "N/A", cls: "na",
+        pending: false, detail: "", asOf: "—", lanesOpen: "—", bar: 0
+      };
+      if (!raw || /^N\/A$/i.test(raw)) return { ...base };
+      if (/update\s*pending/i.test(raw)) {
         return {
-          minutes: null, num: "N/A", unit: "", label: "N/A", cls: "na",
-          detail: "", asOf: "—", lanesOpen: "—", bar: 0
+          ...base,
+          num: "Update pending",
+          label: "Update pending",
+          cls: "pending",
+          pending: true,
+          detail: "CBP has not published a new wait estimate yet"
         };
       }
       if (/lanes?\s*closed/i.test(raw)) {
         return {
-          minutes: null, num: "Closed", unit: "", label: "Closed", cls: "na",
-          detail: "Lanes closed", asOf: "—", lanesOpen: "Closed", bar: 0
+          ...base,
+          num: "Closed",
+          label: "Closed",
+          detail: "Lanes closed",
+          lanesOpen: "Closed"
         };
       }
       const minMatch = raw.match(/(\d+)\s*min/i);
@@ -1136,6 +1168,7 @@
           unit: "min",
           label: mins + " min",
           cls: waitClass(mins),
+          pending: false,
           detail,
           asOf: when || "—",
           lanesOpen,
@@ -1143,8 +1176,9 @@
         };
       }
       return {
-        minutes: null, num: raw, unit: "", label: raw, cls: "na",
-        detail: "", asOf: "—", lanesOpen: "—", bar: 0
+        ...base,
+        num: raw.length > 24 ? raw.slice(0, 24) + "…" : raw,
+        label: raw
       };
     }
 
@@ -1365,16 +1399,20 @@
       noticesEl.className = "stat" + (notices ? " warn" : " good");
     }
 
-    /** Pull active general wait for a traffic mode (SENTRI/Fast live in their own column). */
+    /** Pull general wait for a traffic mode (SENTRI/Fast live in their own column). */
     function summarizeMode(sections, modeKeyName) {
       const sec = sections.find((s) => s.key === modeKeyName);
       if (!sec) return null;
-      const active = sec.lanes.filter((l) => isActiveWait(l.wait));
-      if (!active.length) return null;
+      const showable = sec.lanes.filter((l) => isShowableWait(l.wait));
+      if (!showable.length) return null;
 
-      // Prefer General for the main number; skip trusted/fast here to avoid double-listing
-      const general = active.find((l) => /general/i.test(l.name));
-      const primary = general || active.find((l) => !/sentri|ready|fast/i.test(l.name)) || active[0];
+      // Prefer General; prefer a numeric estimate over "update pending" when both exist
+      const ranked = showable.slice().sort((a, b) => {
+        const aScore = (isActiveWait(a.wait) ? 2 : 0) + (/general/i.test(a.name) ? 1 : 0);
+        const bScore = (isActiveWait(b.wait) ? 2 : 0) + (/general/i.test(b.name) ? 1 : 0);
+        return bScore - aScore;
+      });
+      const primary = ranked[0];
       return {
         primary: primary.wait,
         primaryName: primary.name,
@@ -1425,19 +1463,22 @@
 
     function bestTrusted(port) {
       let trusted = null;
+      let pending = null;
       for (const sec of port.sections) {
         for (const lane of sec.lanes) {
-          if (!isActiveWait(lane.wait)) continue;
           if (!/sentri|ready|fast/i.test(lane.name)) continue;
-          if (!trusted || lane.wait.minutes < trusted.wait.minutes) {
-            trusted = lane;
+          if (isActiveWait(lane.wait)) {
+            if (!trusted || lane.wait.minutes < trusted.wait.minutes) trusted = lane;
+          } else if (lane.wait.pending && !pending) {
+            pending = lane;
           }
         }
       }
-      if (!trusted) return waitCellBlock(null);
+      const pick = trusted || pending;
+      if (!pick) return waitCellBlock(null);
       return {
-        html: `${waitCellHtml(trusted.wait)}<span class="wait-extra"><span class="tag">${escapeHtml(trusted.name.replace(/\s*Lane$/i, ""))}</span></span>`,
-        cls: "has-" + trusted.wait.cls
+        html: `${waitCellHtml(pick.wait)}<span class="wait-extra"><span class="tag">${escapeHtml(pick.name.replace(/\s*Lane$/i, ""))}</span></span>`,
+        cls: "has-" + pick.wait.cls
       };
     }
 
@@ -1447,11 +1488,26 @@
       const tableRows = [];
 
       const asOfList = collectAsOf(data);
-      const asOfText = asOfList.length === 1
-        ? asOfList[0]
-        : asOfList.length > 1
-          ? asOfList.join(" · ")
-          : "—";
+      let pendingCount = 0;
+      let numericCount = 0;
+      for (const port of data.items) {
+        for (const sec of port.sections) {
+          for (const lane of sec.lanes) {
+            if (lane.wait.pending) pendingCount++;
+            if (isActiveWait(lane.wait)) numericCount++;
+          }
+        }
+      }
+      let asOfText;
+      if (numericCount === 0 && pendingCount > 0) {
+        asOfText = "Update pending from CBP (no new wait estimates yet)";
+      } else if (asOfList.length === 1) {
+        asOfText = asOfList[0];
+      } else if (asOfList.length > 1) {
+        asOfText = asOfList.join(" · ") + (pendingCount ? " · some lanes update pending" : "");
+      } else {
+        asOfText = "—";
+      }
 
       // Columns for wait types (bridge + hours always first)
       const waitCols = [];
@@ -1555,7 +1611,8 @@
     }
 
     async function fetchText(url) {
-      const res = await fetch(url, { cache: "no-store" });
+      const bust = url.includes("?") ? "&" : "?";
+      const res = await fetch(url + bust + "t=" + Date.now(), { cache: "no-store" });
       if (!res.ok) throw new Error("HTTP " + res.status + " for " + url);
       return res.text();
     }
@@ -1573,7 +1630,7 @@
         let sourceLabel = "";
         let isLive = true;
 
-        // 1) Prefer same-origin mirror (GitHub Pages + Actions)
+        // 1) Prefer same-origin mirror (GitHub Pages + Actions) — cache-busted
         try {
           text = await fetchText(LOCAL_FEED_URL);
           sourceLabel = fromAuto ? "Live · data mirror auto-refreshed" : "Live · CBP data mirror";
@@ -1593,7 +1650,7 @@
         } else {
           render(parseRss(FALLBACK_RSS), "Snapshot · offline fallback", false);
           alert.innerHTML =
-            "<div><strong>Showing embedded snapshot</strong>Could not load the CBP data mirror or live feed. If this is GitHub Pages, wait for the hourly Actions update, or check the official CBP site.</div>";
+            "<div><strong>Showing embedded snapshot</strong>Could not load the CBP data mirror or live feed. If this is GitHub Pages, wait for the scheduled Actions update, or check the official CBP site.</div>";
           alert.classList.add("show");
         }
       } finally {

@@ -2,13 +2,14 @@ name: Update CBP wait times
 
 on:
   schedule:
-    # 5 minutes past every hour (UTC). CBP updates ~hourly.
-    - cron: "5 * * * *"
+    # Every 15 minutes — CBP can flip lanes to "Update Pending" between hourly stamps
+    - cron: "5,20,35,50 * * * *"
   workflow_dispatch:
   push:
     branches: [main]
     paths:
       - ".github/workflows/update-wait-times.yml"
+      - "data/**"
 
 permissions:
   contents: write
