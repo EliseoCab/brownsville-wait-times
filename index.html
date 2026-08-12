@@ -1610,24 +1610,28 @@
     }
 
     /**
-     * SENTRI (passenger) and FAST (commercial) only — never Ready Lanes.
-     * Commercial filter: FAST only (Veterans / Los Indios) — never SENTRI open counts.
+     * SENTRI / FAST column content:
+     *  - Veterans: SENTRI only (label + wait + open when known)
+     *  - Commercial filter: FAST only (Los Indios / Veterans)
+     *  - Otherwise: SENTRI or FAST, never Ready
      */
     function bestTrusted(port) {
       const commercialOnly = currentFilter === "commercial";
       const passengerOnly = currentFilter === "passenger";
+      const veteransOnlySentri = isVeteransPort(port) && !commercialOnly;
 
       let trusted = null;
       let pending = null;
       for (const sec of port.sections) {
         for (const lane of sec.lanes) {
           if (/ready/i.test(lane.name)) continue;
-          if (commercialOnly) {
+          if (veteransOnlySentri) {
+            if (!/sentri/i.test(lane.name)) continue;
+          } else if (commercialOnly) {
             if (!/fast/i.test(lane.name)) continue;
           } else if (passengerOnly) {
             if (!/sentri/i.test(lane.name)) continue;
           } else {
-            // All filter: SENTRI or FAST
             if (!/sentri|fast/i.test(lane.name)) continue;
           }
           if (isActiveWait(lane.wait)) {
@@ -1640,27 +1644,34 @@
         }
       }
       const pick = trusted || pending;
+
+      // Veterans: SENTRI-only cell (All / Passenger filters)
+      if (veteransOnlySentri) {
+        const lane = pick && pick.lane;
+        const wait = lane && lane.wait;
+        const n = (wait && wait.lanesOpenCount != null)
+          ? wait.lanesOpenCount
+          : veteransSentriOpenCount(port);
+        const main = wait && isActiveWait(wait)
+          ? waitCellHtml(wait)
+          : wait && wait.pending
+            ? waitCellHtml(wait)
+            : `<span class="wait-empty">—</span>`;
+        let sub = `<span class="tag">SENTRI</span>`;
+        if (n != null && n > 0) sub += ` ${n} open`;
+        else if (wait && wait.lanesOpen === "Closed") sub += ` closed`;
+        else if (n === 0) sub += ` closed`;
+        return {
+          html: `${main}<span class="wait-extra">${sub}</span>`,
+          cls: wait && isActiveWait(wait) ? "has-" + wait.cls : (wait && wait.pending ? "has-pending" : "")
+        };
+      }
+
       if (!pick) {
-        // Veterans SENTRI open only when not on Commercial filter (SENTRI is passenger)
-        if (!commercialOnly && isVeteransPort(port)) {
-          const n = veteransSentriOpenCount(port);
-          if (n != null) {
-            return {
-              html: `<span class="wait-empty">—</span><span class="wait-extra"><span class="tag">SENTRI</span> ${n} open</span>`,
-              cls: ""
-            };
-          }
-        }
         return { html: `<span class="wait-empty">—</span>`, cls: "" };
       }
-      const short = pick.lane.name.replace(/\s*Lane$/i, "");
-      const context = /fast/i.test(pick.lane.name)
-        ? "Commercial"
-        : /sentri/i.test(pick.lane.name)
-          ? "Passenger"
-          : pick.sectionTitle;
 
-      // Commercial filter: FAST only (Veterans / Los Indios) — never SENTRI; never show "0 open"
+      // Commercial filter: FAST only — never SENTRI; never show "0 open"
       if (commercialOnly) {
         const n = pick.lane.wait.lanesOpenCount;
         const closed = pick.lane.wait.lanesOpen === "Closed";
@@ -1668,14 +1679,12 @@
         if (n != null && n > 0) {
           sub = `<span class="tag">FAST</span> ${n} open`;
         } else if (closed || n === 0) {
-          // Concise: no "0 open"
           sub = `<span class="tag">FAST</span> closed`;
         } else if (pick.lane.wait.pending) {
           sub = `<span class="tag">FAST</span> pending`;
         } else {
           sub = `<span class="tag">FAST</span>`;
         }
-        // Prefer wait minutes when available; otherwise just the FAST status line
         const main = isActiveWait(pick.lane.wait)
           ? waitCellHtml(pick.lane.wait)
           : `<span class="wait-empty">—</span>`;
@@ -1685,16 +1694,13 @@
         };
       }
 
-      let extra = `<span class="tag">${escapeHtml(short)}</span> · ${escapeHtml(context)}`;
-      // Veterans SENTRI open count (All / Passenger only — not Commercial)
-      if (isVeteransPort(port) && /sentri/i.test(pick.lane.name)) {
-        const n = pick.lane.wait.lanesOpenCount != null
-          ? pick.lane.wait.lanesOpenCount
-          : veteransSentriOpenCount(port);
-        if (n != null) {
-          extra = `<span class="tag">SENTRI</span> ${n} open`;
-        }
-      }
+      const short = pick.lane.name.replace(/\s*Lane$/i, "");
+      const context = /fast/i.test(pick.lane.name)
+        ? "Commercial"
+        : /sentri/i.test(pick.lane.name)
+          ? "Passenger"
+          : pick.sectionTitle;
+      const extra = `<span class="tag">${escapeHtml(short)}</span> · ${escapeHtml(context)}`;
       return {
         html: `${waitCellHtml(pick.lane.wait)}<span class="wait-extra">${extra}</span>`,
         cls: "has-" + pick.lane.wait.cls
