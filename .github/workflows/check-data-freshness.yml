@@ -6,8 +6,9 @@ on:
     - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
 
-# Fails the job when the live site is behind CBP by ~1+ hour.
-# Enable GitHub email: Settings → Notifications → Actions (Failed workflows)
+# Compares live CBP vs GitHub Pages mirror (backup). The live page prefers the
+# Cloudflare Worker; this alarm keeps the Actions mirror honest.
+# On lag: auto-run Update workflow, wait, re-check. Email only if still lagging.
 
 permissions:
   contents: read
@@ -26,6 +27,7 @@ jobs:
         env:
           CBP_URL: "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43"
           SITE_URL: "https://eliseocab.github.io/brownsville-wait-times/data/bwt.xml"
+          WORKER_URL: "https://brownsville-bwt.borderwait.workers.dev/?fresh=1"
           # Alert if site lags CBP by this many minutes (one CBP hour + small buffer)
           MAX_LAG_MINUTES: "75"
         run: |
@@ -33,6 +35,8 @@ jobs:
 
           curl -fsSL "$CBP_URL" -o /tmp/cbp.xml
           curl -fsSL "$SITE_URL" -o /tmp/site.xml
+          # Best-effort: worker is primary for the open page (not required for pass/fail)
+          curl -fsSL --max-time 20 "$WORKER_URL" -o /tmp/worker.xml || true
 
           python3 <<'PY'
           import os, re, sys
@@ -42,8 +46,11 @@ jobs:
           max_lag = int(os.environ.get("MAX_LAG_MINUTES", "75"))
 
           def read(path):
-              with open(path, "r", encoding="utf-8", errors="replace") as f:
-                  return f.read()
+              try:
+                  with open(path, "r", encoding="utf-8", errors="replace") as f:
+                      return f.read()
+              except FileNotFoundError:
+                  return ""
 
           def channel_pubdate(xml: str):
               m = re.search(r"<pubDate>\s*([^<]+?)\s*</pubDate>", xml, re.I)
@@ -58,8 +65,7 @@ jobs:
                   return None
 
           def report_stamps(xml: str):
-              """Parse CBP 'At 3:00 pm CDT' style stamps into comparable UTC datetimes (today/yesterday)."""
-              # Use channel date if present for the calendar day
+              """Parse CBP 'At 3:00 pm CDT' style stamps into comparable UTC datetimes."""
               day = None
               dm = re.search(r"Date:\s*(\d{1,2})/(\d{1,2})/(\d{4})", xml)
               if dm:
@@ -82,7 +88,6 @@ jobs:
                       y, mo, d = day
                       local = datetime(y, mo, d, hour, minute, tzinfo=timezone(timedelta(hours=-5)))
                   else:
-                      # Fall back to today in CDT
                       now_cdt = datetime.now(timezone(timedelta(hours=-5)))
                       local = now_cdt.replace(hour=hour, minute=minute, second=0, microsecond=0)
                   stamps.append(local.astimezone(timezone.utc))
@@ -99,68 +104,246 @@ jobs:
               has_delay = bool(re.search(r"\d+\s*min\s*delay", xml, re.I))
               return has_pending and not has_delay
 
+          def lag_minutes(cbp_t, site_t):
+              if cbp_t is None or site_t is None:
+                  return None
+              return (cbp_t - site_t).total_seconds() / 60.0
+
           cbp = read("/tmp/cbp.xml")
           site = read("/tmp/site.xml")
+          worker = read("/tmp/worker.xml")
 
           cbp_pending = pending_only(cbp)
           site_pending = pending_only(site)
 
           cbp_t = newest_stamp(cbp)
           site_t = newest_stamp(site)
+          worker_t = newest_stamp(worker) if worker else None
 
-          print("=== Lag check ===")
-          print(f"CBP newest report:  {cbp_t}")
-          print(f"Site newest report: {site_t}")
-          print(f"CBP pending-only:   {cbp_pending}")
-          print(f"Site pending-only:  {site_pending}")
-          print(f"Max allowed lag:    {max_lag} minutes")
+          print("=== Lag check (GitHub Pages mirror) ===")
+          print(f"CBP newest report:     {cbp_t}")
+          print(f"Site newest report:    {site_t}")
+          print(f"Worker newest report:  {worker_t}")
+          print(f"CBP pending-only:      {cbp_pending}")
+          print(f"Site pending-only:     {site_pending}")
+          print(f"Max allowed lag:       {max_lag} minutes")
+
+          out_path = os.environ["GITHUB_OUTPUT"]
+
+          def write_out(**kwargs):
+              with open(out_path, "a") as out:
+                  for k, v in kwargs.items():
+                      out.write(f"{k}={v}\n")
 
           # Both pending: not treated as lag (CBP itself has no times)
           if cbp_pending and site_pending:
               print("OK: both CBP and site are Update Pending.")
+              write_out(lagging="false", reason="pending")
               sys.exit(0)
 
           if cbp_t is None:
               print("WARN: could not parse CBP report time; skipping fail.")
+              write_out(lagging="false", reason="cbp_unparseable")
               sys.exit(0)
 
           if site_t is None:
-              print("FAIL: site feed has no parseable report time while CBP does.")
-              with open(os.environ["GITHUB_OUTPUT"], "a") as out:
-                  out.write("lagging=true\n")
-              sys.exit(1)
+              print("SITE STALE: site feed has no parseable report time while CBP does.")
+              write_out(lagging="true", reason="site_unparseable")
+              sys.exit(0)
 
-          lag = (cbp_t - site_t).total_seconds() / 60.0
-          print(f"Lag (CBP - site):   {lag:.1f} minutes")
+          lag = lag_minutes(cbp_t, site_t)
+          print(f"Lag (CBP - site):      {lag:.1f} minutes")
+          if worker_t is not None:
+              wlag = lag_minutes(cbp_t, worker_t)
+              print(f"Lag (CBP - worker):    {wlag:.1f} minutes")
 
           # Site ahead of CBP is fine (clock/parse noise)
-          if lag <= max_lag:
-              print("OK: site is fresh enough.")
-              with open(os.environ["GITHUB_OUTPUT"], "a") as out:
-                  out.write("lagging=false\n")
+          if lag is not None and lag <= max_lag:
+              print("OK: site mirror is fresh enough.")
+              write_out(lagging="false", reason="fresh", lag_minutes=str(int(lag)))
               sys.exit(0)
 
           print(
-              f"FAIL: site is lagging CBP by {lag:.0f} minutes "
-              f"(threshold {max_lag} min)."
+              f"STALE: site mirror is lagging CBP by {lag:.0f} minutes "
+              f"(threshold {max_lag} min). Will try auto-refresh."
           )
-          print("Action: run workflow 'Update CBP wait times' manually, or wait for the next scheduled run.")
-          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
-              out.write("lagging=true\n")
-              out.write(f"lag_minutes={int(lag)}\n")
-          sys.exit(1)
+          write_out(
+              lagging="true",
+              reason="behind",
+              lag_minutes=str(int(lag)),
+          )
+          # Do not fail yet — next steps self-heal, then re-check
+          sys.exit(0)
           PY
 
-      - name: Trigger data refresh when lagging
-        if: failure()
+      - name: Auto-refresh when mirror is lagging
+        if: steps.compare.outputs.lagging == 'true'
+        id: refresh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Lag detected — requesting Update CBP wait times…"
-          gh workflow run "Update CBP wait times" --repo "${{ github.repository }}" || true
-          echo "If email alerts are enabled, you should get a failure notification for this lag check."
+          set -euo pipefail
+          echo "Lag detected — starting Update CBP wait times…"
+          BEFORE_IDS=$(gh run list --repo "${{ github.repository }}" \
+            --workflow "Update CBP wait times" --limit 5 \
+            --json databaseId --jq '[.[].databaseId] | join(",")' 2>/dev/null || echo "")
+          gh workflow run "Update CBP wait times" --repo "${{ github.repository }}"
 
-      - name: How to get email alerts
-        if: failure()
+          # Wait for a *new* run id, then for it to finish (max ~6 min)
+          sleep 8
+          RUN_ID=""
+          for i in $(seq 1 24); do
+            # Prefer queued / in-progress
+            RUN_ID=$(gh run list --repo "${{ github.repository }}" \
+              --workflow "Update CBP wait times" --limit 5 \
+              --json databaseId,status \
+              --jq '[.[] | select(.status == "queued" or .status == "in_progress" or .status == "waiting")] | .[0].databaseId // empty' 2>/dev/null || true)
+            # Else newest id that was not already in the list before we triggered
+            if [ -z "$RUN_ID" ]; then
+              RUN_ID=$(gh run list --repo "${{ github.repository }}" \
+                --workflow "Update CBP wait times" --limit 5 \
+                --json databaseId \
+                --jq --arg before "$BEFORE_IDS" '
+                  def seen: ($before | split(","));
+                  [.[] | select(($before == "") or ((.databaseId | tostring) as $id | (seen | index($id) | not)))]
+                  | .[0].databaseId // empty
+                ' 2>/dev/null || true)
+            fi
+            if [ -n "$RUN_ID" ]; then
+              echo "Tracking run $RUN_ID"
+              break
+            fi
+            sleep 3
+          done
+
+          if [ -z "$RUN_ID" ]; then
+            echo "Could not find update run id"
+            echo "refreshed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Poll until completed or timeout
+          ok=0
+          for i in $(seq 1 36); do
+            status=$(gh run view "$RUN_ID" --repo "${{ github.repository }}" \
+              --json status,conclusion --jq '"\(.status) \(.conclusion // "")"' 2>/dev/null || echo "unknown")
+            echo "  [$i] $status"
+            case "$status" in
+              completed\ success)
+                ok=1
+                break
+                ;;
+              completed\ *)
+                echo "Update run finished with: $status"
+                break
+                ;;
+            esac
+            sleep 10
+          done
+
+          if [ "$ok" = "1" ]; then
+            echo "refreshed=true" >> "$GITHUB_OUTPUT"
+            # Pages CDN can lag a few seconds after deploy
+            sleep 15
+          else
+            echo "refreshed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Re-check site after auto-refresh
+        if: steps.compare.outputs.lagging == 'true'
+        id: recheck
+        env:
+          CBP_URL: "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43"
+          SITE_URL: "https://eliseocab.github.io/brownsville-wait-times/data/bwt.xml"
+          MAX_LAG_MINUTES: "75"
         run: |
-          echo "::notice::Lag check failed. Enable email: GitHub avatar → Settings → Notifications → Actions → 'Send notifications for failed workflows only' (or similar)."
+          set -euo pipefail
+          curl -fsSL "$CBP_URL" -o /tmp/cbp2.xml
+          # Bust any intermediary caches
+          curl -fsSL "${SITE_URL}?t=$(date +%s)" -o /tmp/site2.xml || curl -fsSL "$SITE_URL" -o /tmp/site2.xml
+
+          python3 <<'PY'
+          import os, re, sys
+          from datetime import datetime, timezone, timedelta
+          from email.utils import parsedate_to_datetime
+
+          max_lag = int(os.environ.get("MAX_LAG_MINUTES", "75"))
+
+          def read(path):
+              with open(path, "r", encoding="utf-8", errors="replace") as f:
+                  return f.read()
+
+          def newest_stamp(xml: str):
+              day = None
+              dm = re.search(r"Date:\s*(\d{1,2})/(\d{1,2})/(\d{4})", xml)
+              if dm:
+                  day = (int(dm.group(3)), int(dm.group(1)), int(dm.group(2)))
+              stamps = []
+              for m in re.finditer(r"At\s+(\d{1,2}):(\d{2})\s*(am|pm)\s*CDT", xml, re.I):
+                  hour = int(m.group(1)) % 12
+                  minute = int(m.group(2))
+                  if m.group(3).lower() == "pm":
+                      hour += 12
+                  if day:
+                      y, mo, d = day
+                      local = datetime(y, mo, d, hour, minute, tzinfo=timezone(timedelta(hours=-5)))
+                  else:
+                      now_cdt = datetime.now(timezone(timedelta(hours=-5)))
+                      local = now_cdt.replace(hour=hour, minute=minute, second=0, microsecond=0)
+                  stamps.append(local.astimezone(timezone.utc))
+              if stamps:
+                  return max(stamps)
+              m = re.search(r"<pubDate>\s*([^<]+?)\s*</pubDate>", xml, re.I)
+              if not m:
+                  return None
+              try:
+                  dt = parsedate_to_datetime(m.group(1).strip())
+                  if dt.tzinfo is None:
+                      dt = dt.replace(tzinfo=timezone.utc)
+                  return dt.astimezone(timezone.utc)
+              except Exception:
+                  return None
+
+          cbp_t = newest_stamp(read("/tmp/cbp2.xml"))
+          site_t = newest_stamp(read("/tmp/site2.xml"))
+          print("=== Re-check after auto-refresh ===")
+          print(f"CBP newest report:  {cbp_t}")
+          print(f"Site newest report: {site_t}")
+
+          out_path = os.environ["GITHUB_OUTPUT"]
+          if cbp_t is None or site_t is None:
+              print("Still cannot parse times after refresh.")
+              with open(out_path, "a") as out:
+                  out.write("still_lagging=true\n")
+              sys.exit(0)
+
+          lag = (cbp_t - site_t).total_seconds() / 60.0
+          print(f"Lag (CBP - site):   {lag:.1f} minutes")
+          with open(out_path, "a") as out:
+              if lag <= max_lag:
+                  out.write("still_lagging=false\n")
+                  out.write(f"lag_minutes={int(lag)}\n")
+                  print("OK: mirror recovered after auto-refresh.")
+              else:
+                  out.write("still_lagging=true\n")
+                  out.write(f"lag_minutes={int(lag)}\n")
+                  print("STILL STALE after auto-refresh.")
+          PY
+
+      - name: Pass if mirror was fine or recovered
+        if: steps.compare.outputs.lagging != 'true' || steps.recheck.outputs.still_lagging == 'false'
+        run: |
+          if [ "${{ steps.compare.outputs.lagging }}" = "true" ]; then
+            echo "Self-healed: mirror was lagging (~${{ steps.compare.outputs.lag_minutes }} min) but Update CBP wait times fixed it."
+            echo "::notice::Mirror was behind CBP; auto-refresh recovered. No action needed."
+          else
+            echo "Mirror is fresh (lag ~${{ steps.compare.outputs.lag_minutes }} min)."
+          fi
+
+      - name: Fail only if still lagging after auto-refresh
+        if: steps.compare.outputs.lagging == 'true' && steps.recheck.outputs.still_lagging == 'true'
+        run: |
+          echo "::error::GitHub Pages data/bwt.xml is still ~${{ steps.recheck.outputs.lag_minutes || steps.compare.outputs.lag_minutes }} minutes behind CBP after auto-refresh."
+          echo "Manual fix: Actions → Update CBP wait times → Run workflow"
+          echo "Note: the live page may still be OK via Cloudflare Worker (Live · CBP proxy)."
+          exit 1

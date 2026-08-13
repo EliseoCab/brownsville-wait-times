@@ -2,10 +2,13 @@ name: Update CBP wait times
 
 on:
   schedule:
-    # Multiple times per hour (GitHub often delays dense */5 crons)
-    - cron: "3,18,33,48 * * * *"
-    - cron: "8,23,38,53 * * * *"
+    # Single expression is more reliable than dual dense crons on free runners
+    # (GitHub may delay or skip schedules under load — lag check self-heals)
+    - cron: "*/10 * * * *"
   workflow_dispatch:
+  # Allow lag-check / external cron to kick a run without sharing the schedule queue
+  repository_dispatch:
+    types: [refresh-bwt]
 
 # Always fetch CBP + deploy Pages in the same job.
 # GITHUB_TOKEN pushes do not trigger other workflows.
@@ -15,8 +18,9 @@ permissions:
   pages: write
   id-token: write
 
+# Own group so a code-only Pages deploy cannot queue/block data refresh for hours
 concurrency:
-  group: pages-deploy
+  group: bwt-update
   cancel-in-progress: false
 
 jobs:

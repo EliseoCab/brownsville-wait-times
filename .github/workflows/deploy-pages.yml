@@ -15,8 +15,9 @@ permissions:
   pages: write
   id-token: write
 
+# Separate from bwt-update so data refreshes are not queued behind code deploys
 concurrency:
-  group: pages-deploy
+  group: pages-code-deploy
   cancel-in-progress: false
 
 jobs:
