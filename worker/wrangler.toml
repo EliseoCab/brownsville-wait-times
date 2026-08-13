@@ -1,0 +1,17 @@
+# Cloudflare Worker — live CBP RSS proxy for the GitHub Pages site
+# Docs: https://developers.cloudflare.com/workers/
+#
+# First-time setup:
+#   1. Create a free Cloudflare account: https://dash.cloudflare.com/sign-up
+#   2. cd worker && npm install
+#   3. npx wrangler login
+#   4. npx wrangler deploy
+#   5. Copy the workers.dev URL into index.html → FEED_PROXY_URL
+
+name = "brownsville-bwt"
+main = "src/index.js"
+compatibility_date = "2025-08-01"
+
+# Warm the edge cache about every 5 minutes (free plan supports cron triggers)
+[triggers]
+crons = ["*/5 * * * *"]

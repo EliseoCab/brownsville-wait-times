@@ -1419,8 +1419,15 @@
 
   <script>
     const FEED_URL = "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43";
-    // Same-origin mirror updated by GitHub Actions (avoids CBP CORS on GitHub Pages)
+    // Same-origin mirror updated by GitHub Actions (backup if the Worker is down)
     const LOCAL_FEED_URL = "data/bwt.xml";
+    /**
+     * Hybrid primary: your Cloudflare Worker (see worker/README.md).
+     * After `cd worker && npx wrangler deploy`, paste the workers.dev URL here.
+     * Leave "" until deployed — the page will use free proxies + GitHub mirror.
+     * Example: "https://brownsville-bwt.YOUR_SUBDOMAIN.workers.dev"
+     */
+    const FEED_PROXY_URL = "";
 
     const PORT_META = {
       "Brownsville - B&M": {
@@ -2399,11 +2406,22 @@
     }
 
     function dataSources() {
-      // Prefer true live CBP so Refresh / auto-refresh do not wait on GitHub Actions.
-      // Browsers block direct CBP (CORS) → try open proxies first, static mirrors last.
-      const sources = [
+      // Hybrid path (most → least preferred):
+      // 1) Your Cloudflare Worker → live CBP XML + CORS
+      // 2) Public CORS proxies (temporary until Worker is set / if Worker is down)
+      // 3) Direct CBP (usually blocked by CORS in browsers)
+      // 4) GitHub Pages / raw mirror from Actions (always works, may lag)
+      const sources = [];
+
+      if (FEED_PROXY_URL && String(FEED_PROXY_URL).trim()) {
+        sources.push({
+          url: String(FEED_PROXY_URL).replace(/\/$/, ""),
+          label: "Live · CBP proxy"
+        });
+      }
+
+      sources.push(
         {
-          // Open CORS proxy that currently returns the full CBP RSS
           url: "https://proxy.cors.sh/" + FEED_URL,
           label: "Live · CBP"
         },
@@ -2420,7 +2438,8 @@
           url: FEED_URL,
           label: "Live · CBP direct"
         }
-      ];
+      );
+
       try {
         sources.push({
           url: new URL(LOCAL_FEED_URL, location.href).href,

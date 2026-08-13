@@ -11,17 +11,49 @@ A clean viewer for CBP border wait times at Brownsville, Texas bridges:
 
 **https://eliseocab.github.io/brownsville-wait-times/**
 
-## How data stays fresh
+## How data stays fresh (hybrid)
 
-Browsers cannot always call `bwt.cbp.gov` directly (CORS). This repo:
+Browsers cannot call `bwt.cbp.gov` directly (**CORS**). This project uses two layers:
 
-1. Stores a mirror of the CBP RSS feed in [`data/bwt.xml`](data/bwt.xml)
-2. **Update CBP wait times** workflow fetches CBP and deploys Pages about every **5 minutes**
-3. Serves the page from the same origin so the table loads reliably
+| Priority | Source | Role |
+|----------|--------|------|
+| **1** | **Cloudflare Worker** ([`worker/`](worker/)) | Live CBP XML with CORS + ~2 min edge cache + 5‑min cron warm |
+| **2** | Public CORS proxies | Temporary fallback |
+| **3** | **GitHub Actions** → [`data/bwt.xml`](data/bwt.xml) | Same-origin mirror on Pages (backup / first paint) |
 
-Manual refresh anytime:
+```text
+Browser  →  Cloudflare Worker  →  bwt.cbp.gov RSS
+   │
+   └────→  GitHub Pages data/bwt.xml  (Actions backup)
+```
 
-**Actions → Update CBP wait times → Run workflow**
+### One-time: deploy the Worker (recommended)
+
+Full steps: **[worker/README.md](worker/README.md)**
+
+```bash
+cd worker
+npm install
+npx wrangler login
+npx wrangler deploy
+```
+
+Then set the printed `*.workers.dev` URL in `index.html`:
+
+```js
+const FEED_PROXY_URL = "https://brownsville-bwt.YOUR_SUBDOMAIN.workers.dev";
+```
+
+Commit & push. After deploy, **Refresh times** should show **Live · CBP proxy**.
+
+### GitHub Actions backup
+
+Workflow **Update CBP wait times**:
+
+- Fetches the same CBP RSS and deploys Pages on a schedule (~every 15 min, dual crons)
+- Manual: **Actions → Update CBP wait times → Run workflow**
+
+This keeps `data/bwt.xml` usable if the Worker is down or not configured yet.
 
 ## Lag check (email alarm)
 
@@ -56,5 +88,8 @@ python3 -m http.server 8080
 ## Source
 
 Official data: [bwt.cbp.gov](https://bwt.cbp.gov)
+
+Raw RSS (Brownsville ports):  
+https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43
 
 This project is an independent public-data viewer and is **not** affiliated with CBP or DHS.
