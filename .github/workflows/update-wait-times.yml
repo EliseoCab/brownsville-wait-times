@@ -2,8 +2,9 @@ name: Update CBP wait times
 
 on:
   schedule:
-    # Every 5 minutes (GitHub may delay a few min) (GitHub cron can lag a few minutes)
-    - cron: "*/5 * * * *"
+    # Multiple times per hour (GitHub often delays dense */5 crons)
+    - cron: "3,18,33,48 * * * *"
+    - cron: "8,23,38,53 * * * *"
   workflow_dispatch:
 
 # Always fetch CBP + deploy Pages in the same job.
@@ -30,11 +31,28 @@ jobs:
 
       - name: Fetch CBP Brownsville feed
         run: |
+          set -euo pipefail
           mkdir -p data
-          curl -fsSL \
-            "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43" \
-            -o data/bwt.xml
-          grep -q "<item>" data/bwt.xml
+          # Retry CBP a few times (occasional blips)
+          ok=0
+          for i in 1 2 3 4 5; do
+            if curl -fsSL --retry 2 --retry-delay 2 \
+              "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43" \
+              -o data/bwt.xml; then
+              if grep -q "<item>" data/bwt.xml; then
+                ok=1
+                break
+              fi
+            fi
+            echo "Attempt $i failed; retrying…"
+            sleep 3
+          done
+          if [ "$ok" != "1" ]; then
+            echo "Failed to fetch a valid CBP feed"
+            exit 1
+          fi
+          # Touch a stamp so deploys are easy to audit
+          date -u +"%Y-%m-%dT%H:%M:%SZ" > data/last-fetch.txt
           echo "Feed size: $(wc -c < data/bwt.xml) bytes"
           echo "pubDate: $(grep -o '<pubDate>[^<]*' data/bwt.xml | head -1)"
           echo "Sample times:"
@@ -44,7 +62,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/bwt.xml
+          git add data/bwt.xml data/last-fetch.txt
           if git diff --staged --quiet; then
             echo "No wait-time file changes to commit."
           else
@@ -55,13 +73,14 @@ jobs:
 
       - name: Stage site files (always use freshly fetched feed)
         run: |
-          mkdir -p _site
-          cp index.html README.md _site/
           mkdir -p _site/data
+          cp index.html README.md _site/
           cp data/bwt.xml _site/data/bwt.xml
+          cp data/last-fetch.txt _site/data/last-fetch.txt 2>/dev/null || true
           touch _site/.nojekyll
           echo "Deploying feed:"
           grep -o '<pubDate>[^<]*' _site/data/bwt.xml | head -1
+          grep -oE 'At [0-9:]+ [ap]m CDT' _site/data/bwt.xml | sort | uniq -c | head -5
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

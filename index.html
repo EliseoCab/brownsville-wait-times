@@ -1361,7 +1361,7 @@
     <div class="alert" id="alertBox" role="status"></div>
 
     <div class="refresh-meta">
-      <span class="auto-badge" title="Checks the CBP feed at 5 minutes past each hour (e.g. 1:05, 2:05)">Auto-refresh · :05 past the hour</span>
+      <span class="auto-badge" title="While this tab is open, re-checks live CBP about every 12 minutes">Auto-refresh · every ~12 min</span>
       <span>Next check in <strong id="nextRefreshInline">—</strong></span>
       <span class="dot" aria-hidden="true">·</span>
       <span>Active waits only (N/A &amp; closed hidden)</span>
@@ -1464,20 +1464,12 @@
       return w && (w.minutes != null || w.pending);
     }
 
-    /** Next clock time at :05 past the hour (CBP updates ~hourly). */
-    function getNextHourlyRefreshAt() {
-      const d = new Date();
-      const next = new Date(d);
-      next.setSeconds(0, 0);
-      if (d.getMinutes() < 5) {
-        // Before :05 this hour → refresh at this hour's :05
-        next.setMinutes(5);
-      } else {
-        // At or after :05 → next hour's :05
-        next.setHours(next.getHours() + 1);
-        next.setMinutes(5);
-      }
-      return next.getTime();
+    // While the tab is open, re-check live CBP about every 12 minutes
+    const CLIENT_REFRESH_MS = 12 * 60 * 1000;
+
+    /** Next client-side refresh (not tied only to :05 past the hour). */
+    function getNextClientRefreshAt() {
+      return Date.now() + CLIENT_REFRESH_MS;
     }
 
     function formatCountdown(msLeft) {
@@ -1522,14 +1514,14 @@
       if (refreshTimer) clearTimeout(refreshTimer);
       if (countdownTimer) clearInterval(countdownTimer);
 
-      nextRefreshAt = getNextHourlyRefreshAt();
+      nextRefreshAt = getNextClientRefreshAt();
       const delay = Math.max(1000, nextRefreshAt - Date.now());
 
       refreshTimer = setTimeout(() => {
         if (document.visibilityState === "visible") {
           loadData(true);
         } else {
-          // Tab hidden: reschedule for the following :05 without hammering
+          // Tab hidden: wait, then try again later
           scheduleAutoRefresh();
         }
       }, delay);
@@ -2383,23 +2375,31 @@
     }
 
     function dataSources() {
-      const sources = [];
-      // Same-origin mirror (GitHub Pages) — resolve against current page URL
+      // Prefer true live CBP first so Refresh / auto-refresh do not depend on GitHub lag.
+      // Browsers block direct CBP (CORS), so use public CORS proxies, then static mirrors.
+      const sources = [
+        {
+          url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(FEED_URL),
+          label: "Live · CBP"
+        },
+        {
+          url: "https://corsproxy.io/?" + encodeURIComponent(FEED_URL),
+          label: "Live · CBP"
+        },
+        {
+          url: FEED_URL,
+          label: "Live · CBP direct"
+        }
+      ];
       try {
         sources.push({
           url: new URL(LOCAL_FEED_URL, location.href).href,
-          label: "Live · CBP data mirror"
+          label: "Live · site mirror"
         });
       } catch (_) { /* ignore */ }
-      // Repo raw file (works when Pages artifact is stale or path differs)
       sources.push({
         url: "https://raw.githubusercontent.com/EliseoCab/brownsville-wait-times/main/data/bwt.xml",
-        label: "Live · GitHub data mirror"
-      });
-      // Direct CBP (often blocked by CORS in browsers)
-      sources.push({
-        url: FEED_URL,
-        label: "Live · CBP feed connected"
+        label: "Live · GitHub mirror"
       });
       return sources;
     }
