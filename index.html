@@ -1361,7 +1361,7 @@
     <div class="alert" id="alertBox" role="status"></div>
 
     <div class="refresh-meta">
-      <span class="auto-badge" title="While this tab is open, re-checks live CBP about every 12 minutes">Auto-refresh · every ~12 min</span>
+      <span class="auto-badge" title="While this tab is open, re-checks live CBP about every 5 minutes (not GitHub)">Auto-refresh · every ~5 min</span>
       <span>Next check in <strong id="nextRefreshInline">—</strong></span>
       <span class="dot" aria-hidden="true">·</span>
       <span>Active waits only (N/A &amp; closed hidden)</span>
@@ -1464,8 +1464,8 @@
       return w && (w.minutes != null || w.pending);
     }
 
-    // While the tab is open, re-check live CBP about every 12 minutes
-    const CLIENT_REFRESH_MS = 12 * 60 * 1000;
+    // While the tab is open, re-check live CBP (does not depend on GitHub Actions)
+    const CLIENT_REFRESH_MS = 5 * 60 * 1000;
 
     /** Next client-side refresh (not tied only to :05 past the hour). */
     function getNextClientRefreshAt() {
@@ -2359,32 +2359,62 @@
       renderPorts(data);
     }
 
-    async function fetchText(url) {
+    async function fetchText(url, options) {
+      options = options || {};
       const bust = url.includes("?") ? "&" : "?";
-      const res = await fetch(url + bust + "t=" + Date.now(), {
-        cache: "no-store",
-        credentials: "omit",
-        mode: "cors"
-      });
-      if (!res.ok) throw new Error("HTTP " + res.status + " for " + url);
-      const text = await res.text();
-      if (!text || !text.includes("<item>")) {
-        throw new Error("Invalid feed (no items) from " + url);
+      const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const timer = controller
+        ? setTimeout(function () { controller.abort(); }, options.timeoutMs || 12000)
+        : null;
+      try {
+        const res = await fetch(url + bust + "t=" + Date.now(), {
+          cache: "no-store",
+          credentials: "omit",
+          mode: "cors",
+          signal: controller ? controller.signal : undefined
+        });
+        if (!res.ok) throw new Error("HTTP " + res.status + " for " + url);
+        let text = await res.text();
+        // allorigins /get wraps the body: { contents: "<rss…>" }
+        if (
+          options.unwrap === "allorigins" ||
+          (text && text.trimStart().charAt(0) === "{" && text.indexOf('"contents"') !== -1)
+        ) {
+          try {
+            const j = JSON.parse(text);
+            if (j && typeof j.contents === "string") text = j.contents;
+          } catch (_) { /* keep raw text */ }
+        }
+        // Broken free proxies often return a marketing HTML page
+        if (text && /<html[\s>]/i.test(text) && text.indexOf("<item>") === -1) {
+          throw new Error("Proxy returned HTML, not RSS");
+        }
+        if (!text || text.indexOf("<item>") === -1) {
+          throw new Error("Invalid feed (no items) from " + url);
+        }
+        return text;
+      } finally {
+        if (timer) clearTimeout(timer);
       }
-      return text;
     }
 
     function dataSources() {
-      // Prefer true live CBP first so Refresh / auto-refresh do not depend on GitHub lag.
-      // Browsers block direct CBP (CORS), so use public CORS proxies, then static mirrors.
+      // Prefer true live CBP so Refresh / auto-refresh do not wait on GitHub Actions.
+      // Browsers block direct CBP (CORS) → try open proxies first, static mirrors last.
       const sources = [
+        {
+          // Open CORS proxy that currently returns the full CBP RSS
+          url: "https://proxy.cors.sh/" + FEED_URL,
+          label: "Live · CBP"
+        },
         {
           url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(FEED_URL),
           label: "Live · CBP"
         },
         {
-          url: "https://corsproxy.io/?" + encodeURIComponent(FEED_URL),
-          label: "Live · CBP"
+          url: "https://api.allorigins.win/get?url=" + encodeURIComponent(FEED_URL),
+          label: "Live · CBP",
+          unwrap: "allorigins"
         },
         {
           url: FEED_URL,
@@ -2394,12 +2424,12 @@
       try {
         sources.push({
           url: new URL(LOCAL_FEED_URL, location.href).href,
-          label: "Live · site mirror"
+          label: "Cached · site mirror"
         });
       } catch (_) { /* ignore */ }
       sources.push({
         url: "https://raw.githubusercontent.com/EliseoCab/brownsville-wait-times/main/data/bwt.xml",
-        label: "Live · GitHub mirror"
+        label: "Cached · GitHub mirror"
       });
       return sources;
     }
@@ -2485,7 +2515,10 @@
 
       for (const src of dataSources()) {
         try {
-          const text = await fetchText(src.url);
+          const text = await fetchText(src.url, {
+            unwrap: src.unwrap,
+            timeoutMs: 12000
+          });
           let data;
           try {
             data = parseRss(text);
