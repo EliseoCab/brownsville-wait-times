@@ -2,14 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(location.search);
+        var qLang = params.get("lang");
+        if (qLang === "es" || qLang === "en") localStorage.setItem("bwt-lang", qLang);
+        var qTheme = params.get("theme");
+        if (qTheme === "light" || qTheme === "dark") localStorage.setItem("bwt-theme", qTheme);
+        var lang = localStorage.getItem("bwt-lang");
+        if (lang === "es" || lang === "en") document.documentElement.lang = lang;
+        var theme = localStorage.getItem("bwt-theme");
+        if (theme !== "light" && theme !== "dark") {
+          theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) { /* private mode */ }
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1f3a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Brownsville Wait" />
   <meta name="description" content="Live Brownsville Port of Entry wait times for B&amp;M, Gateway, Los Indios, and Veterans International bridges. Plan your border crossing with clear CBP estimates." />
   <meta property="og:title" content="Brownsville Port of Entry · Wait Times" />
   <meta property="og:description" content="Live CBP wait times for B&amp;M, Gateway, Los Indios, and Veterans International bridges." />
   <meta property="og:url" content="https://eliseocab.github.io/brownsville-wait-times/" />
   <meta property="og:type" content="website" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1f3a'/%3E%3Ccircle cx='16' cy='16' r='5.5' fill='%230ea5e9'/%3E%3C/svg%3E" />
   <title>Brownsville Port of Entry · Wait Times</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -17,6 +39,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <style>
     :root {
+      color-scheme: light;
       --ink: #0c1222;
       --ink-soft: #1a2744;
       --slate: #334155;
@@ -46,6 +69,27 @@
       --radius-sm: 10px;
       --font: "DM Sans", system-ui, -apple-system, sans-serif;
       --display: "Instrument Serif", Georgia, serif;
+    }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --ink: #e8eef7;
+      --ink-soft: #d5deea;
+      --slate: #b4c0d0;
+      --muted: #8b9bb0;
+      --line: #2a3a52;
+      --line-soft: #1c2839;
+      --paper: #0a1220;
+      --white: #121c2e;
+      --navy: #07101c;
+      --navy-mid: #0d1f38;
+      --green-bg: #052e22;
+      --amber-bg: #2a1f08;
+      --orange-bg: #2a1408;
+      --red-bg: #2a0b0b;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.45);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -110,6 +154,52 @@
       font-weight: 600;
     }
     .topbar a:hover { color: #fff; text-decoration: underline; }
+    .topbar-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .seg {
+      display: inline-flex;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .seg button {
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.72);
+      font-family: inherit;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      padding: 0.22rem 0.55rem;
+      cursor: pointer;
+      min-height: 28px;
+    }
+    .seg button:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+    .seg button.active {
+      background: rgba(255, 255, 255, 0.16);
+      color: #fff;
+    }
+    .icon-btn {
+      appearance: none;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: transparent;
+      color: #fff;
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: inline-grid;
+      place-items: center;
+      cursor: pointer;
+      padding: 0;
+    }
+    .icon-btn:hover { background: rgba(255, 255, 255, 0.12); }
+    .icon-btn .icon-sun { display: none; }
+    html[data-theme="dark"] .icon-btn .icon-moon { display: none; }
+    html[data-theme="dark"] .icon-btn .icon-sun { display: block; }
 
     /* ——— Hero ——— */
     .hero {
@@ -159,6 +249,7 @@
       margin-bottom: 0.85rem;
       white-space: nowrap;
     }
+    html[lang="es"] .hero h1 { white-space: normal; }
     .hero-lead {
       font-size: clamp(1rem, 2vw, 1.125rem);
       color: rgba(226, 232, 240, 0.9);
@@ -177,6 +268,39 @@
       gap: 0.65rem 0.85rem;
       margin: 0 0 0.85rem;
       position: relative;
+    }
+    .best-pick {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.3rem 0.75rem;
+      margin: -0.35rem 0 1.15rem;
+      padding: 0.85rem 1.1rem;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .best-pick[hidden] { display: none !important; }
+    .best-pick-kicker {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--teal);
+    }
+    .best-pick-text {
+      font-size: 1.05rem;
+      font-weight: 750;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .btn-share,
+    .btn-install {
+      min-height: 44px;
+      white-space: nowrap;
     }
     .btn-refresh {
       box-shadow: var(--shadow-sm);
@@ -321,7 +445,7 @@
     @media (max-width: 900px) {
       .summary { grid-template-columns: repeat(2, 1fr); }
     }
-    @media (max-width: 420px) {
+    @media (max-width: 560px) {
       .summary { grid-template-columns: 1fr; }
     }
     .stat-card {
@@ -338,6 +462,8 @@
       text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 0.35rem;
+      line-height: 1.3;
+      overflow-wrap: anywhere;
     }
     .stat-card .stat {
       font-size: clamp(2rem, 4vw, 2.5rem);
@@ -371,7 +497,7 @@
       letter-spacing: -0.02em;
       color: var(--ink);
     }
-    .section-title span {
+    .section-title .section-sub {
       display: block;
       font-size: 0.85rem;
       font-weight: 500;
@@ -818,17 +944,37 @@
         font-size: clamp(1.35rem, 6.5vw, 2rem);
         white-space: nowrap;
       }
+      html[lang="es"] .hero h1 { white-space: normal; }
       .hero-lead {
         font-size: 0.95rem;
         max-width: none;
       }
+      .best-pick {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem 0.75rem;
+      }
       .refresh-row {
         width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
       }
       .refresh-row .btn-refresh {
+        grid-column: 1 / -1;
         width: 100%;
         justify-content: center;
         min-height: 44px;
+      }
+      .refresh-row .btn-share,
+      .refresh-row .btn-install {
+        width: 100%;
+        justify-content: center;
+      }
+      .refresh-row .btn-share { grid-column: 1 / -1; }
+      .refresh-row:has(.btn-install:not([hidden])) .btn-share { grid-column: 1; }
+      .refresh-row .btn-install:not([hidden]) { grid-column: 2; }
+      .refresh-row .refresh-toast {
+        grid-column: 1 / -1;
       }
       .hero-meta {
         grid-template-columns: 1fr 1fr;
@@ -1129,9 +1275,8 @@
       }
     }
 
-    @media (max-width: 380px) {
+    @media (max-width: 560px) {
       .hero-meta { grid-template-columns: 1fr; }
-      .summary { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 640px) {
@@ -1303,6 +1448,39 @@
       font-size: 0.95rem;
     }
 
+    html[data-theme="dark"] .wait-table tbody tr:hover { background: #182338; }
+    html[data-theme="dark"] .wait-table td.wait-col.has-low { background: rgba(5, 46, 34, 0.55); }
+    html[data-theme="dark"] .wait-table td.wait-col.has-med { background: rgba(42, 31, 8, 0.55); }
+    html[data-theme="dark"] .wait-table td.wait-col.has-high { background: rgba(42, 20, 8, 0.55); }
+    html[data-theme="dark"] .wait-table td.wait-col.has-severe { background: rgba(42, 11, 11, 0.55); }
+    html[data-theme="dark"] .wait-table td.wait-col.has-pending { background: #2a1f08; }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-low {
+      background: linear-gradient(180deg, #0b2a1d 0%, var(--white) 70%);
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-med {
+      background: linear-gradient(180deg, #2a1f08 0%, var(--white) 70%);
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-high {
+      background: linear-gradient(180deg, #2a1408 0%, var(--white) 70%);
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-severe {
+      background: linear-gradient(180deg, #2a0b0b 0%, var(--white) 70%);
+    }
+    html[data-theme="dark"] .notice {
+      background: linear-gradient(135deg, #13233d, #102030);
+      border-color: #1e3a5f;
+      color: #d6e4f5;
+    }
+    html[data-theme="dark"] .auto-badge {
+      background: #0b2a3d;
+      border-color: #164e63;
+      color: #7dd3fc;
+    }
+    html[data-theme="dark"] .m-wait-block.has-low { background: rgba(5, 46, 34, 0.7); }
+    html[data-theme="dark"] .m-wait-block.has-med { background: rgba(42, 31, 8, 0.75); }
+    html[data-theme="dark"] .m-wait-block.has-high { background: rgba(42, 20, 8, 0.75); }
+    html[data-theme="dark"] .m-wait-block.has-severe { background: rgba(42, 11, 11, 0.75); }
+
     @media (prefers-reduced-motion: reduce) {
       .pulse { animation: none; }
     }
@@ -1313,26 +1491,39 @@
     <div class="topbar-inner">
       <div class="topbar-live">
         <span class="pulse" id="livePulse" aria-hidden="true"></span>
-        <span id="liveLabel">Checking CBP feed…</span>
+        <span id="liveLabel" data-i18n="checkingFeed">Checking CBP feed…</span>
       </div>
-      <div>
-        Official CBP data ·
-        <a href="https://bwt.cbp.gov" target="_blank" rel="noopener">bwt.cbp.gov</a>
+      <div class="topbar-controls">
+        <span><span data-i18n="officialData">Official CBP data</span> ·
+        <a href="https://bwt.cbp.gov" target="_blank" rel="noopener">bwt.cbp.gov</a></span>
+        <div class="seg" role="group" aria-label="Language">
+          <button type="button" id="langEn" class="active" onclick="setLang('en')" lang="en">EN</button>
+          <button type="button" id="langEs" onclick="setLang('es')" lang="es">ES</button>
+        </div>
+        <button type="button" class="icon-btn" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle color theme">
+          <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          </svg>
+          <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
       </div>
     </div>
   </div>
 
   <header class="hero">
     <div class="hero-inner">
-      <div class="eyebrow">U.S. – Mexico Land Border · Texas</div>
-      <h1>Brownsville Port of Entry</h1>
+      <div class="eyebrow" data-i18n="eyebrow">U.S. – Mexico Land Border · Texas</div>
+      <h1 data-i18n="heroTitle">Brownsville Port of Entry</h1>
       <div class="hero-meta">
         <div class="meta-chip">
-          <div class="label">Last checked</div>
+          <div class="label" data-i18n="lastChecked">Last checked</div>
           <div class="value" id="loadedAt">—</div>
         </div>
         <div class="meta-chip">
-          <div class="label">Next auto-refresh</div>
+          <div class="label" data-i18n="nextAutoRefresh">Next auto-refresh</div>
           <div class="value" id="nextRefresh">—</div>
         </div>
       </div>
@@ -1340,48 +1531,53 @@
   </header>
 
   <main class="main">
-    <section class="summary" aria-label="At a glance">
+    <section class="summary" aria-label="At a glance" data-i18n-aria="atAGlance">
       <div class="stat-card">
-        <div class="kicker">Shortest vehicle wait</div>
+        <div class="kicker" data-i18n="statShort">Shortest vehicle wait</div>
         <div class="stat" id="statShort">—</div>
-        <div class="hint" id="statShortHint">Across open general lanes</div>
+        <div class="hint" id="statShortHint" data-i18n="statShortHint">Across open general lanes</div>
       </div>
       <div class="stat-card">
-        <div class="kicker">Longest vehicle wait</div>
+        <div class="kicker" data-i18n="statLong">Longest vehicle wait</div>
         <div class="stat" id="statLong">—</div>
-        <div class="hint" id="statLongHint">Plan extra time if needed</div>
+        <div class="hint" id="statLongHint" data-i18n="statLongHint">Plan extra time if needed</div>
       </div>
       <div class="stat-card">
-        <div class="kicker">Best SENTRI / Fast</div>
+        <div class="kicker" data-i18n="statTrusted">Best SENTRI / Fast</div>
         <div class="stat" id="statTrusted">—</div>
-        <div class="hint" id="statTrustedHint">SENTRI or commercial FAST only</div>
+        <div class="hint" id="statTrustedHint" data-i18n="statTrustedHint">SENTRI or commercial FAST only</div>
       </div>
       <div class="stat-card">
-        <div class="kicker">Active notices</div>
+        <div class="kicker" data-i18n="statNotices">Active notices</div>
         <div class="stat" id="statNotices">—</div>
-        <div class="hint">Border advisories from CBP</div>
+        <div class="hint" data-i18n="statNoticesHint">Border advisories from CBP</div>
       </div>
     </section>
+
+    <div class="best-pick" id="bestPick" hidden>
+      <span class="best-pick-kicker" data-i18n="bestPickKicker">Best crossing now</span>
+      <span class="best-pick-text" id="bestPickText">—</span>
+    </div>
 
     <div class="alert" id="alertBox" role="status"></div>
 
     <div class="refresh-meta">
-      <span class="auto-badge" title="While this tab is open, re-checks live CBP about every 5 minutes (not GitHub)">Auto-refresh · every ~5 min</span>
-      <span>Next check in <strong id="nextRefreshInline">—</strong></span>
+      <span class="auto-badge" data-i18n="autoRefresh" data-i18n-title="autoRefreshTitle" title="While this tab is open, re-checks live CBP about every 5 minutes (not GitHub)">Auto-refresh · every ~5 min</span>
+      <span><span data-i18n="nextCheckIn">Next check in</span> <strong id="nextRefreshInline">—</strong></span>
       <span class="dot" aria-hidden="true">·</span>
-      <span>Active waits only (N/A &amp; closed hidden)</span>
+      <span data-i18n="activeOnly">Active waits only (N/A &amp; closed hidden)</span>
     </div>
 
     <div class="toolbar" id="ports">
       <h2 class="section-title">
-        Crossing times
-        <span>Estimates to primary inspection booth · CBP updates about hourly</span>
+        <span data-i18n="crossingTimes">Crossing times</span>
+        <span class="section-sub" data-i18n="crossingTimesSub">Estimates to primary inspection booth · CBP updates about hourly</span>
       </h2>
-      <div class="filters" role="tablist" aria-label="Filter by traffic type">
-        <button type="button" class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All</button>
-        <button type="button" class="filter-btn" data-filter="passenger" onclick="setFilter('passenger', this)">Vehicles</button>
-        <button type="button" class="filter-btn" data-filter="pedestrian" onclick="setFilter('pedestrian', this)">Pedestrian</button>
-        <button type="button" class="filter-btn" data-filter="commercial" onclick="setFilter('commercial', this)">Commercial</button>
+      <div class="filters" role="tablist" aria-label="Filter by traffic type" data-i18n-aria="filterAria">
+        <button type="button" class="filter-btn active" data-filter="all" data-i18n="filterAll" onclick="setFilter('all', this)">All</button>
+        <button type="button" class="filter-btn" data-filter="passenger" data-i18n="filterVehicles" onclick="setFilter('passenger', this)">Vehicles</button>
+        <button type="button" class="filter-btn" data-filter="pedestrian" data-i18n="filterPedestrian" onclick="setFilter('pedestrian', this)">Pedestrian</button>
+        <button type="button" class="filter-btn" data-filter="commercial" data-i18n="filterCommercial" onclick="setFilter('commercial', this)">Commercial</button>
       </div>
     </div>
     <div class="refresh-row">
@@ -1392,13 +1588,20 @@
             <path d="M18 4v5h-5M6 20v-5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </span>
-        <span class="btn-label" id="refreshBtnLabel">Refresh times</span>
+        <span class="btn-label" id="refreshBtnLabel" data-i18n="refresh">Refresh times</span>
+      </button>
+      <button type="button" class="btn btn-light btn-share" id="shareBtn" onclick="shareTimes()">
+        <span aria-hidden="true">↗</span>
+        <span data-i18n="share">Share</span>
+      </button>
+      <button type="button" class="btn btn-light btn-install" id="installBtn" hidden onclick="installApp()">
+        <span data-i18n="install">Install</span>
       </button>
       <span class="refresh-toast" id="refreshToast" role="status" aria-live="polite"></span>
     </div>
     <div class="ports" id="portGrid" aria-live="polite"></div>
 
-    <p class="disclaimer">
+    <p class="disclaimer" data-i18n="disclaimer">
       Wait times are CBP estimates for primary inspection. Actual delays can change quickly. This is an independent viewer of the public CBP feed and is not affiliated with CBP or DHS.
     </p>
   </main>
@@ -1406,18 +1609,18 @@
   <footer>
     <div class="footer-inner">
       <div>
-        <div class="footer-brand">Brownsville Border Wait Times</div>
-        <p class="footer-tagline">Real-time CBP estimates for B&amp;M, Gateway, Los Indios, and Veterans International bridges.</p>
+        <div class="footer-brand" data-i18n="footerBrand">Brownsville Border Wait Times</div>
+        <p class="footer-tagline" data-i18n="footerTag">Real-time CBP estimates for B&amp;M, Gateway, Los Indios, and Veterans International bridges.</p>
       </div>
       <div class="footer-links">
-        <span>Source: <a href="https://bwt.cbp.gov" target="_blank" rel="noopener">CBP Border Wait Times (bwt.cbp.gov)</a></span>
-        <a href="https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43" target="_blank" rel="noopener">Raw RSS feed</a>
-        <a href="https://www.cbp.gov/travel/trusted-traveler-programs" target="_blank" rel="noopener">Trusted Traveler</a>
+        <span><span data-i18n="source">Source:</span> <a href="https://bwt.cbp.gov" target="_blank" rel="noopener">CBP Border Wait Times (bwt.cbp.gov)</a></span>
+        <a href="https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43" target="_blank" rel="noopener" data-i18n="rawRss">Raw RSS feed</a>
+        <a href="https://www.cbp.gov/travel/trusted-traveler-programs" target="_blank" rel="noopener" data-i18n="trustedTraveler">Trusted Traveler</a>
       </div>
     </div>
     <div class="footer-inner" style="margin-top:0;padding-top:0">
       <div class="visit-ticker" id="visitTicker" aria-live="polite">
-        Page Visits: <span class="visit-count" id="visitCount">—</span> (All-Time Unique)
+        <span data-i18n="visits">Page Visits:</span> <span class="visit-count" id="visitCount">—</span> <span data-i18n="visitsUnique">(All-Time Unique)</span>
       </div>
     </div>
   </footer>
@@ -1433,6 +1636,221 @@
      * Example: "https://brownsville-bwt.YOUR_SUBDOMAIN.workers.dev"
      */
     const FEED_PROXY_URL = "https://brownsville-bwt.borderwait.workers.dev";
+
+    const LANG_KEY = "bwt-lang";
+    const THEME_KEY = "bwt-theme";
+    const STR = {
+      en: {
+        pageTitle: "Brownsville Port of Entry · Wait Times",
+        pageDesc: "Live Brownsville Port of Entry wait times for B&M, Gateway, Los Indios, and Veterans International bridges. Plan your border crossing with clear CBP estimates.",
+        checkingFeed: "Checking CBP feed…",
+        officialData: "Official CBP data",
+        eyebrow: "U.S. – Mexico Land Border · Texas",
+        heroTitle: "Brownsville Port of Entry",
+        lastChecked: "Last checked",
+        nextAutoRefresh: "Next auto-refresh",
+        statShort: "Shortest vehicle wait",
+        statLong: "Longest vehicle wait",
+        statTrusted: "Best SENTRI / Fast",
+        statNotices: "Active notices",
+        statShortHint: "Across open general lanes",
+        statLongHint: "Plan extra time if needed",
+        statTrustedHint: "SENTRI or commercial FAST only",
+        statNoticesHint: "Border advisories from CBP",
+        autoRefresh: "Auto-refresh · every ~5 min",
+        autoRefreshTitle: "While this tab is open, re-checks live CBP about every 5 minutes (not GitHub)",
+        nextCheckIn: "Next check in",
+        activeOnly: "Active waits only (N/A & closed hidden)",
+        crossingTimes: "Crossing times",
+        crossingTimesSub: "Estimates to primary inspection booth · CBP updates about hourly",
+        filterAll: "All",
+        filterVehicles: "Vehicles",
+        filterPedestrian: "Pedestrian",
+        filterCommercial: "Commercial",
+        filterAria: "Filter by traffic type",
+        refresh: "Refresh times",
+        refreshing: "Refreshing…",
+        autoRefreshing: "Auto-refreshing…",
+        updated: "✓ Updated",
+        failed: "Failed",
+        toastOk: "Wait times updated",
+        toastErr: "Could not refresh",
+        toastCopied: "Copied times to clipboard",
+        share: "Share",
+        shareTitle: "Brownsville wait times",
+        shareAsOf: "Report time: ",
+        disclaimer: "Wait times are CBP estimates for primary inspection. Actual delays can change quickly. This is an independent viewer of the public CBP feed and is not affiliated with CBP or DHS.",
+        footerBrand: "Brownsville Border Wait Times",
+        footerTag: "Real-time CBP estimates for B&M, Gateway, Los Indios, and Veterans International bridges.",
+        source: "Source:",
+        rawRss: "Raw RSS feed",
+        trustedTraveler: "Trusted Traveler",
+        visits: "Page Visits:",
+        visitsUnique: "(All-Time Unique)",
+        bestPickKicker: "Best crossing now",
+        bestPickVehicle: "{bridge} · {mins} min general vehicle",
+        bestPickPed: "{bridge} · {mins} min pedestrian",
+        bestPickCom: "{bridge} · {mins} min commercial",
+        hours: "Hours",
+        hours24: "24 hours",
+        midnight: "midnight",
+        reportTime: "Report time:",
+        borderNotice: "Border notice",
+        emptyFilter: "No active wait times for this filter. N/A and closed lanes are hidden.",
+        liveProxy: "Live · CBP proxy",
+        liveCbp: "Live · CBP",
+        liveDirect: "Live · CBP direct",
+        cachedMirror: "Cached · site mirror",
+        cachedGithub: "Cached · GitHub mirror",
+        autoRefreshed: "auto-refreshed",
+        refreshFailed: "Live · refresh failed, showing last good data",
+        snapshot: "Snapshot · offline fallback",
+        errorLoad: "Error · could not load wait times",
+        alertSnapshot: "Showing embedded snapshot",
+        alertFile: "Opened as a local file (file://). Browsers block live data this way. Use the live site, or run a local server from the project folder.",
+        alertFail: "Could not load the data mirror or CBP feed. Try Refresh, or open bwt.cbp.gov.",
+        atAGlance: "At a glance",
+        now: "now",
+        themeToLight: "Switch to light theme",
+        themeToDark: "Switch to dark theme",
+        install: "Install",
+        colBridge: "Bridge",
+        na: "N/A",
+        closed: "Closed",
+        updatePending: "Update pending",
+        pendingDetail: "CBP has not published a new wait estimate yet",
+        lanesClosed: "Lanes closed",
+        asOf: "As of",
+        lanesOpen: "lane(s) open",
+        open: "open",
+        gen: "Gen",
+        ready: "Ready",
+        fastOpen: "FAST open",
+        genClosed: "Gen closed",
+        readyClosed: "Ready closed",
+        noTrusted: "No open trusted lanes reported",
+        pendingNoTimes: "Update pending from CBP (no new wait estimates yet)",
+        generalLanes: "general lanes",
+        sentri: "SENTRI",
+        fast: "FAST",
+        pending: "pending"
+      },
+      es: {
+        pageTitle: "Puerto de entrada de Brownsville · Tiempos de espera",
+        pageDesc: "Tiempos de espera en vivo del puerto de entrada de Brownsville para los puentes B&M, Gateway, Los Indios y Veterans International.",
+        checkingFeed: "Revisando datos de CBP…",
+        officialData: "Datos oficiales de CBP",
+        eyebrow: "Frontera terrestre EE. UU. – México · Texas",
+        heroTitle: "Puerto de entrada de Brownsville",
+        lastChecked: "Última revisión",
+        nextAutoRefresh: "Próxima actualización",
+        statShort: "Espera más corta (vehículos)",
+        statLong: "Espera más larga (vehículos)",
+        statTrusted: "Mejor SENTRI / FAST",
+        statNotices: "Avisos activos",
+        statShortHint: "En carriles generales abiertos",
+        statLongHint: "Planea tiempo extra si hace falta",
+        statTrustedHint: "Solo SENTRI o FAST comercial",
+        statNoticesHint: "Avisos fronterizos de CBP",
+        autoRefresh: "Auto-actualización · cada ~5 min",
+        autoRefreshTitle: "Con esta pestaña abierta, vuelve a consultar CBP cada 5 minutos",
+        nextCheckIn: "Próxima revisión en",
+        activeOnly: "Solo esperas activas (se ocultan N/A y cerrados)",
+        crossingTimes: "Tiempos de cruce",
+        crossingTimesSub: "Estimaciones hasta la inspección primaria · CBP actualiza cada hora aprox.",
+        filterAll: "Todos",
+        filterVehicles: "Vehículos",
+        filterPedestrian: "Peatonal",
+        filterCommercial: "Comercial",
+        filterAria: "Filtrar por tipo de tráfico",
+        refresh: "Actualizar tiempos",
+        refreshing: "Actualizando…",
+        autoRefreshing: "Actualización automática…",
+        updated: "✓ Actualizado",
+        failed: "Error",
+        toastOk: "Tiempos actualizados",
+        toastErr: "No se pudo actualizar",
+        toastCopied: "Tiempos copiados",
+        share: "Compartir",
+        shareTitle: "Tiempos de espera en Brownsville",
+        shareAsOf: "Hora del reporte: ",
+        disclaimer: "Los tiempos son estimaciones de CBP para la inspección primaria. Las demoras pueden cambiar rápido. Este visor es independiente y no está afiliado a CBP ni a DHS.",
+        footerBrand: "Tiempos de espera en Brownsville",
+        footerTag: "Estimaciones de CBP en tiempo real para los puentes B&M, Gateway, Los Indios y Veterans International.",
+        source: "Fuente:",
+        rawRss: "Fuente RSS",
+        trustedTraveler: "Viajero de confianza",
+        visits: "Visitas:",
+        visitsUnique: "(únicas de todos los tiempos)",
+        bestPickKicker: "Mejor cruce ahora",
+        bestPickVehicle: "{bridge} · {mins} min en vehículos generales",
+        bestPickPed: "{bridge} · {mins} min peatonal",
+        bestPickCom: "{bridge} · {mins} min comercial",
+        hours: "Horario",
+        hours24: "24 horas",
+        midnight: "medianoche",
+        reportTime: "Hora del reporte:",
+        borderNotice: "Aviso fronterizo",
+        emptyFilter: "No hay tiempos activos para este filtro. Se ocultan N/A y cerrados.",
+        liveProxy: "En vivo · proxy CBP",
+        liveCbp: "En vivo · CBP",
+        liveDirect: "En vivo · CBP directo",
+        cachedMirror: "Guardado · copia del sitio",
+        cachedGithub: "Guardado · copia de GitHub",
+        autoRefreshed: "auto-actualizado",
+        refreshFailed: "En vivo · falló la actualización; se muestra el último dato bueno",
+        snapshot: "Instantánea · sin conexión",
+        errorLoad: "Error · no se pudieron cargar los tiempos",
+        alertSnapshot: "Mostrando instantánea guardada",
+        alertFile: "Se abrió como archivo local (file://). Así el navegador bloquea los datos en vivo. Usa el sitio publicado o un servidor local.",
+        alertFail: "No se pudo cargar la copia ni el feed de CBP. Prueba Actualizar, o abre bwt.cbp.gov.",
+        atAGlance: "De un vistazo",
+        now: "ahora",
+        themeToLight: "Cambiar a modo claro",
+        themeToDark: "Cambiar a modo oscuro",
+        install: "Instalar",
+        colBridge: "Puente",
+        na: "N/A",
+        closed: "Cerrado",
+        updatePending: "Actualización pendiente",
+        pendingDetail: "CBP aún no ha publicado una nueva estimación",
+        lanesClosed: "Carriles cerrados",
+        asOf: "A las",
+        lanesOpen: "carril(es) abierto(s)",
+        open: "abiertos",
+        gen: "Gral",
+        ready: "Ready",
+        fastOpen: "FAST abiertos",
+        genClosed: "Gral cerrado",
+        readyClosed: "Ready cerrado",
+        noTrusted: "No hay carriles de confianza abiertos",
+        pendingNoTimes: "Actualización pendiente de CBP (aún no hay estimaciones)",
+        generalLanes: "carriles generales",
+        sentri: "SENTRI",
+        fast: "FAST",
+        pending: "pendiente"
+      }
+    };
+
+    let currentLang = "en";
+    try {
+      const savedLang = localStorage.getItem(LANG_KEY);
+      if (savedLang === "es" || savedLang === "en") currentLang = savedLang;
+    } catch (_) { /* ignore */ }
+
+    function t(key) {
+      return (STR[currentLang] && STR[currentLang][key]) || STR.en[key] || key;
+    }
+
+    function tf(key, vars) {
+      let s = t(key);
+      if (vars) {
+        Object.keys(vars).forEach(function (k) {
+          s = s.replace(new RegExp("\\{" + k + "\\}", "g"), vars[k]);
+        });
+      }
+      return s;
+    }
 
     const PORT_META = {
       "Brownsville - B&M": {
@@ -1461,10 +1879,15 @@
 
     let currentFilter = "all";
     let lastData = null;
+    let lastXmlText = null;
+    let lastSourceId = null;
+    let lastIsLive = false;
+    let lastFromAuto = false;
     let refreshTimer = null;
     let countdownTimer = null;
     let nextRefreshAt = null;
     let isLoading = false;
+    let deferredInstallPrompt = null;
 
     function isActiveWait(w) {
       // Real numeric wait estimates only
@@ -1512,8 +1935,8 @@
       }
       const msLeft = nextRefreshAt - Date.now();
       if (msLeft <= 0) {
-        if (a) a.textContent = "now";
-        if (b) b.textContent = "now";
+        if (a) a.textContent = t("now");
+        if (b) b.textContent = t("now");
         return;
       }
       const countdown = formatCountdown(msLeft);
@@ -1573,27 +1996,28 @@
     function parseWait(text) {
       const raw = (text || "").trim();
       const base = {
-        minutes: null, num: "N/A", unit: "", label: "N/A", cls: "na",
-        pending: false, detail: "", asOf: "—", lanesOpen: "—", lanesOpenCount: null, bar: 0
+        minutes: null, num: t("na"), unit: "", label: t("na"), cls: "na",
+        pending: false, closed: false, detail: "", asOf: "—", lanesOpen: "—", lanesOpenCount: null, bar: 0
       };
       if (!raw || /^N\/A$/i.test(raw)) return { ...base };
       if (/update\s*pending/i.test(raw)) {
         return {
           ...base,
-          num: "Update pending",
-          label: "Update pending",
+          num: t("updatePending"),
+          label: t("updatePending"),
           cls: "pending",
           pending: true,
-          detail: "CBP has not published a new wait estimate yet"
+          detail: t("pendingDetail")
         };
       }
       if (/lanes?\s*closed/i.test(raw)) {
         return {
           ...base,
-          num: "Closed",
-          label: "Closed",
-          detail: "Lanes closed",
-          lanesOpen: "Closed"
+          num: t("closed"),
+          label: t("closed"),
+          detail: t("lanesClosed"),
+          lanesOpen: t("closed"),
+          closed: true
         };
       }
       // Prefer delay minutes (e.g. "60 min delay"), not clock fragments
@@ -1605,10 +2029,10 @@
         const mins = parseInt(minMatch[1], 10);
         const when = timeMatch ? timeMatch[1].trim() : "";
         const openCount = lanesMatch ? parseInt(lanesMatch[1], 10) : null;
-        const lanesOpen = openCount != null ? openCount + " open" : "—";
+        const lanesOpen = openCount != null ? openCount + " " + t("open") : "—";
         const detail = [
-          when ? "As of " + when : "",
-          openCount != null ? openCount + " lane(s) open" : ""
+          when ? t("asOf") + " " + when : "",
+          openCount != null ? openCount + " " + t("lanesOpen") : ""
         ].filter(Boolean).join(" · ");
         return {
           minutes: mins,
@@ -1802,7 +2226,10 @@
       currentFilter = filter;
       document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
-      if (lastData) renderPorts(lastData);
+      if (lastData) {
+        renderPorts(lastData);
+        updateBestPick(lastData);
+      }
     }
 
     function updateSummary(data) {
@@ -1837,10 +2264,10 @@
         const worst = passengerWaits[passengerWaits.length - 1];
         shortEl.textContent = best.mins + " min";
         shortEl.className = "stat " + (best.mins <= 15 ? "good" : best.mins <= 45 ? "warn" : "bad");
-        document.getElementById("statShortHint").textContent = best.port + " · general lanes";
+        document.getElementById("statShortHint").textContent = best.port + " · " + t("generalLanes");
         longEl.textContent = worst.mins + " min";
         longEl.className = "stat " + (worst.mins <= 15 ? "good" : worst.mins <= 45 ? "warn" : "bad");
-        document.getElementById("statLongHint").textContent = worst.port + " · general lanes";
+        document.getElementById("statLongHint").textContent = worst.port + " · " + t("generalLanes");
       } else {
         shortEl.textContent = "—";
         longEl.textContent = "—";
@@ -1853,13 +2280,49 @@
         trustedEl.className = "stat " + (t.mins <= 15 ? "good" : "warn");
         document.getElementById("statTrustedHint").textContent = t.port + " · " + t.name;
       } else {
-        trustedEl.textContent = "N/A";
+        trustedEl.textContent = t("na");
         trustedEl.className = "stat";
-        document.getElementById("statTrustedHint").textContent = "No open trusted lanes reported";
+        document.getElementById("statTrustedHint").textContent = t("noTrusted");
       }
 
       noticesEl.textContent = String(notices);
       noticesEl.className = "stat" + (notices ? " warn" : " good");
+      updateBestPick(data);
+    }
+
+    function collectModeWaits(data, modeKeyName) {
+      const waits = [];
+      for (const port of data.items) {
+        const summary = summarizeMode(port.sections, modeKeyName);
+        if (summary && isActiveWait(summary.primary)) {
+          waits.push({
+            mins: summary.primary.minutes,
+            port: port.meta.short
+          });
+        }
+      }
+      waits.sort((a, b) => a.mins - b.mins);
+      return waits;
+    }
+
+    function updateBestPick(data) {
+      const box = document.getElementById("bestPick");
+      const text = document.getElementById("bestPickText");
+      if (!box || !text || !data) return;
+
+      const mode = currentFilter === "all" ? "passenger" : currentFilter;
+      const key = mode === "pedestrian"
+        ? "bestPickPed"
+        : mode === "commercial"
+          ? "bestPickCom"
+          : "bestPickVehicle";
+      const waits = collectModeWaits(data, mode);
+      if (!waits.length) {
+        box.hidden = true;
+        return;
+      }
+      text.textContent = tf(key, { bridge: waits[0].port, mins: waits[0].mins });
+      box.hidden = false;
     }
 
     /** Pull general wait for a traffic mode; Ready shown as an extra under that mode. */
@@ -1902,8 +2365,10 @@
       if (!hours || hours === "—") return "—";
       let h = String(hours).replace(/\s+/g, " ").trim();
       // Normalize common CBP phrases
-      h = h.replace(/24\s*hrs?\/day/i, "24 hours");
-      h = h.replace(/Midnight/gi, "midnight");
+      h = h.replace(/24\s*hrs?\/day/i, t("hours24"));
+      h = h.replace(/24 hours/i, t("hours24"));
+      h = h.replace(/Midnight/gi, t("midnight"));
+      h = h.replace(/medianoche/gi, t("midnight"));
       h = h.replace(/\b(\d{1,2})\s*am\b/gi, (_, n) => n + " a.m.");
       h = h.replace(/\b(\d{1,2})\s*pm\b/gi, (_, n) => n + " p.m.");
       h = h.replace(/\s*-\s*/g, "–"); // en dash
@@ -1922,7 +2387,7 @@
       for (const sec of port.sections || []) {
         for (const lane of sec.lanes || []) {
           if (!/fast/i.test(lane.name)) continue;
-          if (lane.wait && lane.wait.lanesOpen === "Closed") return 0;
+          if (lane.wait && lane.wait.closed) return 0;
           if (lane.wait && lane.wait.lanesOpenCount != null) return lane.wait.lanesOpenCount;
         }
       }
@@ -1942,21 +2407,21 @@
       let hasCounts = false;
 
       if (summary.primary && !summary.primary.pending && summary.primary.lanesOpenCount != null) {
-        bits.push(summary.primary.lanesOpenCount + " Gen");
+        bits.push(summary.primary.lanesOpenCount + " " + t("gen"));
         total += summary.primary.lanesOpenCount;
         hasCounts = true;
-      } else if (summary.primary && summary.primary.lanesOpen === "Closed") {
-        bits.push("Gen closed");
+      } else if (summary.primary && summary.primary.closed) {
+        bits.push(t("genClosed"));
       }
 
       for (const l of summary.extras || []) {
         if (!/ready/i.test(l.name)) continue;
         if (l.wait && !l.wait.pending && l.wait.lanesOpenCount != null) {
-          bits.push(l.wait.lanesOpenCount + " Ready");
+          bits.push(l.wait.lanesOpenCount + " " + t("ready"));
           total += l.wait.lanesOpenCount;
           hasCounts = true;
-        } else if (l.wait && l.wait.lanesOpen === "Closed") {
-          bits.push("Ready closed");
+        } else if (l.wait && l.wait.closed) {
+          bits.push(t("readyClosed"));
         }
       }
 
@@ -1964,7 +2429,7 @@
       if (modeKey === "commercial" && isCommercialFastPort(port)) {
         const n = fastOpenCount(port);
         if (n != null && n > 0) {
-          bits.push(n + " FAST open");
+          bits.push(n + " " + t("fastOpen"));
         }
       }
 
@@ -1977,20 +2442,22 @@
         const fastBits = bits.filter((b) => /FAST/i.test(b));
         const coreBits = bits.filter((b) => !/FAST/i.test(b));
         let core;
-        if (coreBits.length === 1 && /^(\d+) Gen$/.test(coreBits[0])) {
-          core = total + "/" + summary.max + " open";
+        const genOnly = new RegExp("^(\\d+) " + t("gen").replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$");
+        if (coreBits.length === 1 && genOnly.test(coreBits[0])) {
+          core = total + "/" + summary.max + " " + t("open");
         } else if (coreBits.length) {
-          core = coreBits.join(" · ") + " · " + total + "/" + summary.max + " open";
+          core = coreBits.join(" · ") + " · " + total + "/" + summary.max + " " + t("open");
         } else {
-          core = total + "/" + summary.max + " open";
+          core = total + "/" + summary.max + " " + t("open");
         }
         return fastBits.length ? core + " · " + fastBits.join(" · ") : core;
       }
-      if (hasCounts && bits.filter((b) => !/FAST/i.test(b)).length === 1 && /^(\d+) Gen$/.test(bits[0])) {
+      const genOnlyBit = new RegExp("^(\\d+) " + t("gen").replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$");
+      if (hasCounts && bits.filter((b) => !/FAST/i.test(b)).length === 1 && genOnlyBit.test(bits[0])) {
         const fastBits = bits.filter((b) => /FAST/i.test(b));
-        return (total + " open") + (fastBits.length ? " · " + fastBits.join(" · ") : "");
+        return (total + " " + t("open")) + (fastBits.length ? " · " + fastBits.join(" · ") : "");
       }
-      if (hasCounts) return bits.join(" · ") + " · " + total + " open";
+      if (hasCounts) return bits.join(" · ") + " · " + total + " " + t("open");
       return bits.join(" · ");
     }
 
@@ -2091,7 +2558,7 @@
           if (lane.wait && lane.wait.lanesOpenCount != null) {
             return lane.wait.lanesOpenCount;
           }
-          if (lane.wait && lane.wait.lanesOpen === "Closed") return 0;
+          if (lane.wait && lane.wait.closed) return 0;
         }
       }
       return null;
@@ -2145,10 +2612,10 @@
           : wait && wait.pending
             ? waitCellHtml(wait)
             : `<span class="wait-empty">—</span>`;
-        let sub = `<span class="tag">SENTRI</span>`;
-        if (n != null && n > 0) sub += ` ${n} open`;
-        else if (wait && wait.lanesOpen === "Closed") sub += ` closed`;
-        else if (n === 0) sub += ` closed`;
+        let sub = `<span class="tag">${escapeHtml(t("sentri"))}</span>`;
+        if (n != null && n > 0) sub += ` ${n} ${t("open")}`;
+        else if (wait && wait.closed) sub += ` ${t("closed").toLowerCase()}`;
+        else if (n === 0) sub += ` ${t("closed").toLowerCase()}`;
         return {
           html: `${main}<span class="wait-extra">${sub}</span>`,
           cls: wait && isActiveWait(wait) ? "has-" + wait.cls : (wait && wait.pending ? "has-pending" : "")
@@ -2162,16 +2629,16 @@
       // Commercial filter: FAST only — never SENTRI; never show "0 open"
       if (commercialOnly) {
         const n = pick.lane.wait.lanesOpenCount;
-        const closed = pick.lane.wait.lanesOpen === "Closed";
+        const closed = !!pick.lane.wait.closed;
         let sub;
         if (n != null && n > 0) {
-          sub = `<span class="tag">FAST</span> ${n} open`;
+          sub = `<span class="tag">${escapeHtml(t("fast"))}</span> ${n} ${t("open")}`;
         } else if (closed || n === 0) {
-          sub = `<span class="tag">FAST</span> closed`;
+          sub = `<span class="tag">${escapeHtml(t("fast"))}</span> ${t("closed").toLowerCase()}`;
         } else if (pick.lane.wait.pending) {
-          sub = `<span class="tag">FAST</span> pending`;
+          sub = `<span class="tag">${escapeHtml(t("fast"))}</span> ${t("pending")}`;
         } else {
-          sub = `<span class="tag">FAST</span>`;
+          sub = `<span class="tag">${escapeHtml(t("fast"))}</span>`;
         }
         const main = isActiveWait(pick.lane.wait)
           ? waitCellHtml(pick.lane.wait)
@@ -2184,9 +2651,9 @@
 
       const short = pick.lane.name.replace(/\s*Lane$/i, "");
       const context = /fast/i.test(pick.lane.name)
-        ? "Commercial"
+        ? t("filterCommercial")
         : /sentri/i.test(pick.lane.name)
-          ? "Passenger"
+          ? t("filterVehicles")
           : pick.sectionTitle;
       const extra = `<span class="tag">${escapeHtml(short)}</span> · ${escapeHtml(context)}`;
       return {
@@ -2213,7 +2680,7 @@
       }
       let asOfText;
       if (numericCount === 0 && pendingCount > 0) {
-        asOfText = "Update pending from CBP (no new wait estimates yet)";
+        asOfText = t("pendingNoTimes");
       } else if (newestAsOf) {
         // One report time only (newest across bridges) — avoids "4:00 · 3:00" glitch
         asOfText = newestAsOf;
@@ -2224,18 +2691,18 @@
       // Columns: Bridge · Hours · Passenger · SENTRI/FAST · Pedestrian · Commercial
       const waitCols = [];
       if (currentFilter === "all" || currentFilter === "passenger") {
-        waitCols.push({ key: "passenger", label: "Vehicles" });
+        waitCols.push({ key: "passenger", label: t("filterVehicles") });
       }
       if (currentFilter === "commercial") {
-        waitCols.push({ key: "trusted", label: "FAST" });
+        waitCols.push({ key: "trusted", label: t("fast") });
       } else if (currentFilter === "all" || currentFilter === "passenger") {
-        waitCols.push({ key: "trusted", label: "SENTRI" });
+        waitCols.push({ key: "trusted", label: t("sentri") });
       }
       if (currentFilter === "all" || currentFilter === "pedestrian") {
-        waitCols.push({ key: "pedestrian", label: "Pedestrian" });
+        waitCols.push({ key: "pedestrian", label: t("filterPedestrian") });
       }
       if (currentFilter === "all" || currentFilter === "commercial") {
-        waitCols.push({ key: "commercial", label: "Commercial" });
+        waitCols.push({ key: "commercial", label: t("filterCommercial") });
       }
 
       const portsSorted = data.items.slice().sort((a, b) => {
@@ -2273,7 +2740,7 @@
           <tr>
             <td class="bridge">
               ${escapeHtml(port.meta.short)}
-              <span class="hours-line"><strong>Hours</strong> ${escapeHtml(hoursLabel)}</span>
+              <span class="hours-line"><strong>${escapeHtml(t("hours"))}</strong> ${escapeHtml(hoursLabel)}</span>
             </td>
             ${tdHtml}
           </tr>`);
@@ -2301,13 +2768,13 @@
       }
 
       if (!tableRows.length) {
-        grid.innerHTML = `<p class="empty">No active wait times for this filter. N/A and closed lanes are hidden.</p>`;
+        grid.innerHTML = `<p class="empty">${escapeHtml(t("emptyFilter"))}</p>`;
         return;
       }
 
       const noticesHtml = notices.length
         ? `<div class="notices-block">${notices.map((n) =>
-            `<div class="notice"><div class="notice-label">Border notice</div><span class="bridge-tag">${escapeHtml(n.bridge)}:</span> ${escapeHtml(n.text)}</div>`
+            `<div class="notice"><div class="notice-label">${escapeHtml(t("borderNotice"))}</div><span class="bridge-tag">${escapeHtml(n.bridge)}:</span> ${escapeHtml(n.text)}</div>`
           ).join("")}</div>`
         : "";
 
@@ -2336,13 +2803,13 @@
 
       grid.innerHTML = `
         <div class="table-wrap${tightClass}${cardsClass}">
-          <div class="asof-bar">Report time: <strong>${escapeHtml(asOfText)}</strong></div>
+          <div class="asof-bar">${escapeHtml(t("reportTime"))} <strong>${escapeHtml(asOfText)}</strong></div>
           <div class="table-scroll">
             <table class="wait-table">
               <colgroup>${colgroup}</colgroup>
               <thead>
                 <tr>
-                  <th scope="col" class="th-bridge">Bridge</th>
+                  <th scope="col" class="th-bridge">${escapeHtml(t("colBridge"))}</th>
                   ${headCols}
                 </tr>
               </thead>
@@ -2421,7 +2888,7 @@
       if (FEED_PROXY_URL && String(FEED_PROXY_URL).trim()) {
         sources.push({
           url: String(FEED_PROXY_URL).replace(/\/$/, ""),
-          label: "Live · CBP proxy",
+          id: "liveProxy",
           live: true,
           timeoutMs: 8000
         });
@@ -2430,7 +2897,7 @@
       try {
         sources.push({
           url: new URL(LOCAL_FEED_URL, location.href).href,
-          label: "Cached · site mirror",
+          id: "cachedMirror",
           live: false,
           timeoutMs: 5000
         });
@@ -2438,7 +2905,7 @@
 
       sources.push({
         url: "https://raw.githubusercontent.com/EliseoCab/brownsville-wait-times/main/data/bwt.xml",
-        label: "Cached · GitHub mirror",
+        id: "cachedGithub",
         live: false,
         timeoutMs: 6000
       });
@@ -2446,26 +2913,26 @@
       sources.push(
         {
           url: "https://proxy.cors.sh/" + FEED_URL,
-          label: "Live · CBP",
+          id: "liveCbp",
           live: true,
           timeoutMs: 4000
         },
         {
           url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(FEED_URL),
-          label: "Live · CBP",
+          id: "liveCbp",
           live: true,
           timeoutMs: 4000
         },
         {
           url: "https://api.allorigins.win/get?url=" + encodeURIComponent(FEED_URL),
-          label: "Live · CBP",
+          id: "liveCbp",
           live: true,
           unwrap: "allorigins",
           timeoutMs: 4000
         },
         {
           url: FEED_URL,
-          label: "Live · CBP direct",
+          id: "liveDirect",
           live: true,
           timeoutMs: 4000
         }
@@ -2492,7 +2959,7 @@
       if (state === "loading") {
         btn.disabled = true;
         btn.classList.add("is-loading");
-        label.textContent = "Refreshing…";
+        label.textContent = t("refreshing");
         if (toast) {
           toast.classList.remove("show", "ok", "err");
           toast.textContent = "";
@@ -2503,9 +2970,9 @@
       if (state === "success") {
         btn.disabled = true;
         btn.classList.add("is-success");
-        label.textContent = "✓ Updated";
+        label.textContent = t("updated");
         if (toast) {
-          toast.textContent = "Wait times updated";
+          toast.textContent = t("toastOk");
           toast.classList.remove("err");
           toast.classList.add("ok", "show");
         }
@@ -2516,9 +2983,9 @@
       if (state === "error") {
         btn.disabled = true;
         btn.classList.add("is-error");
-        label.textContent = "Failed";
+        label.textContent = t("failed");
         if (toast) {
-          toast.textContent = "Could not refresh";
+          toast.textContent = t("toastErr");
           toast.classList.remove("ok");
           toast.classList.add("err", "show");
         }
@@ -2528,7 +2995,7 @@
 
       // idle
       btn.disabled = false;
-      label.textContent = "Refresh times";
+      label.textContent = t("refresh");
       if (toast) {
         toast.classList.remove("show", "ok", "err");
         toast.textContent = "";
@@ -2548,7 +3015,7 @@
         if (btn) btn.disabled = true;
       }
 
-      document.getElementById("liveLabel").textContent = fromAuto ? "Auto-refreshing…" : "Refreshing…";
+      document.getElementById("liveLabel").textContent = fromAuto ? t("autoRefreshing") : t("refreshing");
 
       const errors = [];
       let loaded = false;
@@ -2563,40 +3030,44 @@
           try {
             data = parseRss(text);
           } catch (parseErr) {
-            errors.push(src.label + " parse: " + parseErr.message);
+            errors.push(t(src.id || "liveCbp") + " parse: " + parseErr.message);
             continue;
           }
           if (!data.items || !data.items.length) {
-            errors.push(src.label + ": empty items");
+            errors.push(t(src.id || "liveCbp") + ": empty items");
             continue;
           }
-          const label = fromAuto ? src.label + " · auto-refreshed" : src.label;
-          render(data, label, !!src.live);
+          lastXmlText = text;
+          lastSourceId = src.id || "liveCbp";
+          lastIsLive = !!src.live;
+          lastFromAuto = !!fromAuto;
+          const label = lastFromAuto ? t(lastSourceId) + " · " + t("autoRefreshed") : t(lastSourceId);
+          render(data, label, lastIsLive);
           alert.classList.remove("show");
           alert.innerHTML = "";
           loaded = true;
           break;
         } catch (e) {
-          errors.push((src.label || src.url) + ": " + (e && e.message ? e.message : String(e)));
+          errors.push((src.id ? t(src.id) : src.url) + ": " + (e && e.message ? e.message : String(e)));
         }
       }
 
       if (!loaded) {
         if (lastData && fromAuto) {
-          document.getElementById("liveLabel").textContent = "Live · refresh failed, showing last good data";
+          document.getElementById("liveLabel").textContent = t("refreshFailed");
           document.getElementById("livePulse").classList.add("cached");
         } else {
           try {
-            render(parseRss(FALLBACK_RSS), "Snapshot · offline fallback", false);
+            render(parseRss(FALLBACK_RSS), t("snapshot"), false);
           } catch (_) {
-            document.getElementById("liveLabel").textContent = "Error · could not load wait times";
+            document.getElementById("liveLabel").textContent = t("errorLoad");
           }
           const isFile = location.protocol === "file:";
           alert.innerHTML =
-            "<div><strong>Showing embedded snapshot</strong>" +
+            "<div><strong>" + escapeHtml(t("alertSnapshot")) + "</strong> " +
             (isFile
-              ? "Opened as a local file (file://). Browsers block live data this way. Use the site at <a href=\"https://eliseocab.github.io/brownsville-wait-times/\" target=\"_blank\" rel=\"noopener\">eliseocab.github.io/brownsville-wait-times</a>, or run a local server from the project folder."
-              : "Could not load the data mirror or CBP feed. Try Refresh, or open <a href=\"https://bwt.cbp.gov\" target=\"_blank\" rel=\"noopener\">bwt.cbp.gov</a>.") +
+              ? escapeHtml(t("alertFile"))
+              : escapeHtml(t("alertFail")) + " <a href=\"https://bwt.cbp.gov\" target=\"_blank\" rel=\"noopener\">bwt.cbp.gov</a>.") +
             (errors.length ? "<br><small style=\"opacity:.85\">" + escapeHtml(errors.slice(0, 3).join(" · ")) + "</small>" : "") +
             "</div>";
           alert.classList.add("show");
@@ -2622,6 +3093,147 @@
       scheduleAutoRefresh();
     }
 
+    function applyStaticLang() {
+      document.documentElement.lang = currentLang === "es" ? "es" : "en";
+      document.title = t("pageTitle");
+      const desc = document.querySelector('meta[name="description"]');
+      if (desc) desc.setAttribute("content", t("pageDesc"));
+      document.querySelectorAll("[data-i18n]").forEach(function (el) {
+        el.textContent = t(el.getAttribute("data-i18n"));
+      });
+      document.querySelectorAll("[data-i18n-title]").forEach(function (el) {
+        el.setAttribute("title", t(el.getAttribute("data-i18n-title")));
+      });
+      document.querySelectorAll("[data-i18n-aria]").forEach(function (el) {
+        el.setAttribute("aria-label", t(el.getAttribute("data-i18n-aria")));
+      });
+      const enBtn = document.getElementById("langEn");
+      const esBtn = document.getElementById("langEs");
+      if (enBtn) enBtn.classList.toggle("active", currentLang === "en");
+      if (esBtn) esBtn.classList.toggle("active", currentLang === "es");
+      const themeBtn = document.getElementById("themeToggle");
+      const theme = document.documentElement.getAttribute("data-theme") || "light";
+      if (themeBtn) {
+        themeBtn.setAttribute("aria-label", theme === "dark" ? t("themeToLight") : t("themeToDark"));
+        themeBtn.title = theme === "dark" ? t("themeToLight") : t("themeToDark");
+      }
+    }
+
+    function setLang(lang) {
+      if (lang !== "en" && lang !== "es") return;
+      currentLang = lang;
+      try { localStorage.setItem(LANG_KEY, lang); } catch (_) { /* ignore */ }
+      applyStaticLang();
+      if (lastXmlText) {
+        const data = parseRss(lastXmlText);
+        const label = lastFromAuto ? t(lastSourceId || "liveProxy") + " · " + t("autoRefreshed") : t(lastSourceId || "liveProxy");
+        render(data, label, lastIsLive);
+      } else if (lastData) {
+        render(lastData, t(lastSourceId || "liveProxy"), lastIsLive);
+      }
+      updateCountdown();
+    }
+
+    function currentTheme() {
+      return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    }
+
+    function applyTheme(theme, persist) {
+      document.documentElement.setAttribute("data-theme", theme);
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", theme === "dark" ? "#07101c" : "#0b1f3a");
+      if (persist) {
+        try { localStorage.setItem(THEME_KEY, theme); } catch (_) { /* ignore */ }
+      }
+      const themeBtn = document.getElementById("themeToggle");
+      if (themeBtn) {
+        themeBtn.setAttribute("aria-label", theme === "dark" ? t("themeToLight") : t("themeToDark"));
+        themeBtn.title = theme === "dark" ? t("themeToLight") : t("themeToDark");
+      }
+    }
+
+    function toggleTheme() {
+      applyTheme(currentTheme() === "dark" ? "light" : "dark", true);
+    }
+
+    function sharePayload() {
+      const lines = [t("shareTitle")];
+      const best = document.getElementById("bestPickText");
+      const pickBox = document.getElementById("bestPick");
+      if (pickBox && !pickBox.hidden && best && best.textContent && best.textContent !== "—") {
+        lines.push(t("bestPickKicker") + ": " + best.textContent);
+      }
+      const shortEl = document.getElementById("statShort");
+      const longEl = document.getElementById("statLong");
+      if (shortEl && shortEl.textContent && shortEl.textContent !== "—") {
+        lines.push(t("statShort") + ": " + shortEl.textContent);
+      }
+      if (longEl && longEl.textContent && longEl.textContent !== "—") {
+        lines.push(t("statLong") + ": " + longEl.textContent);
+      }
+      const asOf = document.querySelector(".asof-bar strong");
+      if (asOf && asOf.textContent) {
+        lines.push(t("shareAsOf") + asOf.textContent);
+      }
+      lines.push(location.href);
+      return { title: t("shareTitle"), text: lines.join("\n"), url: location.href };
+    }
+
+    async function shareTimes() {
+      const payload = sharePayload();
+      try {
+        if (navigator.share) {
+          await navigator.share(payload);
+          return;
+        }
+      } catch (err) {
+        if (err && err.name === "AbortError") return;
+      }
+      try {
+        await navigator.clipboard.writeText(payload.text);
+        const toast = document.getElementById("refreshToast");
+        if (toast) {
+          toast.textContent = t("toastCopied");
+          toast.classList.remove("err");
+          toast.classList.add("ok", "show");
+          setTimeout(function () {
+            toast.classList.remove("show", "ok");
+            toast.textContent = "";
+          }, 1800);
+        }
+      } catch (_) {
+        window.prompt(t("shareTitle"), payload.text);
+      }
+    }
+
+    function installApp() {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      deferredInstallPrompt.userChoice.finally(function () {
+        deferredInstallPrompt = null;
+        const btn = document.getElementById("installBtn");
+        if (btn) btn.hidden = true;
+      });
+    }
+
+    function registerServiceWorker() {
+      if (!("serviceWorker" in navigator)) return;
+      if (location.protocol === "file:") return;
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register(new URL("sw.js", location.href)).catch(function () { /* ignore */ });
+      });
+    }
+
+    window.addEventListener("beforeinstallprompt", function (event) {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      const btn = document.getElementById("installBtn");
+      if (btn) btn.hidden = false;
+    });
+
+    applyTheme(currentTheme(), false);
+    applyStaticLang();
+    registerServiceWorker();
     loadData(true);
 
     /**

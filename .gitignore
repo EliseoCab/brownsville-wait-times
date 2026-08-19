@@ -5,3 +5,5 @@
 .env
 .env.*
 worker/.wrangler/
+__pycache__/
+*.pyc

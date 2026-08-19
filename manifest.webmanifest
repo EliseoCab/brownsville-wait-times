@@ -1,0 +1,32 @@
+{
+  "name": "Brownsville Border Wait Times",
+  "short_name": "Brownsville Wait",
+  "description": "Live CBP wait times for B&M, Gateway, Los Indios, and Veterans International bridges.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0b1f3a",
+  "theme_color": "#0b1f3a",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
