@@ -279,34 +279,6 @@
       margin: 0 0 0.85rem;
       position: relative;
     }
-    .best-pick {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      gap: 0.3rem 0.75rem;
-      margin: -0.35rem 0 1.15rem;
-      padding: 0.85rem 1.1rem;
-      background: var(--white);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-    .best-pick[hidden] { display: none !important; }
-    .best-pick-kicker {
-      font-size: 0.72rem;
-      font-weight: 800;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      color: var(--teal);
-    }
-    .best-pick-text {
-      font-size: 1.05rem;
-      font-weight: 750;
-      color: var(--ink);
-      letter-spacing: -0.02em;
-      min-width: 0;
-      overflow-wrap: anywhere;
-    }
     .btn-share,
     .btn-install {
       min-height: 44px;
@@ -1011,11 +983,6 @@
         font-size: 0.95rem;
         max-width: none;
       }
-      .best-pick {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.25rem 0.75rem;
-      }
       .refresh-row {
         width: 100%;
         display: grid;
@@ -1586,11 +1553,6 @@
       </div>
     </section>
 
-    <div class="best-pick" id="bestPick" hidden>
-      <span class="best-pick-kicker" data-i18n="bestPickKicker">Best crossing now</span>
-      <span class="best-pick-text" id="bestPickText">—</span>
-    </div>
-
     <div class="alert" id="alertBox" role="status"></div>
 
     <div class="refresh-meta">
@@ -1716,10 +1678,6 @@
         rawRss: "Raw RSS feed",
         trustedTraveler: "Trusted Traveler",
 
-        bestPickKicker: "Best crossing now",
-        bestPickVehicle: "{bridge} · {mins} min general vehicle",
-        bestPickPed: "{bridge} · {mins} min pedestrian",
-        bestPickCom: "{bridge} · {mins} min commercial",
         hours: "Hours",
         hours24: "24 hours",
         midnight: "midnight",
@@ -1817,10 +1775,6 @@
         rawRss: "Fuente RSS",
         trustedTraveler: "Viajero de confianza",
 
-        bestPickKicker: "Mejor cruce ahora",
-        bestPickVehicle: "{bridge} · {mins} min en vehículos generales",
-        bestPickPed: "{bridge} · {mins} min peatonal",
-        bestPickCom: "{bridge} · {mins} min comercial",
         hours: "Horario",
         hours24: "24 horas",
         midnight: "medianoche",
@@ -1885,15 +1839,7 @@
       return (STR[currentLang] && STR[currentLang][key]) || STR.en[key] || key;
     }
 
-    function tf(key, vars) {
-      let s = t(key);
-      if (vars) {
-        Object.keys(vars).forEach(function (k) {
-          s = s.replace(new RegExp("\\{" + k + "\\}", "g"), vars[k]);
-        });
-      }
-      return s;
-    }
+
 
     const PORT_META = {
       "Brownsville - B&M": {
@@ -2269,10 +2215,7 @@
       currentFilter = filter;
       document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
-      if (lastData) {
-        renderPorts(lastData);
-        updateBestPick(lastData);
-      }
+      if (lastData) renderPorts(lastData);
     }
 
     function updateSummary(data) {
@@ -2330,42 +2273,6 @@
 
       noticesEl.textContent = String(notices);
       noticesEl.className = "stat" + (notices ? " warn" : " good");
-      updateBestPick(data);
-    }
-
-    function collectModeWaits(data, modeKeyName) {
-      const waits = [];
-      for (const port of data.items) {
-        const summary = summarizeMode(port.sections, modeKeyName);
-        if (summary && isActiveWait(summary.primary)) {
-          waits.push({
-            mins: summary.primary.minutes,
-            port: port.meta.short
-          });
-        }
-      }
-      waits.sort((a, b) => a.mins - b.mins);
-      return waits;
-    }
-
-    function updateBestPick(data) {
-      const box = document.getElementById("bestPick");
-      const text = document.getElementById("bestPickText");
-      if (!box || !text || !data) return;
-
-      const mode = currentFilter === "all" ? "passenger" : currentFilter;
-      const key = mode === "pedestrian"
-        ? "bestPickPed"
-        : mode === "commercial"
-          ? "bestPickCom"
-          : "bestPickVehicle";
-      const waits = collectModeWaits(data, mode);
-      if (!waits.length) {
-        box.hidden = true;
-        return;
-      }
-      text.textContent = tf(key, { bridge: waits[0].port, mins: waits[0].mins });
-      box.hidden = false;
     }
 
     /** Pull general wait for a traffic mode; Ready shown as an extra under that mode. */
@@ -3238,12 +3145,6 @@
       const asOf = document.querySelector(".asof-bar strong");
       if (asOf && asOf.textContent) {
         lines.push(t("shareAsOf") + asOf.textContent);
-      }
-
-      const best = document.getElementById("bestPickText");
-      const pickBox = document.getElementById("bestPick");
-      if (pickBox && !pickBox.hidden && best && best.textContent && best.textContent !== "—") {
-        lines.push(t("bestPickKicker") + ": " + best.textContent);
       }
 
       const data = lastData;
