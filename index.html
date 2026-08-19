@@ -913,6 +913,10 @@
       white-space: normal;
       word-break: break-word;
     }
+    .wait-extra.road-line {
+      color: var(--sky-deep);
+      font-weight: 700;
+    }
     .wait-table td.wait-col.has-dual {
       vertical-align: middle;
       padding-top: 0.7rem;
@@ -1678,6 +1682,8 @@
         rawRss: "Raw RSS feed",
         trustedTraveler: "Trusted Traveler",
 
+        roadQueue: "Road ~{n} min",
+        roadMoving: "Road moving",
         hours: "Hours",
         hours24: "24 hours",
         midnight: "midnight",
@@ -1775,6 +1781,8 @@
         rawRss: "Fuente RSS",
         trustedTraveler: "Viajero de confianza",
 
+        roadQueue: "Fila ~{n} min",
+        roadMoving: "Camino fluido",
         hours: "Horario",
         hours24: "24 horas",
         midnight: "medianoche",
@@ -1868,6 +1876,7 @@
 
     let currentFilter = "all";
     let lastData = null;
+    let lastQueues = null;
     let lastXmlText = null;
     let lastSourceId = null;
     let lastIsLive = false;
@@ -2411,6 +2420,26 @@
       return bits.join(" · ");
     }
 
+    function queueIdForPort(port) {
+      const t = ((port && port.title) || "") + " " + (port && port.meta && port.meta.short ? port.meta.short : "");
+      if (/los\s*indios/i.test(t)) return "losIndios";
+      if (/veterans/i.test(t)) return "veterans";
+      if (/gateway/i.test(t)) return "gateway";
+      if (/b\s*&\s*m|b&m/i.test(t)) return "bm";
+      return null;
+    }
+
+    function roadQueueHtml(port) {
+      if (!lastQueues || !lastQueues.configured || !lastQueues.bridges) return "";
+      const id = queueIdForPort(port);
+      const row = id && lastQueues.bridges[id];
+      if (!row || !row.ok || row.minutes == null) return "";
+      const label = row.minutes <= 0
+        ? t("roadMoving")
+        : t("roadQueue").replace("{n}", String(row.minutes));
+      return `<span class="wait-extra road-line">${escapeHtml(label)}</span>`;
+    }
+
     /**
      * Concise wait cell:
      *  - Same wait: "60 min" + open line
@@ -2450,9 +2479,12 @@
       const openHtml = openLine
         ? `<span class="wait-extra open-line">${escapeHtml(openLine)}</span>`
         : "";
+      const roadHtml = modeKey === "passenger"
+        ? roadQueueHtml(port)
+        : "";
 
       return {
-        html: `<div class="wait-stack">${mainHtml}${openHtml}</div>`,
+        html: `<div class="wait-stack">${mainHtml}${openHtml}${roadHtml}</div>`,
         cls: (gatewayPedDual ? "has-dual " : "") + "has-" + w.cls
       };
     }
@@ -2993,6 +3025,7 @@
           lastFromAuto = !!fromAuto;
           const label = lastFromAuto ? t(lastSourceId) + " · " + t("autoRefreshed") : t(lastSourceId);
           render(data, label, lastIsLive);
+          loadQueues();
           alert.classList.remove("show");
           alert.innerHTML = "";
           loaded = true;
@@ -3163,8 +3196,16 @@
           const veh = summarizeMode(port.sections, "passenger");
           const ped = summarizeMode(port.sections, "pedestrian");
           const sentri = sentriWaitForShare(port);
+          const qid = queueIdForPort(port);
+          const qrow = lastQueues && lastQueues.bridges && qid ? lastQueues.bridges[qid] : null;
           lines.push(name);
-          lines.push("• " + t("filterVehicles") + ": " + formatWaitShare(veh && veh.primary));
+          let vehLine = "• " + t("filterVehicles") + ": " + formatWaitShare(veh && veh.primary);
+          if (qrow && qrow.ok && qrow.minutes != null) {
+            vehLine += qrow.minutes <= 0
+              ? " (" + t("roadMoving") + ")"
+              : " (" + t("roadQueue").replace("{n}", String(qrow.minutes)) + ")";
+          }
+          lines.push(vehLine);
           lines.push("• " + t("filterPedestrian") + ": " + formatWaitShare(ped && ped.primary));
           lines.push("• " + t("sentri") + ": " + formatWaitShare(sentri));
           lines.push("");
@@ -3178,6 +3219,22 @@
         url: url,
         fullText: body + "\n\n" + url
       };
+    }
+
+    async function loadQueues() {
+      if (!FEED_PROXY_URL || !String(FEED_PROXY_URL).trim()) return;
+      try {
+        const base = String(FEED_PROXY_URL).replace(/\/$/, "");
+        const res = await fetch(base + "/queues?t=" + Date.now(), {
+          cache: "no-store",
+          credentials: "omit",
+          mode: "cors"
+        });
+        if (!res.ok) return;
+        const json = await res.json();
+        lastQueues = json;
+        if (lastData) renderPorts(lastData);
+      } catch (_) { /* Google queue is optional */ }
     }
 
     async function shareTimes() {
