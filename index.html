@@ -3213,41 +3213,101 @@
       applyTheme(currentTheme() === "dark" ? "light" : "dark", true);
     }
 
+    function sharePageUrl() {
+      try {
+        const u = new URL(location.href);
+        u.search = "";
+        u.hash = "";
+        return u.toString();
+      } catch (_) {
+        return location.href;
+      }
+    }
+
+    function formatWaitShare(wait) {
+      if (!wait) return "—";
+      if (isActiveWait(wait)) return wait.minutes + " min";
+      if (wait.pending) return t("updatePending");
+      if (wait.closed) return t("closed");
+      return "—";
+    }
+
+    function sentriWaitForShare(port) {
+      for (const sec of port.sections || []) {
+        for (const lane of sec.lanes || []) {
+          if (/sentri/i.test(lane.name) && !/ready/i.test(lane.name)) {
+            return lane.wait;
+          }
+        }
+      }
+      return null;
+    }
+
     function sharePayload() {
+      const url = sharePageUrl();
       const lines = [t("shareTitle")];
+
+      const asOf = document.querySelector(".asof-bar strong");
+      if (asOf && asOf.textContent) {
+        lines.push(t("shareAsOf") + asOf.textContent);
+      }
+
       const best = document.getElementById("bestPickText");
       const pickBox = document.getElementById("bestPick");
       if (pickBox && !pickBox.hidden && best && best.textContent && best.textContent !== "—") {
         lines.push(t("bestPickKicker") + ": " + best.textContent);
       }
-      const shortEl = document.getElementById("statShort");
-      const longEl = document.getElementById("statLong");
-      if (shortEl && shortEl.textContent && shortEl.textContent !== "—") {
-        lines.push(t("statShort") + ": " + shortEl.textContent);
+
+      const data = lastData;
+      const ports = data && data.items
+        ? data.items.slice().sort(function (a, b) {
+            const an = (a.meta && a.meta.short ? a.meta.short : a.title || "").toLowerCase();
+            const bn = (b.meta && b.meta.short ? b.meta.short : b.title || "").toLowerCase();
+            return an.localeCompare(bn);
+          })
+        : [];
+
+      if (ports.length) {
+        lines.push("");
+        ports.forEach(function (port) {
+          const name = (port.meta && port.meta.short) || port.title || "—";
+          const veh = summarizeMode(port.sections, "passenger");
+          const ped = summarizeMode(port.sections, "pedestrian");
+          const sentri = sentriWaitForShare(port);
+          lines.push(name);
+          lines.push("• " + t("filterVehicles") + ": " + formatWaitShare(veh && veh.primary));
+          lines.push("• " + t("filterPedestrian") + ": " + formatWaitShare(ped && ped.primary));
+          lines.push("• " + t("sentri") + ": " + formatWaitShare(sentri));
+          lines.push("");
+        });
       }
-      if (longEl && longEl.textContent && longEl.textContent !== "—") {
-        lines.push(t("statLong") + ": " + longEl.textContent);
-      }
-      const asOf = document.querySelector(".asof-bar strong");
-      if (asOf && asOf.textContent) {
-        lines.push(t("shareAsOf") + asOf.textContent);
-      }
-      lines.push(location.href);
-      return { title: t("shareTitle"), text: lines.join("\n"), url: location.href };
+
+      const body = lines.join("\n").replace(/\n+$/, "");
+      return {
+        title: t("shareTitle"),
+        text: body,
+        url: url,
+        fullText: body + "\n\n" + url
+      };
     }
 
     async function shareTimes() {
       const payload = sharePayload();
       try {
         if (navigator.share) {
-          await navigator.share(payload);
+          // Put times + link in text only. Passing url separately can drop the
+          // body in some Android apps and duplicate the link on iOS.
+          await navigator.share({
+            title: payload.title,
+            text: payload.fullText
+          });
           return;
         }
       } catch (err) {
         if (err && err.name === "AbortError") return;
       }
       try {
-        await navigator.clipboard.writeText(payload.text);
+        await navigator.clipboard.writeText(payload.fullText);
         const toast = document.getElementById("refreshToast");
         if (toast) {
           toast.textContent = t("toastCopied");
@@ -3259,7 +3319,7 @@
           }, 1800);
         }
       } catch (_) {
-        window.prompt(t("shareTitle"), payload.text);
+        window.prompt(t("shareTitle"), payload.fullText);
       }
     }
 
