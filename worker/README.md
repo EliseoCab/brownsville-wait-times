@@ -4,9 +4,9 @@ Part of the **hybrid** data path:
 
 | Priority | Source | Role |
 |----------|--------|------|
-| 1 | **This Worker** | Live CBP XML with CORS + ~2 min cache |
-| 2 | Free CORS proxies | Temporary fallback if Worker is down |
-| 3 | GitHub Pages `data/bwt.xml` | Actions mirror (first paint / last resort) |
+| 1 | **This Worker** | Live CBP XML with CORS + ~2 min cache; last-good feed if CBP blips |
+| 2 | GitHub Pages `data/bwt.xml` | Actions mirror (fast backup) |
+| 3 | Free CORS proxies | Last resort if Worker and mirror both fail |
 
 ## Deploy (one-time, ~5 minutes)
 
@@ -56,6 +56,7 @@ On the live page, after hard-refresh, **Refresh times** should show **Live · CB
 - `GET /health` — small JSON status
 - `OPTIONS` — CORS preflight
 - **Cron every 5 min** — re-fetch CBP so the cache stays warm
+- If CBP is down, serves the last good feed (up to ~30 minutes old) instead of failing
 
 ## Redeploy after code changes
 

@@ -42,5 +42,5 @@ gh api -X POST "repos/$USER/$REPO/pages" \
 
 echo ""
 echo "Site URL: https://$USER.github.io/$REPO/"
-echo "Actions will refresh data/bwt.xml at :05 past each hour."
+echo "Actions will refresh data/bwt.xml about every 10 minutes (only when CBP times change)."
 echo "Trigger now: gh workflow run update-wait-times.yml -R $USER/$REPO"

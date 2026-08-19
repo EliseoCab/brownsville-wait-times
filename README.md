@@ -17,9 +17,9 @@ Browsers cannot call `bwt.cbp.gov` directly (**CORS**). This project uses two la
 
 | Priority | Source | Role |
 |----------|--------|------|
-| **1** | **Cloudflare Worker** ([`worker/`](worker/)) | Live CBP XML with CORS + ~2 min edge cache + 5‑min cron warm |
-| **2** | Public CORS proxies | Temporary fallback |
-| **3** | **GitHub Actions** → [`data/bwt.xml`](data/bwt.xml) | Same-origin mirror on Pages (backup / first paint) |
+| **1** | **Cloudflare Worker** ([`worker/`](worker/)) | Live CBP XML with CORS + ~2 min cache; last-good feed if CBP blips |
+| **2** | **GitHub Actions** → [`data/bwt.xml`](data/bwt.xml) | Same-origin mirror on Pages (fast backup) |
+| **3** | Public CORS proxies | Last resort only |
 
 ```text
 Browser  →  Cloudflare Worker  →  bwt.cbp.gov RSS
@@ -50,7 +50,8 @@ Commit & push. After deploy, **Refresh times** should show **Live · CBP proxy**
 
 Workflow **Update CBP wait times**:
 
-- Fetches the same CBP RSS and deploys Pages about every **10 minutes**
+- Fetches the same CBP RSS about every **10 minutes**
+- Commits and redeploys Pages **only when wait times actually change**
 - Manual: **Actions → Update CBP wait times → Run workflow**
 - GitHub sometimes **skips or delays** schedules; the lag check self-heals when that happens
 

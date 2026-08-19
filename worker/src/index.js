@@ -14,6 +14,8 @@ const CBP_URL =
 /** Stable cache key (not the browser request URL). */
 const CACHE_KEY = "https://brownsville-bwt.internal/feed/bwt.xml";
 const CACHE_TTL_SECONDS = 120;
+/** Keep a longer copy in the Cache API so we can serve it if CBP is down. */
+const STALE_TTL_SECONDS = 1800;
 
 function corsHeaders(extra) {
   return Object.assign(
@@ -55,32 +57,58 @@ function xmlResponse(text, source, maxAge) {
           ? "no-store"
           : "public, max-age=" + maxAge + ", s-maxage=" + maxAge,
       "X-BWT-Source": source,
+      "X-BWT-Stored-At": new Date().toISOString(),
     }),
   });
 }
 
-async function cachedFeed(ctx) {
-  const cache = caches.default;
+function withSource(response, source) {
+  const headers = new Headers(response.headers);
+  const cors = corsHeaders({ "X-BWT-Source": source });
+  Object.keys(cors).forEach(function (k) {
+    headers.set(k, cors[k]);
+  });
+  return new Response(response.body, { status: response.status, headers: headers });
+}
+
+async function putCachedFeed(text, source) {
   const cacheReq = new Request(CACHE_KEY);
-  const hit = await cache.match(cacheReq);
-  if (hit) {
-    // Re-apply CORS in case an older object was stored without full headers
-    const headers = new Headers(hit.headers);
-    const cors = corsHeaders({ "X-BWT-Source": "cache" });
-    Object.keys(cors).forEach(function (k) {
-      headers.set(k, cors[k]);
-    });
-    return new Response(hit.body, { status: hit.status, headers: headers });
+  const stored = xmlResponse(text, source, STALE_TTL_SECONDS);
+  await caches.default.put(cacheReq, stored);
+}
+
+async function matchCachedFeed() {
+  const hit = await caches.default.match(new Request(CACHE_KEY));
+  return hit || null;
+}
+
+function cacheAgeSeconds(response) {
+  const raw = response.headers.get("X-BWT-Stored-At");
+  if (!raw) return Number.POSITIVE_INFINITY;
+  const ms = Date.now() - Date.parse(raw);
+  return Number.isFinite(ms) ? ms / 1000 : Number.POSITIVE_INFINITY;
+}
+
+async function cachedFeed(ctx) {
+  const hit = await matchCachedFeed();
+  if (hit && cacheAgeSeconds(hit) < CACHE_TTL_SECONDS) {
+    return withSource(hit, "cache");
   }
 
-  const text = await fetchCbpFeed();
-  const response = xmlResponse(text, "cbp-live", CACHE_TTL_SECONDS);
-  if (ctx && ctx.waitUntil) {
-    ctx.waitUntil(cache.put(cacheReq, response.clone()));
-  } else {
-    await cache.put(cacheReq, response.clone());
+  try {
+    const text = await fetchCbpFeed();
+    if (ctx && ctx.waitUntil) {
+      ctx.waitUntil(putCachedFeed(text, "cbp-live"));
+    } else {
+      await putCachedFeed(text, "cbp-live");
+    }
+    return xmlResponse(text, "cbp-live", CACHE_TTL_SECONDS);
+  } catch (err) {
+    if (hit) {
+      return withSource(hit, "stale");
+    }
+    throw err;
   }
-  return response;
 }
 
 export default {
@@ -114,12 +142,25 @@ export default {
 
       // Force a fresh pull past the edge cache
       if (url.searchParams.get("fresh") === "1") {
-        const text = await fetchCbpFeed();
-        return xmlResponse(text, "cbp-live-fresh", 0);
+        try {
+          const text = await fetchCbpFeed();
+          ctx.waitUntil(putCachedFeed(text, "cbp-live-fresh"));
+          return xmlResponse(text, "cbp-live-fresh", 0);
+        } catch (freshErr) {
+          const stale = await matchCachedFeed();
+          if (stale) {
+            return withSource(stale, "stale");
+          }
+          throw freshErr;
+        }
       }
 
       return await cachedFeed(ctx);
     } catch (err) {
+      const stale = await matchCachedFeed();
+      if (stale) {
+        return withSource(stale, "stale");
+      }
       const message = err && err.message ? err.message : String(err);
       return new Response(JSON.stringify({ error: message }), {
         status: 502,
@@ -132,9 +173,12 @@ export default {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(
       (async function () {
-        const text = await fetchCbpFeed();
-        const response = xmlResponse(text, "cbp-cron", CACHE_TTL_SECONDS);
-        await caches.default.put(new Request(CACHE_KEY), response);
+        try {
+          const text = await fetchCbpFeed();
+          await putCachedFeed(text, "cbp-cron");
+        } catch (_) {
+          // Keep the last good cache if CBP blips during cron.
+        }
       })()
     );
   },
