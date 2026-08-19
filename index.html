@@ -3120,27 +3120,30 @@
       }
     }
 
+    // Figure space is digit-wide, so columns stay lined up in Messages/WhatsApp.
+    const SHARE_PAD = "\u2007";
+
     function padEndShare(s, n) {
       s = String(s);
-      return s.length >= n ? s : s + " ".repeat(n - s.length);
+      return s.length >= n ? s : s + SHARE_PAD.repeat(n - s.length);
     }
 
     function padStartShare(s, n) {
       s = String(s);
-      return s.length >= n ? s : " ".repeat(n - s.length) + s;
+      return s.length >= n ? s : SHARE_PAD.repeat(n - s.length) + s;
     }
 
     function formatShareCell(wait) {
-      if (!wait) return "—";
+      if (!wait) return "-";
       if (isActiveWait(wait)) return String(wait.minutes);
       if (wait.pending) return "Pending";
       if (wait.closed) return "Closed";
-      return "—";
+      return "-";
     }
 
     function shareTableRow(name, cells, nameW, cellW) {
       return padEndShare(name, nameW) + cells.map(function (c) {
-        return "  " + padStartShare(c, cellW);
+        return " | " + padStartShare(c, cellW);
       }).join("");
     }
 
@@ -3222,10 +3225,9 @@
       const payload = sharePayload();
       try {
         if (navigator.share) {
-          // Put times + link in text only. Passing url separately can drop the
-          // body in some Android apps and duplicate the link on iOS.
+          // Text only. A separate title repeats "Brownsville wait times";
+          // a separate url can drop the body on Android.
           await navigator.share({
-            title: payload.title,
             text: payload.fullText
           });
           return;
