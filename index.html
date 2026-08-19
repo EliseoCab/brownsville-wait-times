@@ -3120,18 +3120,35 @@
       }
     }
 
-    function formatWaitShare(wait) {
+    function padEndShare(s, n) {
+      s = String(s);
+      return s.length >= n ? s : s + " ".repeat(n - s.length);
+    }
+
+    function padStartShare(s, n) {
+      s = String(s);
+      return s.length >= n ? s : " ".repeat(n - s.length) + s;
+    }
+
+    function formatShareCell(wait) {
       if (!wait) return "—";
-      if (isActiveWait(wait)) return wait.minutes + " min";
-      if (wait.pending) return t("updatePending");
-      if (wait.closed) return t("closed");
+      if (isActiveWait(wait)) return String(wait.minutes);
+      if (wait.pending) return "Pending";
+      if (wait.closed) return "Closed";
       return "—";
     }
 
-    function sentriWaitForShare(port) {
+    function shareTableRow(name, cells, nameW, cellW) {
+      return padEndShare(name, nameW) + cells.map(function (c) {
+        return "  " + padStartShare(c, cellW);
+      }).join("");
+    }
+
+    function laneWaitForShare(port, namePart) {
+      const re = new RegExp(namePart, "i");
       for (const sec of port.sections || []) {
         for (const lane of sec.lanes || []) {
-          if (/sentri/i.test(lane.name) && !/ready/i.test(lane.name)) {
+          if (re.test(lane.name) && !/ready/i.test(lane.name)) {
             return lane.wait;
           }
         }
@@ -3141,11 +3158,13 @@
 
     function sharePayload() {
       const url = sharePageUrl();
-      const lines = [t("shareTitle")];
+      const nameW = 10;
+      const cellW = 7;
+      const lines = ["Brownsville wait times"];
 
       const asOf = document.querySelector(".asof-bar strong");
       if (asOf && asOf.textContent) {
-        lines.push(t("shareAsOf") + asOf.textContent);
+        lines.push("Report time: " + asOf.textContent);
       }
 
       const data = lastData;
@@ -3159,22 +3178,40 @@
 
       if (ports.length) {
         lines.push("");
+        lines.push("Passenger");
+        lines.push(shareTableRow("Bridge", ["Veh", "Ped", "SENTRI"], nameW, cellW));
         ports.forEach(function (port) {
           const name = (port.meta && port.meta.short) || port.title || "—";
           const veh = summarizeMode(port.sections, "passenger");
           const ped = summarizeMode(port.sections, "pedestrian");
-          const sentri = sentriWaitForShare(port);
-          lines.push(name);
-          lines.push("• " + t("filterVehicles") + ": " + formatWaitShare(veh && veh.primary));
-          lines.push("• " + t("filterPedestrian") + ": " + formatWaitShare(ped && ped.primary));
-          lines.push("• " + t("sentri") + ": " + formatWaitShare(sentri));
-          lines.push("");
+          const sentri = laneWaitForShare(port, "sentri");
+          lines.push(shareTableRow(name, [
+            formatShareCell(veh && veh.primary),
+            formatShareCell(ped && ped.primary),
+            formatShareCell(sentri)
+          ], nameW, cellW));
         });
+
+        const commercialPorts = ports.filter(isCommercialFastPort);
+        if (commercialPorts.length) {
+          lines.push("");
+          lines.push("Commercial");
+          lines.push(shareTableRow("Bridge", ["Comm", "FAST"], nameW, cellW));
+          commercialPorts.forEach(function (port) {
+            const name = (port.meta && port.meta.short) || port.title || "—";
+            const comm = summarizeMode(port.sections, "commercial");
+            const fast = laneWaitForShare(port, "fast");
+            lines.push(shareTableRow(name, [
+              formatShareCell(comm && comm.primary),
+              formatShareCell(fast)
+            ], nameW, cellW));
+          });
+        }
       }
 
       const body = lines.join("\n").replace(/\n+$/, "");
       return {
-        title: t("shareTitle"),
+        title: "Brownsville wait times",
         text: body,
         url: url,
         fullText: body + "\n\n" + url
@@ -3209,7 +3246,7 @@
           }, 1800);
         }
       } catch (_) {
-        window.prompt(t("shareTitle"), payload.fullText);
+        window.prompt(payload.title, payload.fullText);
       }
     }
 
