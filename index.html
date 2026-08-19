@@ -3120,31 +3120,12 @@
       }
     }
 
-    // Figure space is digit-wide, so columns stay lined up in Messages/WhatsApp.
-    const SHARE_PAD = "\u2007";
-
-    function padEndShare(s, n) {
-      s = String(s);
-      return s.length >= n ? s : s + SHARE_PAD.repeat(n - s.length);
-    }
-
-    function padStartShare(s, n) {
-      s = String(s);
-      return s.length >= n ? s : SHARE_PAD.repeat(n - s.length) + s;
-    }
-
     function formatShareCell(wait) {
       if (!wait) return "-";
       if (isActiveWait(wait)) return String(wait.minutes);
       if (wait.pending) return "Pending";
       if (wait.closed) return "Closed";
       return "-";
-    }
-
-    function shareTableRow(name, cells, nameW, cellW) {
-      return padEndShare(name, nameW) + cells.map(function (c) {
-        return " | " + padStartShare(c, cellW);
-      }).join("");
     }
 
     function laneWaitForShare(port, namePart) {
@@ -3161,8 +3142,6 @@
 
     function sharePayload() {
       const url = sharePageUrl();
-      const nameW = 10;
-      const cellW = 7;
       const lines = ["Brownsville wait times"];
 
       const asOf = document.querySelector(".asof-bar strong");
@@ -3182,32 +3161,30 @@
       if (ports.length) {
         lines.push("");
         lines.push("Passenger");
-        lines.push(shareTableRow("Bridge", ["Veh", "Ped", "SENTRI"], nameW, cellW));
         ports.forEach(function (port) {
-          const name = (port.meta && port.meta.short) || port.title || "—";
+          const name = (port.meta && port.meta.short) || port.title || "-";
           const veh = summarizeMode(port.sections, "passenger");
           const ped = summarizeMode(port.sections, "pedestrian");
           const sentri = laneWaitForShare(port, "sentri");
-          lines.push(shareTableRow(name, [
-            formatShareCell(veh && veh.primary),
-            formatShareCell(ped && ped.primary),
-            formatShareCell(sentri)
-          ], nameW, cellW));
+          lines.push(
+            name + ": Veh " + formatShareCell(veh && veh.primary) +
+            ", Ped " + formatShareCell(ped && ped.primary) +
+            ", SENTRI " + formatShareCell(sentri)
+          );
         });
 
         const commercialPorts = ports.filter(isCommercialFastPort);
         if (commercialPorts.length) {
           lines.push("");
           lines.push("Commercial");
-          lines.push(shareTableRow("Bridge", ["Comm", "FAST"], nameW, cellW));
           commercialPorts.forEach(function (port) {
-            const name = (port.meta && port.meta.short) || port.title || "—";
+            const name = (port.meta && port.meta.short) || port.title || "-";
             const comm = summarizeMode(port.sections, "commercial");
             const fast = laneWaitForShare(port, "fast");
-            lines.push(shareTableRow(name, [
-              formatShareCell(comm && comm.primary),
-              formatShareCell(fast)
-            ], nameW, cellW));
+            lines.push(
+              name + ": Comm " + formatShareCell(comm && comm.primary) +
+              ", FAST " + formatShareCell(fast)
+            );
           });
         }
       }
