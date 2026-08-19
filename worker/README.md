@@ -54,28 +54,9 @@ On the live page, after hard-refresh, **Refresh times** should show **Live · CB
 - `GET /` — CBP Brownsville RSS (cached ~2 minutes at the edge)
 - `GET /?fresh=1` — skip edge cache, hit CBP now
 - `GET /health` — small JSON status
-- `GET /queues` — Google vehicle-queue estimates (needs `GOOGLE_MAPS_API_KEY` secret)
 - `OPTIONS` — CORS preflight
 - **Cron every 5 min** — re-fetch CBP so the cache stays warm
 - If CBP is down, serves the last good feed (up to ~30 minutes old) instead of failing
-
-### Google road-queue number (optional)
-
-Store the Routes API key as a Worker secret (never in `index.html`):
-
-```bash
-cd worker
-npx wrangler secret put GOOGLE_MAPS_API_KEY
-```
-
-Paste the key when prompted. Wrangler deploys again. Then:
-
-```bash
-curl -sS "https://brownsville-bwt.borderwait.workers.dev/health"
-curl -sS "https://brownsville-bwt.borderwait.workers.dev/queues"
-```
-
-`queuesConfigured` should be `true`. The page shows **Road ~N min** under vehicle waits.
 
 ## Redeploy after code changes
 
