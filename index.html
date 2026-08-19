@@ -73,16 +73,17 @@
 
     html[data-theme="dark"] {
       color-scheme: dark;
-      --ink: #e8eef7;
-      --ink-soft: #d5deea;
-      --slate: #b4c0d0;
-      --muted: #8b9bb0;
-      --line: #2a3a52;
-      --line-soft: #1c2839;
+      --ink: #f4f7fb;
+      --ink-soft: #e4ebf4;
+      --slate: #c9d4e2;
+      --muted: #b4c2d4;
+      --line: #3a4d68;
+      --line-soft: #243044;
       --paper: #0a1220;
-      --white: #121c2e;
+      --white: #162033;
       --navy: #07101c;
       --navy-mid: #0d1f38;
+      --sky-deep: #7dd3fc;
       --green-bg: #052e22;
       --amber-bg: #2a1f08;
       --orange-bg: #2a1408;
@@ -109,6 +110,15 @@
 
     a { color: var(--sky-deep); text-underline-offset: 2px; }
     a:hover { color: var(--navy); }
+    html[data-theme="dark"] a:hover { color: #e0f2fe; }
+    html[data-theme="dark"] body {
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+    html[data-theme="dark"] .hero h1,
+    html[data-theme="dark"] .footer-brand {
+      color: #f8fbff;
+    }
 
     /* ——— Top bar ——— */
     .topbar {
@@ -301,7 +311,31 @@
     .btn-install {
       min-height: 44px;
       white-space: nowrap;
+      font-weight: 700;
     }
+    .install-help {
+      margin: 0 0 1rem;
+      padding: 0.9rem 1.1rem;
+      border-radius: 12px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-sm);
+      color: var(--ink);
+      font-size: 0.9rem;
+    }
+    .install-help[hidden] { display: none !important; }
+    .install-help h3 {
+      font-size: 0.95rem;
+      font-weight: 750;
+      margin-bottom: 0.4rem;
+    }
+    .install-help ol {
+      margin: 0.35rem 0 0.8rem 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .install-help .btn { margin-top: 0.15rem; }
     .btn-refresh {
       box-shadow: var(--shadow-sm);
       border: 1px solid transparent;
@@ -397,6 +431,34 @@
       box-shadow: var(--shadow-sm);
     }
     .btn-light:hover { border-color: #cbd5e1; background: var(--line-soft); }
+    html[data-theme="dark"] .btn-primary {
+      background: #38bdf8;
+      color: #041018;
+      box-shadow: 0 4px 16px rgba(56, 189, 248, 0.28);
+    }
+    html[data-theme="dark"] .btn-primary:hover {
+      background: #7dd3fc;
+      color: #041018;
+    }
+    html[data-theme="dark"] .btn-light {
+      background: #243656;
+      color: #f4f7fb;
+      border-color: #6b82a3;
+      font-weight: 700;
+    }
+    html[data-theme="dark"] .btn-light:hover {
+      background: #314868;
+      color: #fff;
+      border-color: #93aac8;
+    }
+    html[data-theme="dark"] .filter-btn {
+      color: #d7e2ef;
+      font-weight: 650;
+    }
+    html[data-theme="dark"] .filter-btn.active {
+      background: #38bdf8;
+      color: #041018;
+    }
 
     .hero-meta {
       display: grid;
@@ -969,10 +1031,8 @@
       .refresh-row .btn-install {
         width: 100%;
         justify-content: center;
+        grid-column: 1 / -1;
       }
-      .refresh-row .btn-share { grid-column: 1 / -1; }
-      .refresh-row:has(.btn-install:not([hidden])) .btn-share { grid-column: 1; }
-      .refresh-row .btn-install:not([hidden]) { grid-column: 2; }
       .refresh-row .refresh-toast {
         grid-column: 1 / -1;
       }
@@ -1421,25 +1481,6 @@
       gap: 0.75rem 1.25rem;
       font-size: 0.875rem;
     }
-    .visit-ticker {
-      margin-top: 1.35rem;
-      padding-top: 1rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.12);
-      font-family: var(--font);
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: rgba(226, 232, 240, 0.78);
-      line-height: 1.4;
-    }
-    .visit-ticker .visit-count {
-      font-family: var(--display);
-      font-size: 1.15em;
-      font-weight: 400;
-      color: #7dd3fc;
-      font-variant-numeric: tabular-nums;
-      letter-spacing: -0.02em;
-    }
-
     .empty {
       grid-column: 1 / -1;
       text-align: center;
@@ -1594,10 +1635,15 @@
         <span aria-hidden="true">↗</span>
         <span data-i18n="share">Share</span>
       </button>
-      <button type="button" class="btn btn-light btn-install" id="installBtn" hidden onclick="installApp()">
+      <button type="button" class="btn btn-light btn-install" id="installBtn" onclick="installApp()">
         <span data-i18n="install">Install</span>
       </button>
       <span class="refresh-toast" id="refreshToast" role="status" aria-live="polite"></span>
+    </div>
+    <div class="install-help" id="installHelp" hidden role="dialog" aria-labelledby="installHelpTitle">
+      <h3 id="installHelpTitle" data-i18n="installHelpTitle">Add this page to your Home Screen</h3>
+      <ol id="installHelpSteps"></ol>
+      <button type="button" class="btn btn-primary" onclick="closeInstallHelp()" data-i18n="installHelpOk">Got it</button>
     </div>
     <div class="ports" id="portGrid" aria-live="polite"></div>
 
@@ -1616,11 +1662,6 @@
         <span><span data-i18n="source">Source:</span> <a href="https://bwt.cbp.gov" target="_blank" rel="noopener">CBP Border Wait Times (bwt.cbp.gov)</a></span>
         <a href="https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43" target="_blank" rel="noopener" data-i18n="rawRss">Raw RSS feed</a>
         <a href="https://www.cbp.gov/travel/trusted-traveler-programs" target="_blank" rel="noopener" data-i18n="trustedTraveler">Trusted Traveler</a>
-      </div>
-    </div>
-    <div class="footer-inner" style="margin-top:0;padding-top:0">
-      <div class="visit-ticker" id="visitTicker" aria-live="polite">
-        <span data-i18n="visits">Page Visits:</span> <span class="visit-count" id="visitCount">—</span> <span data-i18n="visitsUnique">(All-Time Unique)</span>
       </div>
     </div>
   </footer>
@@ -1685,8 +1726,7 @@
         source: "Source:",
         rawRss: "Raw RSS feed",
         trustedTraveler: "Trusted Traveler",
-        visits: "Page Visits:",
-        visitsUnique: "(All-Time Unique)",
+
         bestPickKicker: "Best crossing now",
         bestPickVehicle: "{bridge} · {mins} min general vehicle",
         bestPickPed: "{bridge} · {mins} min pedestrian",
@@ -1714,6 +1754,14 @@
         themeToLight: "Switch to light theme",
         themeToDark: "Switch to dark theme",
         install: "Install",
+        installHelpTitle: "Add this page to your Home Screen",
+        installHelpOk: "Got it",
+        installIos1: "Tap the Share button (square with an arrow).",
+        installIos2: "Scroll and tap Add to Home Screen.",
+        installIos3: "Tap Add. The app icon will appear on your Home Screen.",
+        installOther1: "Open your browser menu (⋮ or ⋯).",
+        installOther2: "Tap Install app or Add to Home Screen.",
+        installOther3: "Confirm. You can open it like any other app.",
         colBridge: "Bridge",
         na: "N/A",
         closed: "Closed",
@@ -1780,8 +1828,7 @@
         source: "Fuente:",
         rawRss: "Fuente RSS",
         trustedTraveler: "Viajero de confianza",
-        visits: "Visitas:",
-        visitsUnique: "(únicas de todos los tiempos)",
+
         bestPickKicker: "Mejor cruce ahora",
         bestPickVehicle: "{bridge} · {mins} min en vehículos generales",
         bestPickPed: "{bridge} · {mins} min peatonal",
@@ -1809,6 +1856,14 @@
         themeToLight: "Cambiar a modo claro",
         themeToDark: "Cambiar a modo oscuro",
         install: "Instalar",
+        installHelpTitle: "Agrega esta página a tu pantalla de inicio",
+        installHelpOk: "Entendido",
+        installIos1: "Toca el botón Compartir (cuadrado con flecha).",
+        installIos2: "Desplázate y toca Agregar a pantalla de inicio.",
+        installIos3: "Toca Agregar. El ícono aparecerá en tu pantalla de inicio.",
+        installOther1: "Abre el menú del navegador (⋮ o ⋯).",
+        installOther2: "Toca Instalar app o Agregar a pantalla de inicio.",
+        installOther3: "Confirma. Podrás abrirla como cualquier otra app.",
         colBridge: "Puente",
         na: "N/A",
         closed: "Cerrado",
@@ -3124,6 +3179,8 @@
       currentLang = lang;
       try { localStorage.setItem(LANG_KEY, lang); } catch (_) { /* ignore */ }
       applyStaticLang();
+      const help = document.getElementById("installHelp");
+      if (help && !help.hidden) fillInstallHelp();
       if (lastXmlText) {
         const data = parseRss(lastXmlText);
         const label = lastFromAuto ? t(lastSourceId || "liveProxy") + " · " + t("autoRefreshed") : t(lastSourceId || "liveProxy");
@@ -3206,133 +3263,97 @@
       }
     }
 
-    function installApp() {
-      if (!deferredInstallPrompt) return;
-      deferredInstallPrompt.prompt();
-      deferredInstallPrompt.userChoice.finally(function () {
-        deferredInstallPrompt = null;
+    function isStandaloneApp() {
+      return window.matchMedia("(display-mode: standalone)").matches
+        || window.navigator.standalone === true;
+    }
+
+    function isIosDevice() {
+      const ua = navigator.userAgent || "";
+      return /iphone|ipad|ipod/i.test(ua)
+        || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    }
+
+    function fillInstallHelp() {
+      const list = document.getElementById("installHelpSteps");
+      if (!list) return;
+      const keys = isIosDevice()
+        ? ["installIos1", "installIos2", "installIos3"]
+        : ["installOther1", "installOther2", "installOther3"];
+      list.innerHTML = keys.map(function (key) {
+        return "<li>" + escapeHtml(t(key)) + "</li>";
+      }).join("");
+    }
+
+    function showInstallHelp() {
+      fillInstallHelp();
+      const box = document.getElementById("installHelp");
+      if (box) {
+        box.hidden = false;
+        box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }
+
+    function closeInstallHelp() {
+      const box = document.getElementById("installHelp");
+      if (box) box.hidden = true;
+    }
+
+    async function installApp() {
+      if (isStandaloneApp()) {
         const btn = document.getElementById("installBtn");
         if (btn) btn.hidden = true;
-      });
+        return;
+      }
+      if (deferredInstallPrompt) {
+        try {
+          deferredInstallPrompt.prompt();
+          const choice = await deferredInstallPrompt.userChoice;
+          deferredInstallPrompt = null;
+          if (choice && choice.outcome === "accepted") {
+            const btn = document.getElementById("installBtn");
+            if (btn) btn.hidden = true;
+            closeInstallHelp();
+            return;
+          }
+        } catch (_) {
+          deferredInstallPrompt = null;
+        }
+      }
+      showInstallHelp();
     }
 
     function registerServiceWorker() {
       if (!("serviceWorker" in navigator)) return;
       if (location.protocol === "file:") return;
-      window.addEventListener("load", function () {
-        navigator.serviceWorker.register(new URL("sw.js", location.href)).catch(function () { /* ignore */ });
-      });
+      navigator.serviceWorker.register(new URL("sw.js", location.href)).catch(function () { /* ignore */ });
+    }
+
+    function setupInstallButton() {
+      const btn = document.getElementById("installBtn");
+      if (!btn) return;
+      btn.hidden = isStandaloneApp();
     }
 
     window.addEventListener("beforeinstallprompt", function (event) {
       event.preventDefault();
       deferredInstallPrompt = event;
       const btn = document.getElementById("installBtn");
-      if (btn) btn.hidden = false;
+      if (btn && !isStandaloneApp()) btn.hidden = false;
+    });
+
+    window.addEventListener("appinstalled", function () {
+      deferredInstallPrompt = null;
+      const btn = document.getElementById("installBtn");
+      if (btn) btn.hidden = true;
+      closeInstallHelp();
     });
 
     applyTheme(currentTheme(), false);
     applyStaticLang();
+    setupInstallButton();
     registerServiceWorker();
     loadData(true);
-
-    /**
-     * Unique visitor ticker: "Page Visits: N (All-Time)"
-     * Counts each browser once (localStorage). Refresh does NOT increment.
-     * Not cross-device unique without a server/login — same person on phone + laptop = 2.
-     */
-    async function trackPageVisit() {
-      const countEl = document.getElementById("visitCount");
-      if (!countEl) return;
-
-      const STORAGE_KEY = "bwt-unique-visitor-v1";
-      const namespace = "eliseocab-brownsville-wait-times";
-      // New counter key so all-time unique is not mixed with old per-refresh hits
-      const key = "unique-visitors";
-      const pageUrl = "https://eliseocab.github.io/brownsville-wait-times/unique";
-
-      function setCount(n) {
-        const num = Number(n);
-        if (!Number.isFinite(num) || num < 0) return false;
-        countEl.textContent = Math.floor(num).toLocaleString();
-        return true;
-      }
-
-      function extractCount(data) {
-        if (data == null) return null;
-        return (
-          data.value ??
-          data.count ??
-          data.total ??
-          data.hits ??
-          data?.data?.value ??
-          data?.data?.count ??
-          null
-        );
-      }
-
-      let alreadyCounted = false;
-      try {
-        alreadyCounted = localStorage.getItem(STORAGE_KEY) === "1";
-      } catch (_) {
-        alreadyCounted = false;
-      }
-
-      // Increment only for a first-time visitor in this browser
-      if (!alreadyCounted) {
-        try {
-          const res = await fetch(
-            "https://abacus.jasoncameron.dev/hit/" + namespace + "/" + key,
-            { mode: "cors", credentials: "omit", cache: "no-store" }
-          );
-          if (res.ok) {
-            const data = await res.json();
-            const n = extractCount(data);
-            if (setCount(n)) {
-              try { localStorage.setItem(STORAGE_KEY, "1"); } catch (_) { /* private mode */ }
-              return;
-            }
-          }
-        } catch (_) { /* fall through */ }
-
-        // Badge increment once (unique URL path so it doesn't reuse old per-refresh series)
-        try {
-          const img = new Image();
-          img.referrerPolicy = "no-referrer-when-downgrade";
-          img.src =
-            "https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=" +
-            encodeURIComponent(pageUrl) +
-            "&count_bg=%230ea5e9&title_bg=%230b1f3a&title=visits&edge_flat=true&t=" +
-            Date.now();
-          try { localStorage.setItem(STORAGE_KEY, "1"); } catch (_) { /* ignore */ }
-        } catch (_) { /* ignore */ }
-      }
-
-      // Returning visitor (or after increment): read current total without incrementing
-      const readUrls = [
-        "https://abacus.jasoncameron.dev/get/" + namespace + "/" + key,
-        "https://abacus.jasoncameron.dev/hit/" + namespace + "/" + key + "/get"
-      ];
-
-      for (const url of readUrls) {
-        try {
-          const res = await fetch(url, { mode: "cors", credentials: "omit", cache: "no-store" });
-          if (!res.ok) continue;
-          const data = await res.json();
-          if (setCount(extractCount(data))) return;
-        } catch (_) { /* try next */ }
-      }
-
-      // If we just counted but couldn't read a total, show at least 1 for this browser
-      if (!alreadyCounted) {
-        setCount(1);
-        return;
-      }
-
-      countEl.textContent = "—";
-    }
-
-    trackPageVisit();
   </script>
 </body>
 </html>
