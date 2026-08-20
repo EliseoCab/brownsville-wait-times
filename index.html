@@ -3165,12 +3165,12 @@
           const name = (port.meta && port.meta.short) || port.title || "-";
           const veh = summarizeMode(port.sections, "passenger");
           const ped = summarizeMode(port.sections, "pedestrian");
-          const sentri = laneWaitForShare(port, "sentri");
-          lines.push(
-            name + ": Veh " + formatShareCell(veh && veh.primary) +
-            ", Ped " + formatShareCell(ped && ped.primary) +
-            ", SENTRI " + formatShareCell(sentri)
-          );
+          let line = name + ": Veh " + formatShareCell(veh && veh.primary) +
+            ", Ped " + formatShareCell(ped && ped.primary);
+          if (isVeteransPort(port)) {
+            line += ", SENTRI " + formatShareCell(laneWaitForShare(port, "sentri"));
+          }
+          lines.push(line);
         });
 
         const commercialPorts = ports.filter(isCommercialFastPort);
