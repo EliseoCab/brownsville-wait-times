@@ -2828,7 +2828,8 @@
       }
     }
 
-    function dataSources() {
+    function dataSources(opts) {
+      opts = opts || {};
       // Hybrid path (most → least preferred):
       // 1) Cloudflare Worker → live CBP XML + CORS
       // 2) Same-origin GitHub Pages mirror (fast, may lag a few minutes)
@@ -2837,11 +2838,16 @@
       const sources = [];
 
       if (FEED_PROXY_URL && String(FEED_PROXY_URL).trim()) {
+        let proxyUrl = String(FEED_PROXY_URL).replace(/\/$/, "");
+        // Manual Refresh bypasses the Worker edge cache so the as-of hour matches CBP
+        if (opts.forceFresh) {
+          proxyUrl += (proxyUrl.indexOf("?") >= 0 ? "&" : "?") + "fresh=1";
+        }
         sources.push({
-          url: String(FEED_PROXY_URL).replace(/\/$/, ""),
+          url: proxyUrl,
           id: "liveProxy",
           live: true,
-          timeoutMs: 8000
+          timeoutMs: opts.forceFresh ? 12000 : 8000
         });
       }
 
@@ -2971,7 +2977,7 @@
       const errors = [];
       let loaded = false;
 
-      for (const src of dataSources()) {
+      for (const src of dataSources({ forceFresh: manual })) {
         try {
           const text = await fetchText(src.url, {
             unwrap: src.unwrap,

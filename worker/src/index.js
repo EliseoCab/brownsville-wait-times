@@ -48,6 +48,8 @@ async function fetchCbpFeed() {
 }
 
 function xmlResponse(text, source, maxAge) {
+  // Client/CDN TTL must stay short. Long Cache-Control here made Cloudflare
+  // keep serving an old hour for up to 30 minutes after CBP updated.
   return new Response(text, {
     status: 200,
     headers: corsHeaders({
@@ -62,9 +64,17 @@ function xmlResponse(text, source, maxAge) {
   });
 }
 
-function withSource(response, source) {
+function withSource(response, source, clientMaxAge) {
   const headers = new Headers(response.headers);
-  const cors = corsHeaders({ "X-BWT-Source": source });
+  const age =
+    typeof clientMaxAge === "number" ? clientMaxAge : CACHE_TTL_SECONDS;
+  const cors = corsHeaders({
+    "X-BWT-Source": source,
+    "Cache-Control":
+      age === 0
+        ? "no-store"
+        : "public, max-age=" + age + ", s-maxage=" + age,
+  });
   Object.keys(cors).forEach(function (k) {
     headers.set(k, cors[k]);
   });
@@ -73,6 +83,7 @@ function withSource(response, source) {
 
 async function putCachedFeed(text, source) {
   const cacheReq = new Request(CACHE_KEY);
+  // Store for stale-if-error use; client TTL is overwritten on the way out.
   const stored = xmlResponse(text, source, STALE_TTL_SECONDS);
   await caches.default.put(cacheReq, stored);
 }
@@ -92,7 +103,7 @@ function cacheAgeSeconds(response) {
 async function cachedFeed(ctx) {
   const hit = await matchCachedFeed();
   if (hit && cacheAgeSeconds(hit) < CACHE_TTL_SECONDS) {
-    return withSource(hit, "cache");
+    return withSource(hit, "cache", CACHE_TTL_SECONDS);
   }
 
   try {
@@ -105,7 +116,8 @@ async function cachedFeed(ctx) {
     return xmlResponse(text, "cbp-live", CACHE_TTL_SECONDS);
   } catch (err) {
     if (hit) {
-      return withSource(hit, "stale");
+      // Stale backup only — tell browsers not to keep it long
+      return withSource(hit, "stale", 30);
     }
     throw err;
   }
@@ -147,7 +159,7 @@ export default {
         } catch (freshErr) {
           const stale = await matchCachedFeed();
           if (stale) {
-            return withSource(stale, "stale");
+            return withSource(stale, "stale", 30);
           }
           throw freshErr;
         }
@@ -157,7 +169,7 @@ export default {
     } catch (err) {
       const stale = await matchCachedFeed();
       if (stale) {
-        return withSource(stale, "stale");
+        return withSource(stale, "stale", 30);
       }
       const message = err && err.message ? err.message : String(err);
       return new Response(JSON.stringify({ error: message }), {
