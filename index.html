@@ -2458,6 +2458,30 @@
       };
     }
 
+    /** Parse CBP "Date: 8/22/2026" into a local Date at midnight (or null). */
+    function parseCbpDate(dateStr) {
+      if (!dateStr || dateStr === "—") return null;
+      const m = String(dateStr).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (!m) return null;
+      const month = parseInt(m[1], 10);
+      const day = parseInt(m[2], 10);
+      const year = parseInt(m[3], 10);
+      const d = new Date(year, month - 1, day);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    /** "8/22/2026" → "Aug 22, 2026" (or Spanish equivalent). */
+    function formatReportDate(dateStr) {
+      const d = parseCbpDate(dateStr);
+      if (!d) return dateStr && dateStr !== "—" ? String(dateStr).trim() : "";
+      const locale = currentLang === "es" ? "es-US" : "en-US";
+      return d.toLocaleDateString(locale, {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+      });
+    }
+
     /** Parse "3:00 pm CDT" / "11:00 am CDT" into minutes since midnight for ordering. */
     function asOfSortKey(asOf) {
       if (!asOf || asOf === "—") return -1;
@@ -2469,23 +2493,41 @@
       return h * 60 + min;
     }
 
-    /** Single report time for the bar — newest "As of" across all active lanes (never list two). */
+    /**
+     * Newest report stamp across active lanes — date (from CBP Date:) + time (At … CDT).
+     * Returns { date, time } or null.
+     */
     function collectAsOf(data) {
       let best = null;
       let bestKey = -1;
       for (const port of data.items) {
+        const d = parseCbpDate(port.date);
+        const dateKey = d
+          ? d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate()
+          : 0;
         for (const sec of port.sections) {
           for (const lane of sec.lanes) {
             if (!isActiveWait(lane.wait) || !lane.wait.asOf || lane.wait.asOf === "—") continue;
-            const key = asOfSortKey(lane.wait.asOf);
+            const timeKey = asOfSortKey(lane.wait.asOf);
+            if (timeKey < 0) continue;
+            // Prefer later calendar day, then later clock time
+            const key = dateKey * 10000 + timeKey;
             if (key >= bestKey) {
               bestKey = key;
-              best = lane.wait.asOf;
+              best = { date: port.date || "", time: lane.wait.asOf };
             }
           }
         }
       }
       return best;
+    }
+
+    /** "Aug 22, 2026 · 5:00 am CDT" */
+    function formatReportStamp(stamp) {
+      if (!stamp || !stamp.time) return "—";
+      const datePart = formatReportDate(stamp.date);
+      if (datePart) return datePart + " · " + stamp.time;
+      return stamp.time;
     }
 
     function portHasActiveForFilter(port) {
@@ -2633,8 +2675,8 @@
       if (numericCount === 0 && pendingCount > 0) {
         asOfText = t("pendingNoTimes");
       } else if (newestAsOf) {
-        // One report time only (newest across bridges) — avoids "4:00 · 3:00" glitch
-        asOfText = newestAsOf;
+        // One stamp only (newest date + time across bridges)
+        asOfText = formatReportStamp(newestAsOf);
       } else {
         asOfText = "—";
       }
