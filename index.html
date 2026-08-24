@@ -649,7 +649,7 @@
     }
     .table-wrap.table-cards .wait-table {
       border-collapse: separate;
-      border-spacing: 0 0.65rem; /* gap between bridge bands only */
+      border-spacing: 0 0.32rem; /* tighter gap between bridge bands */
       background: transparent;
     }
     /* Continuous navy header bar on top */
@@ -657,7 +657,7 @@
       background: var(--navy);
       color: #e2e8f0;
       border-bottom: none;
-      padding: 0.7rem 0.65rem;
+      padding: 0.55rem 0.5rem;
       box-shadow: none;
       border-radius: 0;
     }
@@ -681,19 +681,19 @@
       border-bottom: 1px solid rgba(226, 232, 240, 0.95);
       border-left: none;
       border-right: none;
-      box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
-      padding: 0.75rem 0.5rem;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+      padding: 0.45rem 0.32rem;
       vertical-align: middle;
     }
     .table-wrap.table-cards .wait-table tbody td.bridge {
       border-left: 1px solid rgba(226, 232, 240, 0.95);
-      border-radius: 14px 0 0 14px;
-      padding: 0.85rem 0.9rem;
+      border-radius: 12px 0 0 12px;
+      padding: 0.55rem 0.7rem;
       background: linear-gradient(90deg, #f1f5f9 0%, #f8fafc 55%, #ffffff 100%);
     }
     .table-wrap.table-cards .wait-table tbody td:last-child {
       border-right: 1px solid rgba(226, 232, 240, 0.95);
-      border-radius: 0 14px 14px 0;
+      border-radius: 0 12px 12px 0;
     }
     /* Floating time chips on the band (no category titles on chips) */
     .table-wrap.table-cards .wait-table tbody td.wait-col {
@@ -704,21 +704,21 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-width: 4.5rem;
-      max-width: 7.25rem;
+      min-width: 4.1rem;
+      max-width: 6.5rem;
       width: auto;
-      padding: 0.55rem 0.4rem 0.5rem;
-      border-radius: 12px;
+      padding: 0.4rem 0.3rem 0.35rem;
+      border-radius: 10px;
       background: var(--white);
       border: 1px solid rgba(226, 232, 240, 0.95);
-      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.09);
       box-sizing: border-box;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack:has(.wait-empty) {
       background: #f8fafc;
       box-shadow: none;
       border-style: dashed;
-      min-height: 2.6rem;
+      min-height: 2.25rem;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col.has-low .wait-stack {
       background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 75%);
@@ -1287,12 +1287,12 @@
 
     @media (max-width: 720px) {
       .table-wrap.table-cards .wait-table {
-        border-spacing: 0 0.55rem;
+        border-spacing: 0 0.28rem;
         min-width: 0;
       }
       .table-wrap.table-cards .wait-table thead th {
         font-size: 0.62rem;
-        padding: 0.55rem 0.4rem;
+        padding: 0.45rem 0.32rem;
       }
       .table-wrap.table-cards .wait-table thead th.th-bridge {
         border-radius: 10px 0 0 10px;
@@ -1301,19 +1301,19 @@
         border-radius: 0 10px 10px 0;
       }
       .table-wrap.table-cards .wait-table tbody td {
-        padding: 0.55rem 0.3rem;
+        padding: 0.4rem 0.22rem;
       }
       .table-wrap.table-cards .wait-table tbody td.bridge {
-        border-radius: 12px 0 0 12px;
-        padding: 0.65rem 0.55rem;
+        border-radius: 10px 0 0 10px;
+        padding: 0.45rem 0.45rem;
       }
       .table-wrap.table-cards .wait-table tbody td:last-child {
-        border-radius: 0 12px 12px 0;
+        border-radius: 0 10px 10px 0;
       }
       .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
-        min-width: 3.5rem;
-        max-width: 5.25rem;
-        padding: 0.45rem 0.28rem;
+        min-width: 3.25rem;
+        max-width: 4.85rem;
+        padding: 0.32rem 0.22rem;
       }
       .table-wrap.table-cards .wait-cell .num {
         font-size: 1.25rem;
