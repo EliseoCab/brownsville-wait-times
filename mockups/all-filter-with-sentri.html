@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MOCKUP ONLY · All filter with SENTRI — do not treat as live site</title>
+  <style>
+    :root {
+      --navy: #0b1f3a;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --paper: #f1f5f9;
+      --white: #fff;
+      --sky: #0369a1;
+      --green: #059669;
+      --amber: #d97706;
+      --shadow: 0 2px 12px rgba(15, 23, 42, 0.08);
+      --float: 0 4px 14px rgba(15, 23, 42, 0.12);
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 1.5rem; background: #e8eef5; color: var(--ink); }
+    .banner {
+      background: #7f1d1d;
+      color: #fff;
+      padding: 0.65rem 0.9rem;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      max-width: 52rem;
+    }
+    h1 { font-size: 1.2rem; margin: 0 0 0.35rem; }
+    .sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 1.1rem; max-width: 48rem; line-height: 1.45; }
+    .panel {
+      max-width: 52rem;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 1rem 1.1rem 1.25rem;
+      box-shadow: var(--shadow);
+    }
+    .asof {
+      font-size: 0.8rem;
+      color: var(--muted);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.45rem 0.7rem;
+      margin-bottom: 0.75rem;
+    }
+    .asof strong { color: var(--ink); }
+
+    /* Headers on top only — includes SENTRI */
+    .cols {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr 0.9fr 1fr 1fr;
+      gap: 0.55rem;
+      align-items: center;
+      background: var(--navy);
+      color: #e2e8f0;
+      border-radius: 12px;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-bottom: 0.65rem;
+    }
+    .cols span:not(:first-child) { text-align: center; }
+
+    .list { display: flex; flex-direction: column; gap: 0.65rem; }
+
+    /* One long bridge card across the row */
+    .bridge-band {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr 0.9fr 1fr 1fr;
+      gap: 0.55rem;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.75rem 0.85rem;
+      box-shadow: var(--shadow);
+      background: linear-gradient(90deg, #f8fafc 0%, #ffffff 18%, #ffffff 100%);
+    }
+    .bridge-name {
+      font-weight: 750;
+      font-size: 0.95rem;
+      letter-spacing: -0.02em;
+    }
+    .bridge-name .hrs {
+      display: block;
+      margin-top: 0.2rem;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--sky);
+    }
+
+    /* Floating time chips — minutes only, NO titles on chips */
+    .chip {
+      justify-self: center;
+      width: 100%;
+      max-width: 5.75rem;
+      padding: 0.55rem 0.4rem 0.5rem;
+      border-radius: 12px;
+      background: var(--white);
+      border: 1px solid rgba(226, 232, 240, 0.95);
+      box-shadow: var(--float);
+      text-align: center;
+    }
+    .chip.low {
+      background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 75%);
+      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.12);
+    }
+    .chip.med {
+      background: linear-gradient(180deg, #fffbeb 0%, #ffffff 75%);
+      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.12);
+    }
+    .chip.empty {
+      background: #f8fafc;
+      box-shadow: none;
+      border-style: dashed;
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.75rem 0.4rem;
+    }
+    .chip .n {
+      font-size: 1.25rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--green);
+    }
+    .chip.med .n { color: var(--amber); }
+    .chip .u {
+      display: block;
+      margin-top: 0.15rem;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .chip .open {
+      display: block;
+      margin-top: 0.25rem;
+      font-size: 0.55rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .notes {
+      margin-top: 1.1rem;
+      max-width: 52rem;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 0.9rem 1rem;
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+    .notes ul { margin: 0.35rem 0 0; padding-left: 1.15rem; }
+    code { font-size: 0.82em; }
+  </style>
+</head>
+<body>
+  <div class="banner">MOCKUP ONLY — not the live site. No approval implied to change index.html.</div>
+
+  <h1>All filter mockup (with SENTRI)</h1>
+  <p class="sub">
+    Long <strong>bridge card</strong> across each row.
+    <strong>Vehicles · SENTRI · Pedestrian · Commercial</strong> float as time chips on that card.
+    Column titles stay in the navy header only — <strong>no titles inside the chips</strong>.
+  </p>
+
+  <section class="panel">
+    <div class="asof">Report time: <strong>Aug 24, 2026 · 12:00 pm CDT</strong></div>
+
+    <div class="cols">
+      <span>Bridge</span>
+      <span>Vehicles</span>
+      <span>SENTRI</span>
+      <span>Pedestrian</span>
+      <span>Commercial</span>
+    </div>
+
+    <div class="list">
+      <div class="bridge-band">
+        <div class="bridge-name">B&amp;M<span class="hrs">Hours 24 hours</span></div>
+        <div class="chip med"><span class="n">15</span><span class="u">min</span></div>
+        <div class="chip empty">—</div>
+        <div class="chip low"><span class="n">5</span><span class="u">min</span></div>
+        <div class="chip empty">—</div>
+      </div>
+
+      <div class="bridge-band">
+        <div class="bridge-name">Gateway<span class="hrs">Hours 24 hours</span></div>
+        <div class="chip med"><span class="n">15</span><span class="u">min</span></div>
+        <div class="chip empty">—</div>
+        <div class="chip med"><span class="n">60</span><span class="u">min</span></div>
+        <div class="chip empty">—</div>
+      </div>
+
+      <div class="bridge-band">
+        <div class="bridge-name">Los Indios<span class="hrs">Hours 6 a.m.–10 p.m.</span></div>
+        <div class="chip low"><span class="n">5</span><span class="u">min</span></div>
+        <div class="chip empty">—</div>
+        <div class="chip empty">—</div>
+        <div class="chip low"><span class="n">0</span><span class="u">min</span></div>
+      </div>
+
+      <div class="bridge-band">
+        <div class="bridge-name">Veterans<span class="hrs">Hours 6 a.m.–Midnight</span></div>
+        <div class="chip low"><span class="n">5</span><span class="u">min</span></div>
+        <div class="chip low"><span class="n">0</span><span class="u">min</span><span class="open">2 open</span></div>
+        <div class="chip low"><span class="n">0</span><span class="u">min</span></div>
+        <div class="chip low"><span class="n">5</span><span class="u">min</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="notes">
+    <strong>This mockup includes SENTRI as its own column</strong>
+    <ul>
+      <li>Headers: Bridge · Vehicles · SENTRI · Pedestrian · Commercial</li>
+      <li>One long bridge band per row; wait chips float on top</li>
+      <li>No category labels inside the chips</li>
+    </ul>
+    <p style="margin: 0.65rem 0 0;">
+      Open: <code>open ~/Projects/brownsville-wait-times/mockups/all-filter-with-sentri.html</code>
+    </p>
+  </div>
+</body>
+</html>
