@@ -687,7 +687,7 @@
       border-left: none;
       border-right: none;
       box-shadow: none;
-      padding: 0.45rem 0.32rem;
+      padding: 0.4rem 0.1rem;
       vertical-align: middle;
       border-radius: 0;
     }
@@ -698,11 +698,17 @@
     }
     .table-wrap.table-cards .wait-table tbody td.bridge {
       border-left: 1px solid var(--line);
-      padding: 0.55rem 0.7rem;
+      padding: 0.5rem 0.55rem 0.5rem 0.65rem;
       background: linear-gradient(90deg, #f1f5f9 0%, #f8fafc 55%, #ffffff 100%);
     }
     .table-wrap.table-cards .wait-table tbody td:last-child {
       border-right: 1px solid var(--line);
+      padding-right: 0.35rem;
+    }
+    /* Barely-visible space between wait chips */
+    .table-wrap.table-cards .wait-table tbody td.wait-col {
+      padding-left: 0.08rem;
+      padding-right: 0.08rem;
     }
     .table-wrap.table-cards .wait-table tbody tr:first-child td.bridge {
       border-radius: 12px 0 0 0;
@@ -727,25 +733,26 @@
       text-align: center;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
-      display: inline-flex;
+      display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-width: 4.1rem;
-      max-width: 6.5rem;
-      width: auto;
-      padding: 0.4rem 0.3rem 0.35rem;
-      border-radius: 10px;
+      width: 100%;
+      max-width: none;
+      min-width: 0;
+      margin: 0;
+      padding: 0.35rem 0.2rem 0.3rem;
+      border-radius: 8px;
       background: var(--white);
       border: 1px solid rgba(226, 232, 240, 0.95);
-      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.09);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.07);
       box-sizing: border-box;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack:has(.wait-empty) {
       background: #f8fafc;
       box-shadow: none;
       border-style: dashed;
-      min-height: 2.25rem;
+      min-height: 2.1rem;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col.has-low .wait-stack {
       background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 75%);
@@ -1336,11 +1343,18 @@
         border-radius: 0 10px 10px 0;
       }
       .table-wrap.table-cards .wait-table tbody td {
-        padding: 0.4rem 0.22rem;
+        padding: 0.35rem 0.06rem;
         border-radius: 0;
       }
       .table-wrap.table-cards .wait-table tbody td.bridge {
-        padding: 0.45rem 0.45rem;
+        padding: 0.4rem 0.35rem 0.4rem 0.45rem;
+      }
+      .table-wrap.table-cards .wait-table tbody td.wait-col {
+        padding-left: 0.05rem;
+        padding-right: 0.05rem;
+      }
+      .table-wrap.table-cards .wait-table tbody td:last-child {
+        padding-right: 0.25rem;
       }
       .table-wrap.table-cards .wait-table tbody tr:first-child td {
         box-shadow: 0 -0.35rem 0 0 var(--paper);
@@ -1361,9 +1375,11 @@
         border-radius: 0 0 10px 0;
       }
       .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
-        min-width: 3.25rem;
-        max-width: 4.85rem;
-        padding: 0.32rem 0.22rem;
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+        padding: 0.28rem 0.12rem;
+        border-radius: 7px;
       }
       .table-wrap.table-cards .wait-cell .num {
         font-size: 1.25rem;
