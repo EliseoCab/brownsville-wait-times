@@ -627,7 +627,8 @@
       width: 100%;
     }
 
-    /* All filter: floating rounded cards for wait cells; blue column titles kept */
+    /* All filter: one long bridge band per row; wait chips float on it; headers on top only
+       (matches mockups/all-filter-bridge-band.html) */
     .table-wrap.table-cards {
       background: transparent;
       border: none;
@@ -639,28 +640,32 @@
       border: 1px solid var(--line);
       border-radius: 12px;
       box-shadow: var(--shadow-sm);
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.45rem;
     }
     .table-wrap.table-cards .table-scroll {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
-      padding: 0.15rem 0.1rem 0.5rem;
+      padding: 0.1rem 0.05rem 0.45rem;
     }
     .table-wrap.table-cards .wait-table {
       border-collapse: separate;
-      border-spacing: 0.55rem 0.65rem;
+      border-spacing: 0 0.65rem; /* gap between bridge bands only */
       background: transparent;
     }
+    /* Continuous navy header bar on top */
     .table-wrap.table-cards .wait-table thead th {
       background: var(--navy);
       color: #e2e8f0;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(11, 31, 58, 0.18);
       border-bottom: none;
-      padding: 0.75rem 0.65rem;
+      padding: 0.7rem 0.65rem;
+      box-shadow: none;
+      border-radius: 0;
     }
     .table-wrap.table-cards .wait-table thead th.th-bridge {
-      border-radius: 12px;
+      border-radius: 12px 0 0 12px;
+    }
+    .table-wrap.table-cards .wait-table thead th:last-child {
+      border-radius: 0 12px 12px 0;
     }
     .table-wrap.table-cards .wait-table tbody tr {
       background: transparent;
@@ -669,41 +674,74 @@
     .table-wrap.table-cards .wait-table tbody tr:hover {
       background: transparent;
     }
-    .table-wrap.table-cards .wait-table tbody td.bridge {
-      background: var(--white);
-      border-radius: 14px;
-      box-shadow: 0 2px 12px rgba(15, 23, 42, 0.07);
-      border: 1px solid rgba(226, 232, 240, 0.9);
-      padding: 0.9rem 0.85rem;
-    }
-    .table-wrap.table-cards .wait-table tbody td.wait-col {
-      background: var(--white);
-      border-radius: 14px;
-      border: 1px solid rgba(226, 232, 240, 0.85);
-      border-left: 1px solid rgba(226, 232, 240, 0.85);
-      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
-      padding: 0.85rem 0.65rem;
+    /* Continuous bridge band across the row */
+    .table-wrap.table-cards .wait-table tbody td {
+      background: linear-gradient(90deg, #f8fafc 0%, #ffffff 18%, #ffffff 100%);
+      border-top: 1px solid rgba(226, 232, 240, 0.95);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.95);
+      border-left: none;
+      border-right: none;
+      box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+      padding: 0.75rem 0.5rem;
       vertical-align: middle;
     }
-    .table-wrap.table-cards .wait-table tbody td.wait-col.has-low {
-      background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 70%);
-      box-shadow: 0 4px 16px rgba(5, 150, 105, 0.1);
+    .table-wrap.table-cards .wait-table tbody td.bridge {
+      border-left: 1px solid rgba(226, 232, 240, 0.95);
+      border-radius: 14px 0 0 14px;
+      padding: 0.85rem 0.9rem;
+      background: linear-gradient(90deg, #f1f5f9 0%, #f8fafc 55%, #ffffff 100%);
     }
-    .table-wrap.table-cards .wait-table tbody td.wait-col.has-med {
-      background: linear-gradient(180deg, #fffbeb 0%, #ffffff 70%);
-      box-shadow: 0 4px 16px rgba(217, 119, 6, 0.1);
+    .table-wrap.table-cards .wait-table tbody td:last-child {
+      border-right: 1px solid rgba(226, 232, 240, 0.95);
+      border-radius: 0 14px 14px 0;
     }
-    .table-wrap.table-cards .wait-table tbody td.wait-col.has-high {
-      background: linear-gradient(180deg, #fff7ed 0%, #ffffff 70%);
-      box-shadow: 0 4px 16px rgba(234, 88, 12, 0.1);
+    /* Floating time chips on the band (no category titles on chips) */
+    .table-wrap.table-cards .wait-table tbody td.wait-col {
+      text-align: center;
     }
-    .table-wrap.table-cards .wait-table tbody td.wait-col.has-severe {
-      background: linear-gradient(180deg, #fef2f2 0%, #ffffff 70%);
-      box-shadow: 0 4px 16px rgba(220, 38, 38, 0.1);
+    .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 4.5rem;
+      max-width: 7.25rem;
+      width: auto;
+      padding: 0.55rem 0.4rem 0.5rem;
+      border-radius: 12px;
+      background: var(--white);
+      border: 1px solid rgba(226, 232, 240, 0.95);
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
+      box-sizing: border-box;
     }
-    .table-wrap.table-cards .wait-table tbody tr:hover td.bridge,
-    .table-wrap.table-cards .wait-table tbody tr:hover td.wait-col {
-      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.11);
+    .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack:has(.wait-empty) {
+      background: #f8fafc;
+      box-shadow: none;
+      border-style: dashed;
+      min-height: 2.6rem;
+    }
+    .table-wrap.table-cards .wait-table tbody td.wait-col.has-low .wait-stack {
+      background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 75%);
+      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.12);
+    }
+    .table-wrap.table-cards .wait-table tbody td.wait-col.has-med .wait-stack {
+      background: linear-gradient(180deg, #fffbeb 0%, #ffffff 75%);
+      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.12);
+    }
+    .table-wrap.table-cards .wait-table tbody td.wait-col.has-high .wait-stack {
+      background: linear-gradient(180deg, #fff7ed 0%, #ffffff 75%);
+      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.12);
+    }
+    .table-wrap.table-cards .wait-table tbody td.wait-col.has-severe .wait-stack {
+      background: linear-gradient(180deg, #fef2f2 0%, #ffffff 75%);
+      box-shadow: 0 4px 14px rgba(220, 38, 38, 0.12);
+    }
+    /* Headers already name the column — hide chip category tags (e.g. SENTRI) */
+    .table-wrap.table-cards .wait-extra .tag {
+      display: none;
+    }
+    .table-wrap.table-cards .wait-table tbody tr:hover td {
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.09);
     }
     .table-scroll {
       overflow-x: auto;
@@ -1249,25 +1287,39 @@
 
     @media (max-width: 720px) {
       .table-wrap.table-cards .wait-table {
-        border-spacing: 0.4rem 0.55rem;
+        border-spacing: 0 0.55rem;
         min-width: 0;
       }
       .table-wrap.table-cards .wait-table thead th {
-        border-radius: 10px;
         font-size: 0.62rem;
         padding: 0.55rem 0.4rem;
       }
-      .table-wrap.table-cards .wait-table tbody td.bridge,
-      .table-wrap.table-cards .wait-table tbody td.wait-col {
-        border-radius: 12px;
-        padding: 0.65rem 0.5rem;
-        box-shadow: 0 3px 12px rgba(15, 23, 42, 0.08);
+      .table-wrap.table-cards .wait-table thead th.th-bridge {
+        border-radius: 10px 0 0 10px;
+      }
+      .table-wrap.table-cards .wait-table thead th:last-child {
+        border-radius: 0 10px 10px 0;
+      }
+      .table-wrap.table-cards .wait-table tbody td {
+        padding: 0.55rem 0.3rem;
+      }
+      .table-wrap.table-cards .wait-table tbody td.bridge {
+        border-radius: 12px 0 0 12px;
+        padding: 0.65rem 0.55rem;
+      }
+      .table-wrap.table-cards .wait-table tbody td:last-child {
+        border-radius: 0 12px 12px 0;
+      }
+      .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
+        min-width: 3.5rem;
+        max-width: 5.25rem;
+        padding: 0.45rem 0.28rem;
       }
       .table-wrap.table-cards .wait-cell .num {
-        font-size: 1.3rem;
+        font-size: 1.25rem;
       }
       .table-wrap.table-cards .wait-extra.open-line {
-        font-size: 0.62rem;
+        font-size: 0.55rem;
       }
     }
 
@@ -1454,17 +1506,23 @@
     html[data-theme="dark"] .wait-table td.wait-col.has-high { background: rgba(42, 20, 8, 0.55); }
     html[data-theme="dark"] .wait-table td.wait-col.has-severe { background: rgba(42, 11, 11, 0.55); }
     html[data-theme="dark"] .wait-table td.wait-col.has-pending { background: #2a1f08; }
-    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-low {
-      background: linear-gradient(180deg, #0b2a1d 0%, var(--white) 70%);
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td {
+      background: linear-gradient(90deg, #152033 0%, var(--white) 22%, var(--white) 100%);
     }
-    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-med {
-      background: linear-gradient(180deg, #2a1f08 0%, var(--white) 70%);
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.bridge {
+      background: linear-gradient(90deg, #121a28 0%, #152033 55%, var(--white) 100%);
     }
-    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-high {
-      background: linear-gradient(180deg, #2a1408 0%, var(--white) 70%);
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-low .wait-stack {
+      background: linear-gradient(180deg, #0b2a1d 0%, var(--white) 75%);
     }
-    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-severe {
-      background: linear-gradient(180deg, #2a0b0b 0%, var(--white) 70%);
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-med .wait-stack {
+      background: linear-gradient(180deg, #2a1f08 0%, var(--white) 75%);
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-high .wait-stack {
+      background: linear-gradient(180deg, #2a1408 0%, var(--white) 75%);
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-severe .wait-stack {
+      background: linear-gradient(180deg, #2a0b0b 0%, var(--white) 75%);
     }
     html[data-theme="dark"] .notice {
       background: linear-gradient(135deg, #13233d, #102030);
@@ -2811,7 +2869,7 @@
       const tightClass = tight
         ? ` table-tight table-tight-${waitN}`
         : "";
-      // All filter: floating rounded wait cards (blue header pills kept)
+      // All filter: long bridge bands + floating chips (headers on top)
       const cardsClass = currentFilter === "all" ? " table-cards" : "";
 
       grid.innerHTML = `
