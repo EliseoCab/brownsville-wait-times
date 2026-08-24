@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mockup 2 · All filter — long bridge band + floating times</title>
+  <style>
+    :root {
+      --navy: #0b1f3a;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --paper: #f1f5f9;
+      --white: #fff;
+      --sky: #0369a1;
+      --green: #059669;
+      --amber: #d97706;
+      --shadow: 0 2px 12px rgba(15, 23, 42, 0.08);
+      --shadow-float: 0 4px 14px rgba(15, 23, 42, 0.12);
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 1.5rem;
+      background: #e8eef5;
+      color: var(--ink);
+    }
+    h1 { font-size: 1.2rem; margin: 0 0 0.35rem; }
+    .sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 1.1rem; max-width: 46rem; line-height: 1.45; }
+    .panel {
+      max-width: 52rem;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 1rem 1.1rem 1.25rem;
+      box-shadow: var(--shadow);
+    }
+    .panel h2 {
+      margin: 0 0 0.75rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--sky);
+    }
+    .asof {
+      font-size: 0.8rem;
+      color: var(--muted);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.45rem 0.7rem;
+      margin-bottom: 0.75rem;
+    }
+    .asof strong { color: var(--ink); }
+
+    /* Column headers — top only, not on cards */
+    .cols {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 0.9fr 1fr 1fr;
+      gap: 0.55rem;
+      align-items: center;
+      background: var(--navy);
+      color: #e2e8f0;
+      border-radius: 12px;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-bottom: 0.65rem;
+    }
+    .cols span:not(:first-child) { text-align: center; }
+
+    .list { display: flex; flex-direction: column; gap: 0.65rem; }
+
+    /*
+      ONE long bridge card spanning the full row.
+      Wait chips float ON TOP of that band (no titles inside chips).
+    */
+    .bridge-band {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 0.9fr 1fr 1fr;
+      gap: 0.55rem;
+      align-items: center;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.75rem 0.85rem;
+      box-shadow: var(--shadow);
+      /* subtle band fill so it reads as one continuous card */
+      background:
+        linear-gradient(90deg, #f8fafc 0%, #ffffff 18%, #ffffff 100%);
+    }
+    .bridge-name {
+      font-weight: 750;
+      font-size: 0.95rem;
+      letter-spacing: -0.02em;
+      padding-right: 0.25rem;
+    }
+    .bridge-name .hrs {
+      display: block;
+      margin-top: 0.2rem;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--sky);
+    }
+
+    /* Floating time chips — values only, no Vehicles/SENTRI labels */
+    .chip {
+      justify-self: center;
+      min-width: 4.6rem;
+      max-width: 100%;
+      padding: 0.55rem 0.45rem 0.5rem;
+      border-radius: 12px;
+      background: var(--white);
+      border: 1px solid rgba(226, 232, 240, 0.95);
+      box-shadow: var(--shadow-float);
+      text-align: center;
+    }
+    .chip.low {
+      background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 75%);
+      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.12);
+    }
+    .chip.med {
+      background: linear-gradient(180deg, #fffbeb 0%, #ffffff 75%);
+      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.12);
+    }
+    .chip.empty {
+      background: #f8fafc;
+      box-shadow: none;
+      border-style: dashed;
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.7rem 0.45rem;
+    }
+    .chip .n {
+      font-size: 1.25rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--green);
+    }
+    .chip.med .n { color: var(--amber); }
+    .chip .u {
+      display: block;
+      margin-top: 0.15rem;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .chip .open {
+      display: block;
+      margin-top: 0.25rem;
+      font-size: 0.58rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .callouts {
+      margin-top: 1.15rem;
+      display: grid;
+      gap: 0.65rem;
+      max-width: 52rem;
+    }
+    .callout {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+    .callout.alt {
+      background: #f8fafc;
+      border-color: var(--line);
+    }
+    .callout strong { display: block; margin-bottom: 0.25rem; }
+    code { font-size: 0.82em; }
+    .arrow {
+      display: inline-block;
+      margin: 0 0.15rem;
+      color: var(--sky);
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mockup 2 · All filter</h1>
+  <p class="sub">
+    One <strong>long bridge card</strong> runs across each row.
+    Vehicles / SENTRI / Pedestrian / Commercial are <strong>floating time chips</strong> on that card.
+    Column titles stay in the navy header only — <strong>no titles inside the time chips</strong>.
+  </p>
+
+  <section class="panel">
+    <h2>Proposed All view</h2>
+    <div class="asof">Report time: <strong>Aug 24, 2026 · 12:00 pm CDT</strong></div>
+
+    <!-- Headers on top only -->
+    <div class="cols" aria-hidden="true">
+      <span>Bridge</span>
+      <span>Vehicles</span>
+      <span>SENTRI</span>
+      <span>Pedestrian</span>
+      <span>Commercial</span>
+    </div>
+
+    <div class="list">
+      <!-- B&M -->
+      <div class="bridge-band">
+        <div class="bridge-name">B&amp;M<span class="hrs">Hours 24 hours</span></div>
+        <div class="chip med"><span class="n">15</span><span class="u">min</span><span class="open">2 Gen · 2 Ready</span></div>
+        <div class="chip empty">—</div>
+        <div class="chip low"><span class="n">5</span><span class="u">min</span></div>
+        <div class="chip empty">—</div>
+      </div>
+
+      <!-- Gateway -->
+      <div class="bridge-band">
+        <div class="bridge-name">Gateway<span class="hrs">Hours 24 hours</span></div>
+        <div class="chip med"><span class="n">15</span><span class="u">min</span></div>
+        <div class="chip empty">—</div>
+        <div class="chip med"><span class="n">60</span><span class="u">min</span></div>
+        <div class="chip empty">—</div>
+      </div>
+
+      <!-- Los Indios -->
+      <div class="bridge-band">
+        <div class="bridge-name">Los Indios<span class="hrs">Hours 6 a.m.–10 p.m.</span></div>
+        <div class="chip low"><span class="n">5</span><span class="u">min</span></div>
+        <div class="chip empty">—</div>
+        <div class="chip empty">—</div>
+        <div class="chip low"><span class="n">0</span><span class="u">min</span></div>
+      </div>
+
+      <!-- Veterans -->
+      <div class="bridge-band">
+        <div class="bridge-name">Veterans<span class="hrs">Hours 6 a.m.–Midnight</span></div>
+        <div class="chip low"><span class="n">5</span><span class="u">min</span></div>
+        <div class="chip low"><span class="n">0</span><span class="u">min</span><span class="open">2 open</span></div>
+        <div class="chip low"><span class="n">0</span><span class="u">min</span></div>
+        <div class="chip low"><span class="n">5</span><span class="u">min</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="callouts">
+    <div class="callout">
+      <strong>How to read this mockup</strong>
+      Navy bar = column headers (Bridge · Vehicles · SENTRI · Pedestrian · Commercial).<br />
+      Each gray/white band = <em>one bridge card</em> stretching across the table.<br />
+      Raised white tiles = wait times floating on that card — minutes only, no “Vehicles / Pedestrian” labels on the tiles.
+    </div>
+    <div class="callout alt">
+      <strong>vs today</strong>
+      Today every cell (including bridge) is its own separate floating card with gaps between them.<br />
+      Proposed: bridge owns the full row card <span class="arrow">→</span> times sit on top of it.
+    </div>
+    <div class="callout alt">
+      File: <code>mockups/all-filter-bridge-band.html</code><br />
+      Open with: <code>open ~/Projects/brownsville-wait-times/mockups/all-filter-bridge-band.html</code>
+    </div>
+  </div>
+</body>
+</html>
