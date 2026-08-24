@@ -736,15 +736,6 @@
     .table-wrap.table-cards .wait-table tbody tr:hover td {
       box-shadow: 0 4px 16px rgba(15, 23, 42, 0.09);
     }
-    .table-wrap.table-cards .sentri-note {
-      display: block;
-      margin-top: 0.3rem;
-      font-size: 0.58rem;
-      font-weight: 650;
-      color: var(--muted);
-      line-height: 1.25;
-      max-width: 7rem;
-    }
     .table-scroll {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
@@ -1321,8 +1312,7 @@
       .table-wrap.table-cards .wait-cell .num {
         font-size: 1.25rem;
       }
-      .table-wrap.table-cards .wait-extra.open-line,
-      .table-wrap.table-cards .sentri-note {
+      .table-wrap.table-cards .wait-extra.open-line {
         font-size: 0.55rem;
       }
     }
@@ -2624,29 +2614,6 @@
       return /veterans/i.test(t);
     }
 
-    /**
-     * All-filter note under Vehicles for Veterans (SENTRI is not its own column).
-     * Returns escaped HTML text or "".
-     */
-    function veteransSentriUnderVehiclesNote(port) {
-      if (!isVeteransPort(port)) return "";
-      let wait = null;
-      for (const sec of port.sections || []) {
-        for (const lane of sec.lanes || []) {
-          if (/sentri/i.test(lane.name) && isActiveWait(lane.wait)) {
-            wait = lane.wait;
-            break;
-          }
-        }
-        if (wait) break;
-      }
-      if (!wait) return "";
-      const n = wait.lanesOpenCount != null ? wait.lanesOpenCount : veteransSentriOpenCount(port);
-      let text = escapeHtml(t("sentri")) + " " + wait.minutes + " min";
-      if (n != null && n > 0) text += " · " + n + " " + escapeHtml(t("open"));
-      return text;
-    }
-
     /** SENTRI open-lane count for Veterans International only. */
     function veteransSentriOpenCount(port) {
       if (!isVeteransPort(port)) return null;
@@ -2787,7 +2754,7 @@
       }
 
       // Columns by filter:
-      //  All → Vehicles · Pedestrian · Commercial (no separate SENTRI column)
+      //  All → Vehicles · SENTRI · Pedestrian · Commercial
       //  Vehicles → Vehicles · SENTRI
       //  Pedestrian / Commercial → single wait column (Commercial uses FAST)
       const waitCols = [];
@@ -2796,7 +2763,7 @@
       }
       if (currentFilter === "commercial") {
         waitCols.push({ key: "trusted", label: t("fast") });
-      } else if (currentFilter === "passenger") {
+      } else if (currentFilter === "all" || currentFilter === "passenger") {
         waitCols.push({ key: "trusted", label: t("sentri") });
       }
       if (currentFilter === "all" || currentFilter === "pedestrian") {
@@ -2827,22 +2794,6 @@
           commercial: waitCellBlock(summarizeMode(port.sections, "commercial"), "commercial", port),
           trusted: bestTrusted(port)
         };
-
-        // All view: optional SENTRI note under Vehicles on Veterans (not its own column)
-        if (currentFilter === "all" && isVeteransPort(port)) {
-          const note = veteransSentriUnderVehiclesNote(port);
-          if (note && cells.passenger) {
-            if (cells.passenger.html.includes("wait-stack")) {
-              cells.passenger.html = cells.passenger.html.replace(
-                /<\/div>\s*$/,
-                `<span class="sentri-note">${note}</span></div>`
-              );
-            } else {
-              cells.passenger.html =
-                `<div class="wait-stack">${cells.passenger.html}<span class="sentri-note">${note}</span></div>`;
-            }
-          }
-        }
 
         const tdHtml = waitCols.map((c) => {
           const cell = cells[c.key];
@@ -2901,8 +2852,8 @@
       let bridgePct;
       if (waitN === 1) bridgePct = 42;
       else if (waitN === 2) bridgePct = 36;
-      else if (waitN === 3) bridgePct = 32; // All: Bridge + 3 wait cols
-      else bridgePct = 20;
+      else if (waitN === 3) bridgePct = 28;
+      else bridgePct = 22; // All: Bridge + Vehicles · SENTRI · Pedestrian · Commercial
       const waitPct = ((100 - bridgePct) / waitN).toFixed(3);
       const colgroup =
         `<col class="c-bridge" style="width:${bridgePct}%" />` +
