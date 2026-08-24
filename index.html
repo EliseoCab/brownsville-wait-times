@@ -679,7 +679,7 @@
     .table-wrap.table-cards .wait-table tbody tr:hover {
       background: transparent;
     }
-    /* Continuous bridge band — stacked with 1px divider only */
+    /* Continuous bridge band — stacked with 1px divider only (tight vertical) */
     .table-wrap.table-cards .wait-table tbody td {
       background: linear-gradient(90deg, #f8fafc 0%, #ffffff 18%, #ffffff 100%);
       border-top: none;
@@ -687,28 +687,22 @@
       border-left: none;
       border-right: none;
       box-shadow: none;
-      padding: 0.4rem 0.1rem;
+      padding: 0.22rem 0.28rem; /* short vertical — tiles nearly touch */
       vertical-align: middle;
       border-radius: 0;
     }
     .table-wrap.table-cards .wait-table tbody tr:first-child td {
       border-top: 1px solid var(--line);
-      /* Uniform gap under header (page background), not painted on the header */
-      box-shadow: 0 -0.4rem 0 0 var(--paper);
+      /* Small uniform gap under header */
+      box-shadow: 0 -0.25rem 0 0 var(--paper);
     }
     .table-wrap.table-cards .wait-table tbody td.bridge {
       border-left: 1px solid var(--line);
-      padding: 0.5rem 0.55rem 0.5rem 0.65rem;
+      padding: 0.22rem 0.65rem;
       background: linear-gradient(90deg, #f1f5f9 0%, #f8fafc 55%, #ffffff 100%);
     }
     .table-wrap.table-cards .wait-table tbody td:last-child {
       border-right: 1px solid var(--line);
-      padding-right: 0.35rem;
-    }
-    /* Barely-visible space between wait chips */
-    .table-wrap.table-cards .wait-table tbody td.wait-col {
-      padding-left: 0.08rem;
-      padding-right: 0.08rem;
     }
     .table-wrap.table-cards .wait-table tbody tr:first-child td.bridge {
       border-radius: 12px 0 0 0;
@@ -733,42 +727,50 @@
       text-align: center;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
-      display: flex;
+      display: inline-flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 100%;
-      max-width: none;
-      min-width: 0;
+      width: auto;
+      min-width: 3.75rem;
+      max-width: 6.75rem;
       margin: 0;
-      padding: 0.35rem 0.2rem 0.3rem;
+      padding: 0.2rem 0.35rem 0.18rem; /* compact vertically */
       border-radius: 8px;
       background: var(--white);
       border: 1px solid rgba(226, 232, 240, 0.95);
-      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.07);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
       box-sizing: border-box;
+      line-height: 1.15;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack:has(.wait-empty) {
       background: #f8fafc;
       box-shadow: none;
       border-style: dashed;
-      min-height: 2.1rem;
+      min-height: 1.65rem;
+    }
+    .table-wrap.table-cards .wait-table tbody td.wait-col .wait-extra {
+      margin-top: 0.08rem;
+      line-height: 1.1;
+    }
+    .table-wrap.table-cards .wait-table tbody td.wait-col .wait-cell .num {
+      line-height: 1;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col.has-low .wait-stack {
       background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 75%);
-      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.12);
+      box-shadow: 0 1px 4px rgba(5, 150, 105, 0.1);
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col.has-med .wait-stack {
       background: linear-gradient(180deg, #fffbeb 0%, #ffffff 75%);
-      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.12);
+      box-shadow: 0 1px 4px rgba(217, 119, 6, 0.1);
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col.has-high .wait-stack {
       background: linear-gradient(180deg, #fff7ed 0%, #ffffff 75%);
-      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.12);
+      box-shadow: 0 1px 4px rgba(234, 88, 12, 0.1);
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col.has-severe .wait-stack {
       background: linear-gradient(180deg, #fef2f2 0%, #ffffff 75%);
-      box-shadow: 0 4px 14px rgba(220, 38, 38, 0.12);
+      box-shadow: 0 1px 4px rgba(220, 38, 38, 0.1);
     }
     /* Headers already name the column — hide chip category tags (e.g. SENTRI) */
     .table-wrap.table-cards .wait-extra .tag {
@@ -781,7 +783,7 @@
       background: linear-gradient(90deg, #e8eef5 0%, #f1f5f9 55%, #ffffff 100%);
     }
     .table-wrap.table-cards .wait-table tbody tr:first-child:hover td {
-      box-shadow: 0 -0.4rem 0 0 var(--paper);
+      box-shadow: 0 -0.25rem 0 0 var(--paper);
     }
     .table-scroll {
       overflow-x: auto;
@@ -1343,24 +1345,17 @@
         border-radius: 0 10px 10px 0;
       }
       .table-wrap.table-cards .wait-table tbody td {
-        padding: 0.35rem 0.06rem;
+        padding: 0.16rem 0.2rem;
         border-radius: 0;
       }
       .table-wrap.table-cards .wait-table tbody td.bridge {
-        padding: 0.4rem 0.35rem 0.4rem 0.45rem;
-      }
-      .table-wrap.table-cards .wait-table tbody td.wait-col {
-        padding-left: 0.05rem;
-        padding-right: 0.05rem;
-      }
-      .table-wrap.table-cards .wait-table tbody td:last-child {
-        padding-right: 0.25rem;
+        padding: 0.16rem 0.45rem;
       }
       .table-wrap.table-cards .wait-table tbody tr:first-child td {
-        box-shadow: 0 -0.35rem 0 0 var(--paper);
+        box-shadow: 0 -0.22rem 0 0 var(--paper);
       }
       .table-wrap.table-cards .wait-table tbody tr:first-child:hover td {
-        box-shadow: 0 -0.35rem 0 0 var(--paper);
+        box-shadow: 0 -0.22rem 0 0 var(--paper);
       }
       .table-wrap.table-cards .wait-table tbody tr:first-child td.bridge {
         border-radius: 10px 0 0 0;
@@ -1375,10 +1370,9 @@
         border-radius: 0 0 10px 0;
       }
       .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
-        width: 100%;
-        max-width: none;
-        min-width: 0;
-        padding: 0.28rem 0.12rem;
+        min-width: 3.1rem;
+        max-width: 5.25rem;
+        padding: 0.14rem 0.22rem 0.12rem;
         border-radius: 7px;
       }
       .table-wrap.table-cards .wait-cell .num {
