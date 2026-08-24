@@ -649,8 +649,8 @@
     }
     .table-wrap.table-cards .wait-table {
       border-collapse: separate;
-      /* horizontal 0; vertical = tight gap between bridge tiles */
-      border-spacing: 0 0.18rem;
+      /* horizontal 0; vertical = barely-visible gap between bridge tiles */
+      border-spacing: 0 2px;
       background: transparent;
     }
     /* Uniform navy header bar on top */
@@ -687,21 +687,21 @@
       border-bottom: 1px solid var(--line);
       border-left: none;
       border-right: none;
-      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
-      padding: 0.55rem 0.35rem;
+      box-shadow: 0 1px 6px rgba(15, 23, 42, 0.05);
+      padding: 0.35rem 0.35rem;
       vertical-align: middle;
       border-radius: 0;
     }
     .table-wrap.table-cards .wait-table tbody td.bridge {
       border-left: 1px solid var(--line);
-      border-radius: 14px 0 0 14px;
-      padding: 0.55rem 0.75rem;
+      border-radius: 12px 0 0 12px;
+      padding: 0.35rem 0.7rem;
       background: linear-gradient(90deg, #f8fafc 0%, #ffffff 55%, #ffffff 100%);
     }
     .table-wrap.table-cards .wait-table tbody td:last-child {
       border-right: 1px solid var(--line);
-      border-radius: 0 14px 14px 0;
-      padding-right: 0.55rem;
+      border-radius: 0 12px 12px 0;
+      padding-right: 0.5rem;
     }
     /* Floating time chips on the band (mockup .chip) — no titles on chips */
     .table-wrap.table-cards .wait-table tbody td.wait-col {
@@ -712,29 +712,29 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-width: 4.4rem;
+      min-width: 4.2rem;
       max-width: 7rem;
       width: auto;
       margin: 0 auto;
-      padding: 0.5rem 0.4rem 0.45rem;
-      border-radius: 12px;
+      padding: 0.32rem 0.38rem 0.28rem;
+      border-radius: 10px;
       background: var(--white);
       border: 1px solid rgba(226, 232, 240, 0.95);
-      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
       box-sizing: border-box;
-      line-height: 1.15;
+      line-height: 1.1;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack:has(.wait-empty) {
       background: #f8fafc;
       box-shadow: none;
       border-style: dashed;
-      min-height: 2.5rem;
+      min-height: 2rem;
       color: var(--muted);
       font-weight: 650;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-extra {
-      margin-top: 0.2rem;
-      line-height: 1.15;
+      margin-top: 0.12rem;
+      line-height: 1.1;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-cell .num {
       line-height: 1;
@@ -1306,7 +1306,7 @@
 
     @media (max-width: 720px) {
       .table-wrap.table-cards .wait-table {
-        border-spacing: 0 0.14rem; /* tight vertical between tiles */
+        border-spacing: 0 1px; /* barely-visible vertical gap */
         min-width: 0;
       }
       .table-wrap.table-cards .wait-table thead th {
@@ -1322,21 +1322,21 @@
         border-radius: 0 10px 10px 0;
       }
       .table-wrap.table-cards .wait-table tbody td {
-        padding: 0.45rem 0.22rem;
+        padding: 0.28rem 0.2rem;
       }
       .table-wrap.table-cards .wait-table tbody td.bridge {
-        border-radius: 12px 0 0 12px;
-        padding: 0.45rem 0.5rem;
+        border-radius: 10px 0 0 10px;
+        padding: 0.28rem 0.45rem;
       }
       .table-wrap.table-cards .wait-table tbody td:last-child {
-        border-radius: 0 12px 12px 0;
-        padding-right: 0.4rem;
+        border-radius: 0 10px 10px 0;
+        padding-right: 0.35rem;
       }
       .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
-        min-width: 3.4rem;
-        max-width: 5.5rem;
-        padding: 0.4rem 0.28rem 0.35rem;
-        border-radius: 10px;
+        min-width: 3.25rem;
+        max-width: 5.25rem;
+        padding: 0.26rem 0.24rem 0.22rem;
+        border-radius: 8px;
       }
       .table-wrap.table-cards .wait-cell .num {
         font-size: 1.25rem;
