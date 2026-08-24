@@ -2012,12 +2012,13 @@
       }
       // Prefer delay minutes (e.g. "60 min delay"), not clock fragments
       const minMatch = raw.match(/(\d+)\s*min(?:ute)?s?\s*delay/i) || raw.match(/(\d+)\s*min\b/i);
+      // CBP usually sends "At 3:00 pm CDT"; around midday/midnight it often sends "At Noon CDT" / "At Midnight CDT"
       const timeMatch = raw.match(/At\s+(.+?)\s+(?=\d+\s*min)/i);
       // Require "open" so we never confuse Maximum Lanes / "Lane 1" notice text
       const lanesMatch = raw.match(/(\d+)\s*lane(?:s|\(s\))?\s*open/i);
       if (minMatch) {
         const mins = parseInt(minMatch[1], 10);
-        const when = timeMatch ? timeMatch[1].trim() : "";
+        const when = timeMatch ? normalizeCbpClock(timeMatch[1].trim()) : "";
         const openCount = lanesMatch ? parseInt(lanesMatch[1], 10) : null;
         const lanesOpen = openCount != null ? openCount + " " + t("open") : "—";
         const detail = [
@@ -2482,10 +2483,29 @@
       });
     }
 
-    /** Parse "3:00 pm CDT" / "11:00 am CDT" into minutes since midnight for ordering. */
+    /**
+     * CBP clock text → stable display form.
+     * "Noon CDT" / "At Noon CDT" → "12:00 pm CDT"
+     * "Midnight CST" → "12:00 am CST"
+     * Leaves "3:00 pm CDT" unchanged.
+     */
+    function normalizeCbpClock(when) {
+      if (!when) return "";
+      let s = String(when).replace(/^At\s+/i, "").replace(/\s+/g, " ").trim();
+      const noon = s.match(/^noon\s*(C[DS]T)?$/i);
+      if (noon) return "12:00 pm" + (noon[1] ? " " + noon[1].toUpperCase() : "");
+      const midnight = s.match(/^midnight\s*(C[DS]T)?$/i);
+      if (midnight) return "12:00 am" + (midnight[1] ? " " + midnight[1].toUpperCase() : "");
+      return s;
+    }
+
+    /** Parse "3:00 pm CDT" / "12:00 pm CDT" / "Noon CDT" into minutes since midnight for ordering. */
     function asOfSortKey(asOf) {
       if (!asOf || asOf === "—") return -1;
-      const m = String(asOf).match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
+      const normalized = normalizeCbpClock(asOf);
+      if (/^noon\b/i.test(String(asOf).trim()) || /^12:00\s*pm/i.test(normalized)) return 12 * 60;
+      if (/^midnight\b/i.test(String(asOf).trim()) || /^12:00\s*am/i.test(normalized)) return 0;
+      const m = String(normalized).match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
       if (!m) return -1;
       let h = parseInt(m[1], 10) % 12;
       const min = parseInt(m[2], 10);
