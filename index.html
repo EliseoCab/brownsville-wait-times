@@ -844,15 +844,37 @@
       padding-right: 0.5rem;
       min-width: 0;
     }
-    /* One wait col (Pedestrian): 42% / 58% */
+    /* One wait col fallback: 42% / 58% */
     .table-wrap.table-tight-1 .wait-table col.c-bridge { width: 42% !important; }
     .table-wrap.table-tight-1 .wait-table col.c-wait { width: 58% !important; }
-    /* Two wait cols (Vehicles+SENTRI or Commercial+FAST): equal wait columns */
+    /* Two wait cols (Vehicles+SENTRI, Pedestrian+Ready, Commercial+FAST): equal wait columns */
     .table-wrap.table-tight-2 .wait-table col.c-bridge { width: 36% !important; }
     .table-wrap.table-tight-2 .wait-table col.c-wait { width: 32% !important; }
     .table-wrap.table-tight .wait-stack {
       min-width: 0;
       width: 100%;
+    }
+    .table-wrap.table-tight td.wait-col.has-na {
+      background: transparent;
+    }
+    .table-wrap.table-tight .wait-stack.wait-stack-na {
+      display: inline-flex;
+      width: auto;
+      min-width: 4.75rem;
+      max-width: 6.75rem;
+      min-height: 2.5rem;
+      padding: 0.4rem 0.7rem;
+      border-radius: 10px;
+      background: #dbe3ee;
+      border: 1px solid #94a3b8;
+      box-shadow: none;
+    }
+    .table-wrap.table-tight .wait-na {
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: #475569;
+      text-transform: uppercase;
     }
     .table-wrap.table-tight .wait-extra.open-line {
       white-space: normal;
@@ -1361,6 +1383,17 @@
     .m-wait-block.has-med { background: rgba(255, 251, 235, 0.95); }
     .m-wait-block.has-high { background: rgba(255, 247, 237, 0.95); }
     .m-wait-block.has-severe { background: rgba(254, 242, 242, 0.95); }
+    .m-wait-block.has-na {
+      background: #dbe3ee;
+      border-color: #94a3b8;
+    }
+    .m-wait-block .wait-na {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: #475569;
+      text-transform: uppercase;
+    }
 
     @media (max-width: 720px) {
       .table-wrap.table-cards .wait-table {
@@ -1605,12 +1638,19 @@
       background: linear-gradient(90deg, #121a28 0%, #152033 55%, var(--white) 100%);
     }
     html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-na .wait-stack,
-    html[data-theme="dark"] .table-wrap.table-cards .wait-stack.wait-stack-na {
+    html[data-theme="dark"] .table-wrap.table-cards .wait-stack.wait-stack-na,
+    html[data-theme="dark"] .table-wrap.table-tight .wait-stack.wait-stack-na {
       background: #334155 !important;
       border-color: #64748b !important;
     }
-    html[data-theme="dark"] .table-wrap.table-cards .wait-na {
+    html[data-theme="dark"] .table-wrap.table-cards .wait-na,
+    html[data-theme="dark"] .table-wrap.table-tight .wait-na,
+    html[data-theme="dark"] .m-wait-block .wait-na {
       color: #cbd5e1 !important;
+    }
+    html[data-theme="dark"] .m-wait-block.has-na {
+      background: #334155;
+      border-color: #64748b;
     }
     html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-low .wait-stack {
       background: linear-gradient(180deg, #0b2a1d 0%, var(--white) 75%);
@@ -1691,19 +1731,19 @@
   <main class="main">
     <section class="summary" aria-label="At a glance" data-i18n-aria="atAGlance">
       <div class="stat-card">
-        <div class="kicker" data-i18n="statShort">Shortest vehicle wait</div>
+        <div class="kicker" id="statShortKicker" data-i18n="statShort">Shortest vehicle wait</div>
         <div class="stat" id="statShort">—</div>
         <div class="hint" id="statShortHint" data-i18n="statShortHint">Across open general lanes</div>
       </div>
       <div class="stat-card">
-        <div class="kicker" data-i18n="statLong">Longest vehicle wait</div>
+        <div class="kicker" id="statLongKicker" data-i18n="statLong">Longest vehicle wait</div>
         <div class="stat" id="statLong">—</div>
         <div class="hint" id="statLongHint" data-i18n="statLongHint">Plan extra time if needed</div>
       </div>
       <div class="stat-card">
-        <div class="kicker" data-i18n="statTrusted">Best SENTRI / Fast</div>
+        <div class="kicker" id="statTrustedKicker" data-i18n="statTrusted">Best SENTRI</div>
         <div class="stat" id="statTrusted">—</div>
-        <div class="hint" id="statTrustedHint" data-i18n="statTrustedHint">SENTRI or commercial FAST only</div>
+        <div class="hint" id="statTrustedHint" data-i18n="statTrustedHint">SENTRI lanes only</div>
       </div>
       <div class="stat-card">
         <div class="kicker" data-i18n="statNotices">Active notices</div>
@@ -1803,11 +1843,19 @@
         nextAutoRefresh: "Next auto-refresh",
         statShort: "Shortest vehicle wait",
         statLong: "Longest vehicle wait",
-        statTrusted: "Best SENTRI / Fast",
+        statShortPedestrian: "Shortest pedestrian wait",
+        statLongPedestrian: "Longest pedestrian wait",
+        statShortCommercial: "Shortest commercial wait",
+        statLongCommercial: "Longest commercial wait",
+        statTrusted: "Best SENTRI",
+        statTrustedReady: "Best Ready",
+        statTrustedFast: "Best FAST",
         statNotices: "Active notices",
         statShortHint: "Across open general lanes",
         statLongHint: "Plan extra time if needed",
-        statTrustedHint: "SENTRI or commercial FAST only",
+        statTrustedHint: "SENTRI lanes only",
+        statTrustedHintReady: "Pedestrian Ready lanes only",
+        statTrustedHintFast: "Commercial FAST lanes only",
         statNoticesHint: "Border advisories from CBP",
         autoRefresh: "Auto-refresh · every ~5 min",
         autoRefreshTitle: "While this tab is open, re-checks live CBP about every 5 minutes (not GitHub)",
@@ -1882,7 +1930,9 @@
         fastOpen: "FAST open",
         genClosed: "Gen closed",
         readyClosed: "Ready closed",
-        noTrusted: "No open trusted lanes reported",
+        noTrusted: "No open SENTRI lanes reported",
+        noReady: "No open Ready lanes reported",
+        noFast: "No open FAST lanes reported",
         pendingNoTimes: "Update pending from CBP (no new wait estimates yet)",
         generalLanes: "general lanes",
         sentri: "SENTRI",
@@ -1900,11 +1950,19 @@
         nextAutoRefresh: "Próxima actualización",
         statShort: "Espera más corta (vehículos)",
         statLong: "Espera más larga (vehículos)",
-        statTrusted: "Mejor SENTRI / FAST",
+        statShortPedestrian: "Espera más corta (peatonal)",
+        statLongPedestrian: "Espera más larga (peatonal)",
+        statShortCommercial: "Espera más corta (comercial)",
+        statLongCommercial: "Espera más larga (comercial)",
+        statTrusted: "Mejor SENTRI",
+        statTrustedReady: "Mejor Ready",
+        statTrustedFast: "Mejor FAST",
         statNotices: "Avisos activos",
         statShortHint: "En carriles generales abiertos",
         statLongHint: "Planea tiempo extra si hace falta",
-        statTrustedHint: "Solo SENTRI o FAST comercial",
+        statTrustedHint: "Solo carriles SENTRI",
+        statTrustedHintReady: "Solo carriles Ready peatonales",
+        statTrustedHintFast: "Solo carriles FAST comerciales",
         statNoticesHint: "Avisos fronterizos de CBP",
         autoRefresh: "Auto-actualización · cada ~5 min",
         autoRefreshTitle: "Con esta pestaña abierta, vuelve a consultar CBP cada 5 minutos",
@@ -1979,7 +2037,9 @@
         fastOpen: "FAST abiertos",
         genClosed: "Gral cerrado",
         readyClosed: "Ready cerrado",
-        noTrusted: "No hay carriles de confianza abiertos",
+        noTrusted: "No hay carriles SENTRI abiertos",
+        noReady: "No hay carriles Ready abiertos",
+        noFast: "No hay carriles FAST abiertos",
         pendingNoTimes: "Actualización pendiente de CBP (aún no hay estimaciones)",
         generalLanes: "carriles generales",
         sentri: "SENTRI",
@@ -2375,24 +2435,93 @@
       currentFilter = filter;
       document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
-      if (lastData) renderPorts(lastData);
+      if (lastData) {
+        updateSummary(lastData);
+        renderPorts(lastData);
+      } else {
+        applyStatCardLabels();
+      }
+    }
+
+    function filterGeneralMode() {
+      if (currentFilter === "pedestrian") return "pedestrian";
+      if (currentFilter === "commercial") return "commercial";
+      return "passenger";
+    }
+
+    function statLabelKeys() {
+      if (currentFilter === "pedestrian") {
+        return {
+          short: "statShortPedestrian",
+          long: "statLongPedestrian",
+          trusted: "statTrustedReady",
+          trustedHint: "statTrustedHintReady",
+          noTrusted: "noReady"
+        };
+      }
+      if (currentFilter === "commercial") {
+        return {
+          short: "statShortCommercial",
+          long: "statLongCommercial",
+          trusted: "statTrustedFast",
+          trustedHint: "statTrustedHintFast",
+          noTrusted: "noFast"
+        };
+      }
+      return {
+        short: "statShort",
+        long: "statLong",
+        trusted: "statTrusted",
+        trustedHint: "statTrustedHint",
+        noTrusted: "noTrusted"
+      };
+    }
+
+    function applyStatCardLabels() {
+      const keys = statLabelKeys();
+      const shortK = document.getElementById("statShortKicker");
+      const longK = document.getElementById("statLongKicker");
+      const trustedK = document.getElementById("statTrustedKicker");
+      if (shortK) {
+        shortK.setAttribute("data-i18n", keys.short);
+        shortK.textContent = t(keys.short);
+      }
+      if (longK) {
+        longK.setAttribute("data-i18n", keys.long);
+        longK.textContent = t(keys.long);
+      }
+      if (trustedK) {
+        trustedK.setAttribute("data-i18n", keys.trusted);
+        trustedK.textContent = t(keys.trusted);
+      }
     }
 
     function updateSummary(data) {
-      const passengerWaits = [];
+      applyStatCardLabels();
+      const keys = statLabelKeys();
+      const mode = filterGeneralMode();
+      const generalWaits = [];
       const trustedWaits = [];
       let notices = 0;
 
-      for (const port of data.items) {
+      const items = data && data.items ? data.items : [];
+      for (const port of items) {
         if (port.notice) notices++;
         for (const sec of port.sections) {
           for (const lane of sec.lanes) {
             if (lane.wait.minutes == null) continue;
-            if (sec.key === "passenger" && /general/i.test(lane.name)) {
-              passengerWaits.push({ mins: lane.wait.minutes, port: port.meta.short });
+            if (sec.key === mode && /general/i.test(lane.name) && !/sentri|ready|fast/i.test(lane.name)) {
+              generalWaits.push({ mins: lane.wait.minutes, port: port.meta.short });
             }
-            // SENTRI / commercial FAST only — Ready is a separate program
-            if (/sentri|fast/i.test(lane.name) && !/ready/i.test(lane.name)) {
+            if (currentFilter === "pedestrian") {
+              if (sec.key === "pedestrian" && /ready/i.test(lane.name)) {
+                trustedWaits.push({ mins: lane.wait.minutes, port: port.meta.short, name: lane.name });
+              }
+            } else if (currentFilter === "commercial") {
+              if (/fast/i.test(lane.name) && !/ready/i.test(lane.name)) {
+                trustedWaits.push({ mins: lane.wait.minutes, port: port.meta.short, name: lane.name });
+              }
+            } else if (/sentri/i.test(lane.name) && !/ready/i.test(lane.name)) {
               trustedWaits.push({ mins: lane.wait.minutes, port: port.meta.short, name: lane.name });
             }
           }
@@ -2403,32 +2532,39 @@
       const longEl = document.getElementById("statLong");
       const trustedEl = document.getElementById("statTrusted");
       const noticesEl = document.getElementById("statNotices");
+      const shortHint = document.getElementById("statShortHint");
+      const longHint = document.getElementById("statLongHint");
+      const trustedHint = document.getElementById("statTrustedHint");
 
-      if (passengerWaits.length) {
-        passengerWaits.sort((a, b) => a.mins - b.mins);
-        const best = passengerWaits[0];
-        const worst = passengerWaits[passengerWaits.length - 1];
+      if (generalWaits.length) {
+        generalWaits.sort((a, b) => a.mins - b.mins);
+        const best = generalWaits[0];
+        const worst = generalWaits[generalWaits.length - 1];
         shortEl.textContent = best.mins + " min";
         shortEl.className = "stat " + (best.mins <= 15 ? "good" : best.mins <= 45 ? "warn" : "bad");
-        document.getElementById("statShortHint").textContent = best.port + " · " + t("generalLanes");
+        shortHint.textContent = best.port + " · " + t("generalLanes");
         longEl.textContent = worst.mins + " min";
         longEl.className = "stat " + (worst.mins <= 15 ? "good" : worst.mins <= 45 ? "warn" : "bad");
-        document.getElementById("statLongHint").textContent = worst.port + " · " + t("generalLanes");
+        longHint.textContent = worst.port + " · " + t("generalLanes");
       } else {
         shortEl.textContent = "—";
+        shortEl.className = "stat";
+        shortHint.textContent = t("statShortHint");
         longEl.textContent = "—";
+        longEl.className = "stat";
+        longHint.textContent = t("statLongHint");
       }
 
       if (trustedWaits.length) {
         trustedWaits.sort((a, b) => a.mins - b.mins);
-        const t = trustedWaits[0];
-        trustedEl.textContent = t.mins + " min";
-        trustedEl.className = "stat " + (t.mins <= 15 ? "good" : "warn");
-        document.getElementById("statTrustedHint").textContent = t.port + " · " + t.name;
+        const bestTrustedWait = trustedWaits[0];
+        trustedEl.textContent = bestTrustedWait.mins + " min";
+        trustedEl.className = "stat " + (bestTrustedWait.mins <= 15 ? "good" : "warn");
+        trustedHint.textContent = bestTrustedWait.port + " · " + bestTrustedWait.name;
       } else {
         trustedEl.textContent = t("na");
         trustedEl.className = "stat";
-        document.getElementById("statTrustedHint").textContent = t("noTrusted");
+        trustedHint.textContent = t(keys.noTrusted);
       }
 
       noticesEl.textContent = String(notices);
@@ -2526,6 +2662,8 @@
 
       for (const l of summary.extras || []) {
         if (!/ready/i.test(l.name)) continue;
+        // Pedestrian filter: Ready is its own column — don't duplicate it on Gen
+        if (currentFilter === "pedestrian") continue;
         if (l.wait && !l.wait.pending && l.wait.lanesOpenCount != null) {
           bits.push(l.wait.lanesOpenCount + " " + t("ready"));
           total += l.wait.lanesOpenCount;
@@ -2574,7 +2712,7 @@
     /**
      * Concise wait cell:
      *  - Same wait: "60 min" + open line
-     *  - Gateway Pedestrian only when Gen ≠ Ready: "Gen 15 · Ready 30" + open line
+     *  - All filter, Gateway Pedestrian only when Gen ≠ Ready: "Gen 15 · Ready 30" + open line
      */
     function waitCellBlock(summary, modeKey, port) {
       if (!summary) {
@@ -2586,6 +2724,7 @@
       );
 
       const gatewayPedDual =
+        currentFilter === "all" &&
         port &&
         isGatewayPort(port) &&
         modeKey === "pedestrian" &&
@@ -2736,7 +2875,8 @@
     }
 
     /**
-     * SENTRI / FAST column content:
+     * SENTRI / Ready / FAST column content:
+     *  - Pedestrian filter: Ready only (do not invent data)
      *  - Veterans: SENTRI only (label + wait + open when known)
      *  - Commercial filter: FAST only (Los Indios / Veterans)
      *  - Otherwise: SENTRI or FAST, never Ready
@@ -2744,21 +2884,26 @@
     function bestTrusted(port) {
       const commercialOnly = currentFilter === "commercial";
       const passengerOnly = currentFilter === "passenger";
-      const veteransOnlySentri = isVeteransPort(port) && !commercialOnly;
+      const pedestrianOnly = currentFilter === "pedestrian";
+      const veteransOnlySentri = isVeteransPort(port) && !commercialOnly && !pedestrianOnly;
 
       let trusted = null;
       let pending = null;
       for (const sec of port.sections) {
         for (const lane of sec.lanes) {
-          if (/ready/i.test(lane.name)) continue;
-          if (veteransOnlySentri) {
-            if (!/sentri/i.test(lane.name)) continue;
-          } else if (commercialOnly) {
-            if (!/fast/i.test(lane.name)) continue;
-          } else if (passengerOnly) {
-            if (!/sentri/i.test(lane.name)) continue;
+          if (pedestrianOnly) {
+            if (sec.key !== "pedestrian" || !/ready/i.test(lane.name)) continue;
           } else {
-            if (!/sentri|fast/i.test(lane.name)) continue;
+            if (/ready/i.test(lane.name)) continue;
+            if (veteransOnlySentri) {
+              if (!/sentri/i.test(lane.name)) continue;
+            } else if (commercialOnly) {
+              if (!/fast/i.test(lane.name)) continue;
+            } else if (passengerOnly) {
+              if (!/sentri/i.test(lane.name)) continue;
+            } else {
+              if (!/sentri|fast/i.test(lane.name)) continue;
+            }
           }
           if (isActiveWait(lane.wait)) {
             if (!trusted || lane.wait.minutes < trusted.lane.wait.minutes) {
@@ -2770,6 +2915,24 @@
         }
       }
       const pick = trusted || pending;
+
+      if (pedestrianOnly) {
+        const lane = pick && pick.lane;
+        const wait = lane && lane.wait;
+        const n = wait && wait.lanesOpenCount != null ? wait.lanesOpenCount : null;
+        const main = wait && (isActiveWait(wait) || wait.pending)
+          ? waitCellHtml(wait)
+          : `<span class="wait-empty">—</span>`;
+        let sub = `<span class="tag">${escapeHtml(t("ready"))}</span>`;
+        if (n != null && n > 0) sub += ` ${n} ${t("open")}`;
+        else if (wait && wait.closed) sub += ` ${t("closed").toLowerCase()}`;
+        else if (n === 0) sub += ` ${t("closed").toLowerCase()}`;
+        else if (wait && wait.pending) sub += ` ${t("pending")}`;
+        return {
+          html: `${main}<span class="wait-extra">${sub}</span>`,
+          cls: wait && isActiveWait(wait) ? "has-" + wait.cls : (wait && wait.pending ? "has-pending" : "")
+        };
+      }
 
       // Veterans: SENTRI-only cell (All / Passenger filters)
       if (veteransOnlySentri) {
@@ -2859,21 +3022,23 @@
         asOfText = "—";
       }
 
-      // Columns: Bridge · Hours · Passenger · SENTRI/FAST · Pedestrian · Commercial
+      // All: Vehicles · SENTRI · Pedestrian · Commercial
+      // Focused filters: primary wait · trusted/special (SENTRI / Ready / FAST)
       const waitCols = [];
-      if (currentFilter === "all" || currentFilter === "passenger") {
+      if (currentFilter === "all") {
         waitCols.push({ key: "passenger", label: t("filterVehicles") });
-      }
-      if (currentFilter === "commercial") {
-        waitCols.push({ key: "trusted", label: t("fast") });
-      } else if (currentFilter === "all" || currentFilter === "passenger") {
         waitCols.push({ key: "trusted", label: t("sentri") });
-      }
-      if (currentFilter === "all" || currentFilter === "pedestrian") {
         waitCols.push({ key: "pedestrian", label: t("filterPedestrian") });
-      }
-      if (currentFilter === "all" || currentFilter === "commercial") {
         waitCols.push({ key: "commercial", label: t("filterCommercial") });
+      } else if (currentFilter === "passenger") {
+        waitCols.push({ key: "passenger", label: t("filterVehicles") });
+        waitCols.push({ key: "trusted", label: t("sentri") });
+      } else if (currentFilter === "pedestrian") {
+        waitCols.push({ key: "pedestrian", label: t("filterPedestrian") });
+        waitCols.push({ key: "trusted", label: t("ready") });
+      } else if (currentFilter === "commercial") {
+        waitCols.push({ key: "commercial", label: t("filterCommercial") });
+        waitCols.push({ key: "trusted", label: t("fast") });
       }
 
       const portsSorted = data.items.slice().sort((a, b) => {
@@ -2898,8 +3063,8 @@
           trusted: bestTrusted(port)
         };
 
-        /** All filter: any cell without a real minute value (or pending) → N/A chip */
-        function toAllFilterChip(cell) {
+        /** Any cell without a real minute value (or pending) → N/A chip — every filter */
+        function toEmptyNaChip(cell) {
           const html = cell && cell.html ? cell.html : "";
           const cls = (cell && cell.cls) || "";
           const hasMinute = /class="num">\d+/.test(html);
@@ -2922,11 +3087,9 @@
           };
         }
 
-        if (currentFilter === "all") {
-          Object.keys(cells).forEach((key) => {
-            cells[key] = toAllFilterChip(cells[key]);
-          });
-        }
+        Object.keys(cells).forEach((key) => {
+          cells[key] = toEmptyNaChip(cells[key]);
+        });
 
         const tdHtml = waitCols.map((c) => {
           const cell = cells[c.key];
