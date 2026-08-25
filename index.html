@@ -703,7 +703,7 @@
       border-radius: 0 12px 12px 0;
       padding-right: 0.5rem;
     }
-    /* Floating time chips on the band (mockup .chip) — no titles on chips */
+    /* Floating time chips — uniform size; N/A uses neutral (not white) */
     .table-wrap.table-cards .wait-table tbody td.wait-col {
       text-align: center;
     }
@@ -712,48 +712,58 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-width: 4.2rem;
-      max-width: 7rem;
-      width: auto;
+      width: 5.35rem;
+      min-width: 5.35rem;
+      max-width: 5.35rem;
+      height: 3.15rem;
+      min-height: 3.15rem;
       margin: 0 auto;
-      padding: 0.32rem 0.38rem 0.28rem;
+      padding: 0.28rem 0.3rem;
       border-radius: 10px;
       background: var(--white);
       border: 1px solid rgba(226, 232, 240, 0.95);
       box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
       box-sizing: border-box;
       line-height: 1.1;
+      overflow: hidden;
     }
-    .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack:has(.wait-empty) {
-      background: #f8fafc;
+    .table-wrap.table-cards .wait-table tbody td.wait-col.has-na .wait-stack {
+      background: #e8eef5;
+      border: 1px solid #cbd5e1;
       box-shadow: none;
-      border-style: dashed;
-      min-height: 2rem;
-      color: var(--muted);
-      font-weight: 650;
+    }
+    .table-wrap.table-cards .wait-na {
+      font-size: 0.78rem;
+      font-weight: 750;
+      letter-spacing: 0.04em;
+      color: #64748b;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-extra {
-      margin-top: 0.12rem;
-      line-height: 1.1;
+      margin-top: 0.1rem;
+      line-height: 1.05;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-cell .num {
       line-height: 1;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col.has-low .wait-stack {
       background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 75%);
-      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.12);
+      box-shadow: 0 2px 8px rgba(5, 150, 105, 0.1);
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col.has-med .wait-stack {
       background: linear-gradient(180deg, #fffbeb 0%, #ffffff 75%);
-      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.12);
+      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.1);
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col.has-high .wait-stack {
       background: linear-gradient(180deg, #fff7ed 0%, #ffffff 75%);
-      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.12);
+      box-shadow: 0 2px 8px rgba(234, 88, 12, 0.1);
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col.has-severe .wait-stack {
       background: linear-gradient(180deg, #fef2f2 0%, #ffffff 75%);
-      box-shadow: 0 4px 14px rgba(220, 38, 38, 0.12);
+      box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1);
     }
     /* Headers already name the column — hide chip category tags (e.g. SENTRI) */
     .table-wrap.table-cards .wait-extra .tag {
@@ -1333,10 +1343,16 @@
         padding-right: 0.35rem;
       }
       .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
-        min-width: 3.25rem;
-        max-width: 5.25rem;
-        padding: 0.26rem 0.24rem 0.22rem;
+        width: 4.35rem;
+        min-width: 4.35rem;
+        max-width: 4.35rem;
+        height: 2.75rem;
+        min-height: 2.75rem;
+        padding: 0.2rem 0.18rem;
         border-radius: 8px;
+      }
+      .table-wrap.table-cards .wait-na {
+        font-size: 0.7rem;
       }
       .table-wrap.table-cards .wait-cell .num {
         font-size: 1.25rem;
@@ -1534,6 +1550,13 @@
     }
     html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.bridge {
       background: linear-gradient(90deg, #121a28 0%, #152033 55%, var(--white) 100%);
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-na .wait-stack {
+      background: #1e293b;
+      border-color: #334155;
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-na {
+      color: #94a3b8;
     }
     html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-low .wait-stack {
       background: linear-gradient(180deg, #0b2a1d 0%, var(--white) 75%);
@@ -2814,12 +2837,26 @@
           notices.push({ bridge: port.meta.short, text: port.notice });
         }
 
-        const cells = {
+        let cells = {
           passenger: waitCellBlock(summarizeMode(port.sections, "passenger"), "passenger", port),
           pedestrian: waitCellBlock(summarizeMode(port.sections, "pedestrian"), "pedestrian", port),
           commercial: waitCellBlock(summarizeMode(port.sections, "commercial"), "commercial", port),
           trusted: bestTrusted(port)
         };
+
+        // All filter: blank cells → N/A on a neutral chip (uniform size via CSS)
+        if (currentFilter === "all") {
+          const naChip = {
+            html: `<div class="wait-stack"><span class="wait-na">${escapeHtml(t("na"))}</span></div>`,
+            cls: "has-na"
+          };
+          Object.keys(cells).forEach((key) => {
+            const cell = cells[key];
+            if (!cell || cell.html.includes("wait-empty") || (!cell.cls && !/\bwait-cell\b/.test(cell.html))) {
+              cells[key] = naChip;
+            }
+          });
+        }
 
         const tdHtml = waitCols.map((c) => {
           const cell = cells[c.key];
