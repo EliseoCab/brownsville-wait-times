@@ -1053,13 +1053,18 @@
       font-weight: 600;
     }
     .asof-bar {
-      padding: 0.55rem 1.15rem;
+      padding: 0.5rem 1rem;
       background: var(--paper);
       border: 1px solid var(--line);
       border-radius: 12px;
       font-size: 0.8rem;
       color: var(--muted);
-      margin: 0 0 0.85rem;
+      margin: 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .toolbar .asof-bar {
+      max-width: 100%;
     }
     .asof-bar strong { color: var(--ink); font-weight: 700; }
 
@@ -1758,22 +1763,16 @@
         <span data-i18n="crossingTimes">Crossing times</span>
         <span class="section-sub" data-i18n="crossingTimesSub">Estimates to primary inspection booth · CBP updates about hourly</span>
       </h2>
+      <div class="asof-bar" id="asofBar" aria-live="polite">
+        <span data-i18n="reportTime">Report time:</span>
+        <strong id="asofStamp">—</strong>
+      </div>
       <div class="filters" role="tablist" aria-label="Filter by traffic type" data-i18n-aria="filterAria">
         <button type="button" class="filter-btn active" data-filter="all" data-i18n="filterAll" onclick="setFilter('all', this)">All</button>
         <button type="button" class="filter-btn" data-filter="passenger" data-i18n="filterVehicles" onclick="setFilter('passenger', this)">Vehicles</button>
         <button type="button" class="filter-btn" data-filter="pedestrian" data-i18n="filterPedestrian" onclick="setFilter('pedestrian', this)">Pedestrian</button>
         <button type="button" class="filter-btn" data-filter="commercial" data-i18n="filterCommercial" onclick="setFilter('commercial', this)">Commercial</button>
       </div>
-    </div>
-    <div class="refresh-meta">
-      <span class="auto-badge" data-i18n="autoRefresh" data-i18n-title="autoRefreshTitle" title="While this tab is open, re-checks live CBP about every 5 minutes (not GitHub)">Auto-refresh · every ~5 min</span>
-      <span><span data-i18n="nextCheckIn">Next check in</span> <strong id="nextRefreshInline">—</strong></span>
-      <span class="dot" aria-hidden="true">·</span>
-      <span data-i18n="activeOnly">Active waits only (N/A &amp; closed hidden)</span>
-    </div>
-    <div class="asof-bar" id="asofBar" aria-live="polite">
-      <span data-i18n="reportTime">Report time:</span>
-      <strong id="asofStamp">—</strong>
     </div>
     <div class="refresh-row">
       <button type="button" class="btn btn-primary btn-refresh" id="refreshBtn" onclick="loadData(false, true)">
