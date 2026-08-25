@@ -516,14 +516,13 @@
       margin-top: 0.25rem;
     }
 
-    /* Toolbar */
+    /* Toolbar — heading, then filter pills (stacked to match the section order) */
     .toolbar {
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      margin-bottom: 1.25rem;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.85rem;
+      margin-bottom: 0.85rem;
     }
     .section-title {
       font-size: 1.35rem;
@@ -634,13 +633,6 @@
       border: none;
       box-shadow: none;
       overflow: visible;
-    }
-    .table-wrap.table-cards .asof-bar {
-      background: var(--white);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      box-shadow: var(--shadow-sm);
-      margin-bottom: 0.55rem;
     }
     .table-wrap.table-cards .table-scroll {
       overflow-x: auto;
@@ -1057,9 +1049,11 @@
     .asof-bar {
       padding: 0.55rem 1.15rem;
       background: var(--paper);
-      border-bottom: 1px solid var(--line);
+      border: 1px solid var(--line);
+      border-radius: 12px;
       font-size: 0.8rem;
       color: var(--muted);
+      margin: 0 0 0.85rem;
     }
     .asof-bar strong { color: var(--ink); font-weight: 700; }
 
@@ -1210,8 +1204,7 @@
       .table-wrap.table-tight .mobile-cards {
         display: flex !important;
       }
-      .table-wrap.table-tight .asof-bar,
-      .table-wrap.table-cards .asof-bar {
+      .asof-bar {
         font-size: 0.7rem;
         padding: 0.45rem 0.65rem;
       }
@@ -1772,6 +1765,10 @@
         <button type="button" class="filter-btn" data-filter="pedestrian" data-i18n="filterPedestrian" onclick="setFilter('pedestrian', this)">Pedestrian</button>
         <button type="button" class="filter-btn" data-filter="commercial" data-i18n="filterCommercial" onclick="setFilter('commercial', this)">Commercial</button>
       </div>
+    </div>
+    <div class="asof-bar" id="asofBar" aria-live="polite">
+      <span data-i18n="reportTime">Report time:</span>
+      <strong id="asofStamp">—</strong>
     </div>
     <div class="refresh-row">
       <button type="button" class="btn btn-primary btn-refresh" id="refreshBtn" onclick="loadData(false, true)">
@@ -3049,6 +3046,8 @@
       } else {
         asOfText = "—";
       }
+      const asofStamp = document.getElementById("asofStamp");
+      if (asofStamp) asofStamp.textContent = asOfText;
 
       // All: Vehicles · SENTRI · Pedestrian · Commercial
       // Focused: primary wait · special column (SENTRI / Ready / FAST) when that column has data
@@ -3173,7 +3172,6 @@
 
       grid.innerHTML = `
         <div class="table-wrap${tightClass}${cardsClass}">
-          <div class="asof-bar">${escapeHtml(t("reportTime"))} <strong>${escapeHtml(asOfText)}</strong></div>
           <div class="table-scroll">
             <table class="wait-table">
               <colgroup>${colgroup}</colgroup>
