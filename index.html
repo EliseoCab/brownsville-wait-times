@@ -703,7 +703,7 @@
       border-radius: 0 12px 12px 0;
       padding-right: 0.5rem;
     }
-    /* Floating time chips — size follows content (no clipping); N/A = neutral gray */
+    /* Floating time chips — same width for every column tile (fits Gen/Ready); height grows with content */
     .table-wrap.table-cards .wait-table tbody td.wait-col {
       text-align: center;
       vertical-align: middle;
@@ -713,13 +713,14 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: auto;
-      min-width: 4.25rem;
-      max-width: 100%;
+      /* Uniform width across Vehicles / SENTRI / Pedestrian / Commercial (incl. dual Gen/Ready) */
+      width: 6.75rem;
+      min-width: 6.75rem;
+      max-width: 6.75rem;
       height: auto;
-      min-height: 2.5rem;
+      min-height: 2.75rem;
       margin: 0 auto;
-      padding: 0.4rem 0.45rem 0.35rem;
+      padding: 0.4rem 0.4rem 0.35rem;
       border-radius: 10px;
       background: var(--white);
       border: 1px solid rgba(226, 232, 240, 0.95);
@@ -733,8 +734,6 @@
       background: #dbe3ee !important;
       border: 1px solid #94a3b8 !important;
       box-shadow: none !important;
-      min-width: 4.25rem;
-      min-height: 2.5rem;
     }
     .table-wrap.table-cards .wait-na {
       font-size: 0.8rem;
@@ -746,20 +745,47 @@
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-extra {
       margin-top: 0.15rem;
       line-height: 1.2;
-      max-width: 7.5rem;
+      width: 100%;
+      max-width: 100%;
       white-space: normal;
       overflow-wrap: anywhere;
       word-break: break-word;
-      font-size: 0.6rem;
+      font-size: 0.58rem;
+      box-sizing: border-box;
+      padding: 0 0.1rem;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-cell .num {
       line-height: 1;
     }
+    /* Gen + Ready stacked inside the same uniform chip width */
     .table-wrap.table-cards .wait-table tbody td.wait-col .compact-waits {
       display: flex;
       flex-direction: column;
-      gap: 0.15rem;
+      gap: 0.2rem;
+      align-items: stretch;
+      width: 100%;
+    }
+    .table-wrap.table-cards .wait-table tbody td.wait-col .compact-pair {
+      display: flex;
+      flex-direction: row;
       align-items: center;
+      justify-content: space-between;
+      gap: 0.25rem;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0 0.1rem;
+    }
+    .table-wrap.table-cards .wait-table tbody td.wait-col .dual-label {
+      font-size: 0.58rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--muted);
+      flex: 0 0 auto;
+    }
+    .table-wrap.table-cards .wait-table tbody td.wait-col .compact-pair .wait-cell {
+      flex: 1 1 auto;
+      justify-content: flex-end;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col.has-low .wait-stack {
       background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 75%);
@@ -1154,16 +1180,87 @@
         padding-top: max(0.55rem, env(safe-area-inset-top));
       }
 
-      /* Few-column filters: hide wide table, show compact phone cards */
-      .table-wrap.table-tight .table-scroll {
+      /* Few-column filters + All: hide wide table, show compact phone cards */
+      .table-wrap.table-tight .table-scroll,
+      .table-wrap.table-cards .table-scroll {
         display: none !important;
       }
-      .table-wrap.table-tight .mobile-cards {
+      .table-wrap.table-tight .mobile-cards,
+      .table-wrap.table-cards .mobile-cards {
         display: flex !important;
       }
-      .table-wrap.table-tight .asof-bar {
+      .table-wrap.table-tight .asof-bar,
+      .table-wrap.table-cards .asof-bar {
         font-size: 0.7rem;
         padding: 0.45rem 0.65rem;
+      }
+
+      /* All filter on phone: bridge card + 2×2 uniform wait tiles */
+      .table-wrap.table-cards .mobile-cards {
+        gap: 0.4rem;
+        padding: 0.55rem;
+        background: transparent;
+      }
+      .table-wrap.table-cards .m-row {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.45rem;
+        padding: 0.55rem 0.6rem;
+        border-radius: 12px;
+      }
+      .table-wrap.table-cards .m-row-waits {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.35rem;
+        width: 100%;
+        justify-content: stretch;
+        overflow: visible;
+      }
+      .table-wrap.table-cards .m-wait-block {
+        flex: none;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        min-height: 3.6rem;
+        height: auto;
+        padding: 0.4rem 0.3rem;
+        overflow: visible;
+        box-sizing: border-box;
+      }
+      .table-wrap.table-cards .m-wait-block.has-na {
+        background: #dbe3ee;
+        border-color: #94a3b8;
+      }
+      .table-wrap.table-cards .m-wait-block .wait-na {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        color: #475569;
+        text-transform: uppercase;
+      }
+      .table-wrap.table-cards .m-wait-block .wait-stack {
+        width: 100%;
+        max-width: 100%;
+      }
+      .table-wrap.table-cards .m-wait-block .compact-waits {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+      }
+      .table-wrap.table-cards .m-wait-block .compact-pair {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        gap: 0.2rem;
+      }
+      .table-wrap.table-cards .m-wait-block .dual-label {
+        font-size: 0.55rem;
+        font-weight: 800;
+        color: var(--muted);
+        text-transform: uppercase;
       }
     }
 
@@ -1354,18 +1451,19 @@
         border-radius: 0 10px 10px 0;
         padding-right: 0.35rem;
       }
+      /* Desktop/tablet narrow: keep table chips equal width if table still shows */
       .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
-        width: auto;
-        min-width: 3.5rem;
-        max-width: 100%;
+        width: 5.75rem;
+        min-width: 5.75rem;
+        max-width: 5.75rem;
         height: auto;
-        min-height: 2.25rem;
-        padding: 0.32rem 0.3rem 0.28rem;
+        min-height: 2.5rem;
+        padding: 0.32rem 0.28rem 0.28rem;
         border-radius: 8px;
       }
       .table-wrap.table-cards .wait-table tbody td.wait-col .wait-extra {
-        max-width: 5.5rem;
-        font-size: 0.55rem;
+        max-width: 100%;
+        font-size: 0.52rem;
       }
       .table-wrap.table-cards .wait-na {
         font-size: 0.68rem;
