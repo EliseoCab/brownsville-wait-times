@@ -1180,13 +1180,12 @@
         padding-top: max(0.55rem, env(safe-area-inset-top));
       }
 
-      /* Few-column filters + All: hide wide table, show compact phone cards */
-      .table-wrap.table-tight .table-scroll,
-      .table-wrap.table-cards .table-scroll {
+      /* Few-column filters only: hide wide table, show compact phone cards.
+         All filter keeps the same bridge-band table as desktop. */
+      .table-wrap.table-tight .table-scroll {
         display: none !important;
       }
-      .table-wrap.table-tight .mobile-cards,
-      .table-wrap.table-cards .mobile-cards {
+      .table-wrap.table-tight .mobile-cards {
         display: flex !important;
       }
       .table-wrap.table-tight .asof-bar,
@@ -1195,72 +1194,12 @@
         padding: 0.45rem 0.65rem;
       }
 
-      /* All filter on phone: bridge card + 2×2 uniform wait tiles */
+      /* All filter: never swap to mobile-cards — same layout as desktop */
+      .table-wrap.table-cards .table-scroll {
+        display: block !important;
+      }
       .table-wrap.table-cards .mobile-cards {
-        gap: 0.4rem;
-        padding: 0.55rem;
-        background: transparent;
-      }
-      .table-wrap.table-cards .m-row {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.45rem;
-        padding: 0.55rem 0.6rem;
-        border-radius: 12px;
-      }
-      .table-wrap.table-cards .m-row-waits {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.35rem;
-        width: 100%;
-        justify-content: stretch;
-        overflow: visible;
-      }
-      .table-wrap.table-cards .m-wait-block {
-        flex: none;
-        width: 100%;
-        min-width: 0;
-        max-width: none;
-        min-height: 3.6rem;
-        height: auto;
-        padding: 0.4rem 0.3rem;
-        overflow: visible;
-        box-sizing: border-box;
-      }
-      .table-wrap.table-cards .m-wait-block.has-na {
-        background: #dbe3ee;
-        border-color: #94a3b8;
-      }
-      .table-wrap.table-cards .m-wait-block .wait-na {
-        font-size: 0.72rem;
-        font-weight: 800;
-        letter-spacing: 0.05em;
-        color: #475569;
-        text-transform: uppercase;
-      }
-      .table-wrap.table-cards .m-wait-block .wait-stack {
-        width: 100%;
-        max-width: 100%;
-      }
-      .table-wrap.table-cards .m-wait-block .compact-waits {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 0.15rem;
-      }
-      .table-wrap.table-cards .m-wait-block .compact-pair {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-        gap: 0.2rem;
-      }
-      .table-wrap.table-cards .m-wait-block .dual-label {
-        font-size: 0.55rem;
-        font-weight: 800;
-        color: var(--muted);
-        text-transform: uppercase;
+        display: none !important;
       }
     }
 
