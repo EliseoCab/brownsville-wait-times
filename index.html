@@ -2506,7 +2506,7 @@
 
       const items = data && data.items ? data.items : [];
       for (const port of items) {
-        if (port.notice) notices++;
+        if (port.notice && portHasActiveForFilter(port)) notices++;
         for (const sec of port.sections) {
           for (const lane of sec.lanes) {
             if (lane.wait.minutes == null) continue;
@@ -2736,8 +2736,8 @@
       let mainHtml;
       if (gatewayPedDual) {
         mainHtml = `<div class="compact-waits">
-          <span class="compact-pair"><span class="dual-label">Gen</span> ${waitCellHtml(w)}</span>
-          <span class="compact-pair"><span class="dual-label">Ready</span> ${waitCellHtml(readyActive.wait)}</span>
+          <span class="compact-pair"><span class="dual-label">${escapeHtml(t("gen"))}</span> ${waitCellHtml(w)}</span>
+          <span class="compact-pair"><span class="dual-label">${escapeHtml(t("ready"))}</span> ${waitCellHtml(readyActive.wait)}</span>
         </div>`;
       } else if (w.pending) {
         mainHtml = waitCellHtml(w);
@@ -2996,6 +2996,34 @@
       };
     }
 
+    function cellHasPublishedWait(cell) {
+      const html = cell && cell.html ? cell.html : "";
+      const cls = (cell && cell.cls) || "";
+      return /class="num">\d+/.test(html) ||
+        /has-pending/.test(cls) ||
+        /pending/i.test(cls) ||
+        /updatePending|Update Pending|update\s*pending/i.test(html);
+    }
+
+    /** Any cell without a real minute value (or pending) → N/A chip — every filter */
+    function toEmptyNaChip(cell) {
+      const html = cell && cell.html ? cell.html : "";
+      const cls = (cell && cell.cls) || "";
+      if (cellHasPublishedWait(cell)) {
+        return {
+          html: html.includes("wait-stack") ? html : `<div class="wait-stack">${html}</div>`,
+          cls: cls || "has-low"
+        };
+      }
+      return {
+        html:
+          `<div class="wait-stack wait-stack-na">` +
+          `<span class="wait-na">${escapeHtml(t("na"))}</span>` +
+          `</div>`,
+        cls: "has-na"
+      };
+    }
+
     function renderPorts(data) {
       const grid = document.getElementById("portGrid");
       const notices = [];
@@ -3023,7 +3051,16 @@
       }
 
       // All: Vehicles · SENTRI · Pedestrian · Commercial
-      // Focused filters: primary wait · trusted/special (SENTRI / Ready / FAST)
+      // Focused: primary wait · special column (SENTRI / Ready / FAST) when that column has data
+      const portsSorted = data.items.slice().sort((a, b) => {
+        const an = (a.meta && a.meta.short ? a.meta.short : a.title || "").toLowerCase();
+        const bn = (b.meta && b.meta.short ? b.meta.short : b.title || "").toLowerCase();
+        return an.localeCompare(bn);
+      });
+      const portsVisible = portsSorted.filter(portHasActiveForFilter);
+      const showSpecialCol = currentFilter === "all" ||
+        portsVisible.some((port) => cellHasPublishedWait(bestTrusted(port)));
+
       const waitCols = [];
       if (currentFilter === "all") {
         waitCols.push({ key: "passenger", label: t("filterVehicles") });
@@ -3032,25 +3069,18 @@
         waitCols.push({ key: "commercial", label: t("filterCommercial") });
       } else if (currentFilter === "passenger") {
         waitCols.push({ key: "passenger", label: t("filterVehicles") });
-        waitCols.push({ key: "trusted", label: t("sentri") });
+        if (showSpecialCol) waitCols.push({ key: "trusted", label: t("sentri") });
       } else if (currentFilter === "pedestrian") {
         waitCols.push({ key: "pedestrian", label: t("filterPedestrian") });
-        waitCols.push({ key: "trusted", label: t("ready") });
+        if (showSpecialCol) waitCols.push({ key: "trusted", label: t("ready") });
       } else if (currentFilter === "commercial") {
         waitCols.push({ key: "commercial", label: t("filterCommercial") });
-        waitCols.push({ key: "trusted", label: t("fast") });
+        if (showSpecialCol) waitCols.push({ key: "trusted", label: t("fast") });
       }
-
-      const portsSorted = data.items.slice().sort((a, b) => {
-        const an = (a.meta && a.meta.short ? a.meta.short : a.title || "").toLowerCase();
-        const bn = (b.meta && b.meta.short ? b.meta.short : b.title || "").toLowerCase();
-        return an.localeCompare(bn);
-      });
 
       const mobileCards = [];
 
-      for (const port of portsSorted) {
-        if (!portHasActiveForFilter(port)) continue;
+      for (const port of portsVisible) {
 
         if (port.notice) {
           notices.push({ bridge: port.meta.short, text: port.notice });
@@ -3062,30 +3092,6 @@
           commercial: waitCellBlock(summarizeMode(port.sections, "commercial"), "commercial", port),
           trusted: bestTrusted(port)
         };
-
-        /** Any cell without a real minute value (or pending) → N/A chip — every filter */
-        function toEmptyNaChip(cell) {
-          const html = cell && cell.html ? cell.html : "";
-          const cls = (cell && cell.cls) || "";
-          const hasMinute = /class="num">\d+/.test(html);
-          const hasPending =
-            /has-pending/.test(cls) ||
-            /pending/i.test(cls) ||
-            /updatePending|Update Pending|update\s*pending/i.test(html);
-          if (hasMinute || hasPending) {
-            return {
-              html: html.includes("wait-stack") ? html : `<div class="wait-stack">${html}</div>`,
-              cls: cls || "has-low"
-            };
-          }
-          return {
-            html:
-              `<div class="wait-stack wait-stack-na">` +
-              `<span class="wait-na">${escapeHtml(t("na"))}</span>` +
-              `</div>`,
-            cls: "has-na"
-          };
-        }
 
         Object.keys(cells).forEach((key) => {
           cells[key] = toEmptyNaChip(cells[key]);
