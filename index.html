@@ -715,7 +715,7 @@
       width: 6.75rem;
       min-width: 6.75rem;
       max-width: 6.75rem;
-      height: auto;
+      height: auto; /* JS equalizes to tallest All-filter chip after render */
       min-height: 2.75rem;
       margin: 0 auto;
       padding: 0.4rem 0.4rem 0.35rem;
@@ -3195,6 +3195,32 @@
           </div>
         </div>
         ${noticesHtml}`;
+
+      // Match every wait chip to the tallest chip in the All filter
+      requestAnimationFrame(function () {
+        equalizeAllFilterChipHeights();
+      });
+    }
+
+    /** All filter: set every wait tile height to the tallest tile (full content visible). */
+    function equalizeAllFilterChipHeights() {
+      const stacks = document.querySelectorAll(
+        ".table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack"
+      );
+      if (!stacks.length) return;
+      stacks.forEach(function (el) {
+        el.style.height = "auto";
+        el.style.minHeight = "";
+      });
+      let maxH = 0;
+      stacks.forEach(function (el) {
+        maxH = Math.max(maxH, el.offsetHeight);
+      });
+      if (maxH < 1) return;
+      stacks.forEach(function (el) {
+        el.style.height = maxH + "px";
+        el.style.minHeight = maxH + "px";
+      });
     }
 
     function render(data, sourceLabel, isLive) {
@@ -3740,6 +3766,12 @@
       const btn = document.getElementById("installBtn");
       if (btn) btn.hidden = true;
       closeInstallHelp();
+    });
+
+    let chipEqualizeTimer = null;
+    window.addEventListener("resize", function () {
+      if (chipEqualizeTimer) clearTimeout(chipEqualizeTimer);
+      chipEqualizeTimer = setTimeout(equalizeAllFilterChipHeights, 120);
     });
 
     applyTheme(currentTheme(), false);
