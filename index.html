@@ -703,51 +703,60 @@
       border-radius: 0 12px 12px 0;
       padding-right: 0.5rem;
     }
-    /* Floating time chips — uniform size; N/A uses neutral (not white) */
+    /* Floating time chips — fixed size for every tile; N/A = neutral gray */
     .table-wrap.table-cards .wait-table tbody td.wait-col {
       text-align: center;
+      vertical-align: middle;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
-      display: inline-flex;
+      display: inline-flex !important;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 5.35rem;
-      min-width: 5.35rem;
-      max-width: 5.35rem;
-      height: 3.15rem;
-      min-height: 3.15rem;
+      width: 5.5rem !important;
+      min-width: 5.5rem !important;
+      max-width: 5.5rem !important;
+      height: 3.35rem !important;
+      min-height: 3.35rem !important;
+      max-height: 3.35rem !important;
       margin: 0 auto;
-      padding: 0.28rem 0.3rem;
+      padding: 0.25rem 0.3rem !important;
       border-radius: 10px;
       background: var(--white);
       border: 1px solid rgba(226, 232, 240, 0.95);
       box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-      box-sizing: border-box;
-      line-height: 1.1;
+      box-sizing: border-box !important;
+      line-height: 1.05;
       overflow: hidden;
     }
-    .table-wrap.table-cards .wait-table tbody td.wait-col.has-na .wait-stack {
-      background: #e8eef5;
-      border: 1px solid #cbd5e1;
-      box-shadow: none;
+    .table-wrap.table-cards .wait-table tbody td.wait-col.has-na .wait-stack,
+    .table-wrap.table-cards .wait-stack.wait-stack-na {
+      background: #dbe3ee !important;
+      border: 1px solid #94a3b8 !important;
+      box-shadow: none !important;
     }
     .table-wrap.table-cards .wait-na {
-      font-size: 0.78rem;
-      font-weight: 750;
-      letter-spacing: 0.04em;
-      color: #64748b;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: #475569 !important;
+      text-transform: uppercase;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-extra {
-      margin-top: 0.1rem;
+      margin-top: 0.08rem;
       line-height: 1.05;
       max-width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      font-size: 0.58rem;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-cell .num {
       line-height: 1;
+    }
+    .table-wrap.table-cards .wait-table tbody td.wait-col .compact-waits {
+      transform: scale(0.85);
+      transform-origin: center center;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col.has-low .wait-stack {
       background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 75%);
@@ -1343,16 +1352,17 @@
         padding-right: 0.35rem;
       }
       .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
-        width: 4.35rem;
-        min-width: 4.35rem;
-        max-width: 4.35rem;
-        height: 2.75rem;
-        min-height: 2.75rem;
-        padding: 0.2rem 0.18rem;
+        width: 4.5rem !important;
+        min-width: 4.5rem !important;
+        max-width: 4.5rem !important;
+        height: 2.85rem !important;
+        min-height: 2.85rem !important;
+        max-height: 2.85rem !important;
+        padding: 0.18rem 0.15rem !important;
         border-radius: 8px;
       }
       .table-wrap.table-cards .wait-na {
-        font-size: 0.7rem;
+        font-size: 0.68rem;
       }
       .table-wrap.table-cards .wait-cell .num {
         font-size: 1.25rem;
@@ -1551,12 +1561,13 @@
     html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.bridge {
       background: linear-gradient(90deg, #121a28 0%, #152033 55%, var(--white) 100%);
     }
-    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-na .wait-stack {
-      background: #1e293b;
-      border-color: #334155;
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-na .wait-stack,
+    html[data-theme="dark"] .table-wrap.table-cards .wait-stack.wait-stack-na {
+      background: #334155 !important;
+      border-color: #64748b !important;
     }
     html[data-theme="dark"] .table-wrap.table-cards .wait-na {
-      color: #94a3b8;
+      color: #cbd5e1 !important;
     }
     html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-low .wait-stack {
       background: linear-gradient(180deg, #0b2a1d 0%, var(--white) 75%);
@@ -2844,17 +2855,33 @@
           trusted: bestTrusted(port)
         };
 
-        // All filter: blank cells → N/A on a neutral chip (uniform size via CSS)
-        if (currentFilter === "all") {
-          const naChip = {
-            html: `<div class="wait-stack"><span class="wait-na">${escapeHtml(t("na"))}</span></div>`,
+        /** All filter: any cell without a real minute value (or pending) → N/A chip */
+        function toAllFilterChip(cell) {
+          const html = cell && cell.html ? cell.html : "";
+          const cls = (cell && cell.cls) || "";
+          const hasMinute = /class="num">\d+/.test(html);
+          const hasPending =
+            /has-pending/.test(cls) ||
+            /pending/i.test(cls) ||
+            /updatePending|Update Pending|update\s*pending/i.test(html);
+          if (hasMinute || hasPending) {
+            return {
+              html: html.includes("wait-stack") ? html : `<div class="wait-stack">${html}</div>`,
+              cls: cls || "has-low"
+            };
+          }
+          return {
+            html:
+              `<div class="wait-stack wait-stack-na">` +
+              `<span class="wait-na">${escapeHtml(t("na"))}</span>` +
+              `</div>`,
             cls: "has-na"
           };
+        }
+
+        if (currentFilter === "all") {
           Object.keys(cells).forEach((key) => {
-            const cell = cells[key];
-            if (!cell || cell.html.includes("wait-empty") || (!cell.cls && !/\bwait-cell\b/.test(cell.html))) {
-              cells[key] = naChip;
-            }
+            cells[key] = toAllFilterChip(cells[key]);
           });
         }
 
