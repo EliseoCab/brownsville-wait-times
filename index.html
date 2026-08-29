@@ -3591,11 +3591,17 @@
     }
 
     function formatShareCell(wait) {
-      if (!wait) return "-";
-      if (isActiveWait(wait)) return String(wait.minutes);
+      if (!wait) return null;
+      if (isActiveWait(wait)) {
+        let s = String(wait.minutes) + " min";
+        if (wait.lanesOpenCount != null) {
+          s += " (" + wait.lanesOpenCount + " lane" + (wait.lanesOpenCount === 1 ? "" : "s") + " open)";
+        }
+        return s;
+      }
       if (wait.pending) return "Pending";
       if (wait.closed) return "Closed";
-      return "-";
+      return null;
     }
 
     function laneWaitForShare(port, namePart) {
@@ -3608,6 +3614,12 @@
         }
       }
       return null;
+    }
+
+    function isLosIndiosPort(port) {
+      const label = (port && (port.title || "")) + " " +
+        (port && port.meta && port.meta.short ? port.meta.short : "");
+      return /los\s*indios/i.test(label);
     }
 
     function sharePayload() {
@@ -3635,12 +3647,19 @@
           const name = (port.meta && port.meta.short) || port.title || "-";
           const veh = summarizeMode(port.sections, "passenger");
           const ped = summarizeMode(port.sections, "pedestrian");
-          let line = name + ": Veh " + formatShareCell(veh && veh.primary) +
-            ", Ped " + formatShareCell(ped && ped.primary);
-          if (isVeteransPort(port)) {
-            line += ", SENTRI " + formatShareCell(laneWaitForShare(port, "sentri"));
+          const parts = [];
+          const vehText = formatShareCell(veh && veh.primary);
+          if (vehText) parts.push("Veh " + vehText);
+          // Los Indios has no pedestrian lanes reported — omit Ped entirely
+          if (!isLosIndiosPort(port)) {
+            const pedText = formatShareCell(ped && ped.primary);
+            if (pedText) parts.push("Ped " + pedText);
           }
-          lines.push(line);
+          if (isVeteransPort(port)) {
+            const sentriText = formatShareCell(laneWaitForShare(port, "sentri"));
+            if (sentriText) parts.push("SENTRI " + sentriText);
+          }
+          lines.push(name + ": " + (parts.length ? parts.join(", ") : "-"));
         });
 
         const commercialPorts = ports.filter(isCommercialFastPort);
@@ -3651,10 +3670,12 @@
             const name = (port.meta && port.meta.short) || port.title || "-";
             const comm = summarizeMode(port.sections, "commercial");
             const fast = laneWaitForShare(port, "fast");
-            lines.push(
-              name + ": Comm " + formatShareCell(comm && comm.primary) +
-              ", FAST " + formatShareCell(fast)
-            );
+            const parts = [];
+            const commText = formatShareCell(comm && comm.primary);
+            if (commText) parts.push("Comm " + commText);
+            const fastText = formatShareCell(fast);
+            if (fastText) parts.push("FAST " + fastText);
+            lines.push(name + ": " + (parts.length ? parts.join(", ") : "-"));
           });
         }
       }
