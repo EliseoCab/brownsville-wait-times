@@ -1,0 +1,17 @@
+{
+  "name": "Brownsville Wait Times",
+  "install": "cd worker && npm ci",
+  "terminals": [
+    {
+      "name": "site",
+      "command": "python3 -m http.server 8080",
+      "description": "Serves the static PWA at http://localhost:8080 (the mirror data/bwt.xml renders wait times same-origin)."
+    }
+  ],
+  "ports": [
+    {
+      "name": "site",
+      "port": 8080
+    }
+  ]
+}
