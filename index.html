@@ -3709,16 +3709,30 @@
       };
     }
 
+    function openShareMailto(payload) {
+      // mailto: is the only reliable way to set the real email Subject field
+      window.location.href =
+        "mailto:?subject=" + encodeURIComponent(payload.subject) +
+        "&body=" + encodeURIComponent(payload.fullText);
+    }
+
+    function isAppleMobileUa() {
+      return /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+    }
+
     async function shareTimes() {
       const payload = sharePayload();
       try {
         if (navigator.share) {
-          // title → email subject when the user picks Mail / an email client
-          // (a separate url field can drop the body on some Android shares)
-          const data = {
-            title: payload.subject,
-            text: payload.fullText
-          };
+          if (isAppleMobileUa()) {
+            // iOS Mail dumps share "title" into the message body instead of Subject.
+            // Omit title for the share sheet (WhatsApp etc.); Mail users get a clean body.
+            // Use mailto so Subject is set correctly when we fall through / for email-first.
+            await navigator.share({ text: payload.fullText });
+            return;
+          }
+          // Android / desktop: title becomes the email Subject when Mail/Gmail is chosen
+          const data = { title: payload.subject, text: payload.fullText };
           if (navigator.canShare && !navigator.canShare(data)) {
             await navigator.share({ text: payload.fullText });
           } else {
@@ -3729,20 +3743,25 @@
       } catch (err) {
         if (err && err.name === "AbortError") return;
       }
+      // No Web Share (or share failed): open the mail client with Subject + body
       try {
-        await navigator.clipboard.writeText(payload.fullText);
-        const toast = document.getElementById("refreshToast");
-        if (toast) {
-          toast.textContent = t("toastCopied");
-          toast.classList.remove("err");
-          toast.classList.add("ok", "show");
-          setTimeout(function () {
-            toast.classList.remove("show", "ok");
-            toast.textContent = "";
-          }, 1800);
-        }
+        openShareMailto(payload);
       } catch (_) {
-        window.prompt(payload.title, payload.fullText);
+        try {
+          await navigator.clipboard.writeText(payload.fullText);
+          const toast = document.getElementById("refreshToast");
+          if (toast) {
+            toast.textContent = t("toastCopied");
+            toast.classList.remove("err");
+            toast.classList.add("ok", "show");
+            setTimeout(function () {
+              toast.classList.remove("show", "ok");
+              toast.textContent = "";
+            }, 1800);
+          }
+        } catch (_) {
+          window.prompt(payload.subject, payload.fullText);
+        }
       }
     }
 
