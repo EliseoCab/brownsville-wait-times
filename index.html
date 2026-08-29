@@ -3643,8 +3643,11 @@
       if (ports.length) {
         lines.push("");
         lines.push("Passenger");
-        ports.forEach(function (port) {
+        ports.forEach(function (port, idx) {
+          if (idx > 0) lines.push("");
           const name = (port.meta && port.meta.short) || port.title || "-";
+          // *name* renders bold in WhatsApp and many share targets
+          lines.push("*" + name + "*");
           const veh = summarizeMode(port.sections, "passenger");
           const ped = summarizeMode(port.sections, "pedestrian");
           const parts = [];
@@ -3659,15 +3662,17 @@
             const sentriText = formatShareCell(laneWaitForShare(port, "sentri"));
             if (sentriText) parts.push("SENTRI " + sentriText);
           }
-          lines.push(name + ": " + (parts.length ? parts.join(", ") : "-"));
+          lines.push(parts.length ? parts.join(", ") : "-");
         });
 
         const commercialPorts = ports.filter(isCommercialFastPort);
         if (commercialPorts.length) {
           lines.push("");
           lines.push("Commercial");
-          commercialPorts.forEach(function (port) {
+          commercialPorts.forEach(function (port, idx) {
+            if (idx > 0) lines.push("");
             const name = (port.meta && port.meta.short) || port.title || "-";
+            lines.push("*" + name + "*");
             const comm = summarizeMode(port.sections, "commercial");
             const fast = laneWaitForShare(port, "fast");
             const parts = [];
@@ -3675,7 +3680,7 @@
             if (commText) parts.push("Comm " + commText);
             const fastText = formatShareCell(fast);
             if (fastText) parts.push("FAST " + fastText);
-            lines.push(name + ": " + (parts.length ? parts.join(", ") : "-"));
+            lines.push(parts.length ? parts.join(", ") : "-");
           });
         }
       }
