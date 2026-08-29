@@ -3622,8 +3622,22 @@
       return /los\s*indios/i.test(label);
     }
 
+    /** Email subject when the user picks Mail from the system share sheet. */
+    function shareEmailSubject() {
+      const asOf = document.querySelector(".asof-bar strong");
+      let stamp = asOf && asOf.textContent ? asOf.textContent.trim() : "";
+      if (!stamp || stamp === "—") {
+        stamp = new Date().toLocaleString(undefined, {
+          dateStyle: "medium",
+          timeStyle: "short"
+        });
+      }
+      return "BWT: Report Time: " + stamp;
+    }
+
     function sharePayload() {
       const url = sharePageUrl();
+      const subject = shareEmailSubject();
       const lines = ["Brownsville wait times"];
 
       const asOf = document.querySelector(".asof-bar strong");
@@ -3687,7 +3701,8 @@
 
       const body = lines.join("\n").replace(/\n+$/, "");
       return {
-        title: "Brownsville wait times",
+        title: subject,
+        subject: subject,
         text: body,
         url: url,
         fullText: body + "\n\n" + url
@@ -3698,11 +3713,17 @@
       const payload = sharePayload();
       try {
         if (navigator.share) {
-          // Text only. A separate title repeats "Brownsville wait times";
-          // a separate url can drop the body on Android.
-          await navigator.share({
+          // title → email subject when the user picks Mail / an email client
+          // (a separate url field can drop the body on some Android shares)
+          const data = {
+            title: payload.subject,
             text: payload.fullText
-          });
+          };
+          if (navigator.canShare && !navigator.canShare(data)) {
+            await navigator.share({ text: payload.fullText });
+          } else {
+            await navigator.share(data);
+          }
           return;
         }
       } catch (err) {
