@@ -932,7 +932,8 @@
       color: var(--ink);
       letter-spacing: -0.01em;
     }
-    .wait-table td.bridge .hours-line {
+    .wait-table td.bridge .hours-line,
+    .wait-table td.bridge .updated-line {
       display: block;
       margin-top: 0.3rem;
       font-size: 0.75rem;
@@ -941,9 +942,13 @@
       color: var(--muted);
       line-height: 1.3;
     }
-    .wait-table td.bridge .hours-line strong {
+    .wait-table td.bridge .hours-line strong,
+    .wait-table td.bridge .updated-line strong {
       font-weight: 700;
       color: var(--sky-deep);
+    }
+    .wait-table td.bridge .updated-line {
+      margin-top: 0.15rem;
     }
     .wait-table td.wait-col {
       text-align: center;
@@ -1288,7 +1293,8 @@
       overflow-wrap: anywhere;
       word-break: break-word;
     }
-    .m-row-hours {
+    .m-row-hours,
+    .m-row-updated {
       display: block;
       margin-top: 0.2rem;
       font-size: 0.65rem;
@@ -1297,6 +1303,10 @@
       line-height: 1.3;
       overflow-wrap: anywhere;
       word-break: break-word;
+    }
+    .m-row-updated {
+      color: var(--muted);
+      font-weight: 600;
     }
     .m-row-waits {
       display: flex;
@@ -1566,6 +1576,56 @@
     }
     .tips strong { color: var(--ink); font-weight: 650; }
 
+    /* CBP Laredo Field Office — official X timeline (latest posts) */
+    .x-updates {
+      margin: 1.75rem 0 0;
+      padding: 1rem 1.1rem 1.15rem;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+    }
+    .x-updates-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.4rem 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .x-updates-head h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 750;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+    .x-updates-head .x-sub {
+      display: block;
+      margin-top: 0.15rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    .x-updates-head a {
+      font-size: 0.85rem;
+      font-weight: 650;
+      color: var(--sky-deep);
+      text-decoration: none;
+    }
+    .x-updates-head a:hover { text-decoration: underline; }
+    .x-timeline-host {
+      min-height: 180px;
+      max-width: 100%;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+    .x-timeline-fallback {
+      font-size: 0.875rem;
+      color: var(--muted);
+      padding: 0.75rem 0;
+    }
+
     .legend-grid {
       display: grid;
       gap: 0.55rem;
@@ -1781,7 +1841,7 @@
         <span class="section-sub" data-i18n="crossingTimesSub">Estimates to primary inspection booth · CBP updates about hourly</span>
       </h2>
       <div class="asof-bar" id="asofBar" aria-live="polite">
-        <span data-i18n="reportTime">Report time:</span>
+        <span data-i18n="latestReport">Latest report:</span>
         <strong id="asofStamp">—</strong>
       </div>
       <div class="filters" role="tablist" aria-label="Filter by traffic type" data-i18n-aria="filterAria">
@@ -1816,6 +1876,19 @@
       <button type="button" class="btn btn-primary" onclick="closeInstallHelp()" data-i18n="installHelpOk">Got it</button>
     </div>
     <div class="ports" id="portGrid" aria-live="polite"></div>
+
+    <section class="x-updates" aria-label="CBP Laredo Field Office updates on X">
+      <div class="x-updates-head">
+        <div>
+          <h2 data-i18n="xUpdatesTitle">CBP Laredo updates</h2>
+          <span class="x-sub" data-i18n="xUpdatesSub">Latest posts from the Laredo Field Office</span>
+        </div>
+        <a href="https://x.com/DFOLaredo" target="_blank" rel="noopener">@DFOLaredo</a>
+      </div>
+      <div id="dfoTimeline" class="x-timeline-host">
+        <p class="x-timeline-fallback" data-i18n="xUpdatesLoading">Loading posts…</p>
+      </div>
+    </section>
 
     <p class="disclaimer" data-i18n="disclaimer">
       Wait times are CBP estimates for primary inspection. Actual delays can change quickly. This is an independent viewer of the public CBP feed and is not affiliated with CBP or DHS.
@@ -1907,6 +1980,12 @@
         hours24: "24 hours",
         midnight: "midnight",
         reportTime: "Report time:",
+        latestReport: "Latest report:",
+        bridgeUpdated: "Updated",
+        xUpdatesTitle: "CBP Laredo updates",
+        xUpdatesSub: "Latest posts from the Laredo Field Office",
+        xUpdatesLoading: "Loading posts…",
+        xUpdatesFallback: "Could not load the timeline. View posts on X.",
         borderNotice: "Border notice",
         emptyFilter: "No active wait times for this filter. N/A and closed lanes are hidden.",
         liveProxy: "Live · CBP proxy",
@@ -2014,6 +2093,12 @@
         hours24: "24 horas",
         midnight: "medianoche",
         reportTime: "Hora del reporte:",
+        latestReport: "Último reporte:",
+        bridgeUpdated: "Actualizado",
+        xUpdatesTitle: "Actualizaciones CBP Laredo",
+        xUpdatesSub: "Publicaciones recientes de la Oficina de Campo de Laredo",
+        xUpdatesLoading: "Cargando publicaciones…",
+        xUpdatesFallback: "No se pudo cargar la línea de tiempo. Ver en X.",
         borderNotice: "Aviso fronterizo",
         emptyFilter: "No hay tiempos activos para este filtro. Se ocultan N/D y cerrados.",
         liveProxy: "En vivo · proxy CBP",
@@ -2835,22 +2920,42 @@
     function collectAsOf(data) {
       let best = null;
       let bestKey = -1;
-      for (const port of data.items) {
-        const d = parseCbpDate(port.date);
+      for (const port of data.items || []) {
+        const stamp = collectPortAsOf(port);
+        if (!stamp) continue;
+        const d = parseCbpDate(stamp.date);
         const dateKey = d
           ? d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate()
           : 0;
-        for (const sec of port.sections) {
-          for (const lane of sec.lanes) {
-            if (!isActiveWait(lane.wait) || !lane.wait.asOf || lane.wait.asOf === "—") continue;
-            const timeKey = asOfSortKey(lane.wait.asOf);
-            if (timeKey < 0) continue;
-            // Prefer later calendar day, then later clock time
-            const key = dateKey * 10000 + timeKey;
-            if (key >= bestKey) {
-              bestKey = key;
-              best = { date: port.date || "", time: lane.wait.asOf };
-            }
+        const timeKey = asOfSortKey(stamp.time);
+        if (timeKey < 0) continue;
+        const key = dateKey * 10000 + timeKey;
+        if (key >= bestKey) {
+          bestKey = key;
+          best = stamp;
+        }
+      }
+      return best;
+    }
+
+    /** Newest stamp for a single bridge (from its active lanes). */
+    function collectPortAsOf(port) {
+      if (!port) return null;
+      let best = null;
+      let bestKey = -1;
+      const d = parseCbpDate(port.date);
+      const dateKey = d
+        ? d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate()
+        : 0;
+      for (const sec of port.sections || []) {
+        for (const lane of sec.lanes || []) {
+          if (!isActiveWait(lane.wait) || !lane.wait.asOf || lane.wait.asOf === "—") continue;
+          const timeKey = asOfSortKey(lane.wait.asOf);
+          if (timeKey < 0) continue;
+          const key = dateKey * 10000 + timeKey;
+          if (key >= bestKey) {
+            bestKey = key;
+            best = { date: port.date || "", time: lane.wait.asOf };
           }
         }
       }
@@ -2862,6 +2967,12 @@
       if (!stamp || !stamp.time) return "—";
       const datePart = formatReportDate(stamp.date);
       if (datePart) return datePart + " · " + stamp.time;
+      return stamp.time;
+    }
+
+    /** Compact per-bridge line: prefer clock time (e.g. "9:00 am CDT"). */
+    function formatBridgeUpdated(stamp) {
+      if (!stamp || !stamp.time) return "";
       return stamp.time;
     }
 
@@ -3126,11 +3237,20 @@
         }).join("");
 
         const hoursLabel = formatHoursOfOperation(port.hours);
+        const portStamp = collectPortAsOf(port);
+        const updatedLabel = formatBridgeUpdated(portStamp);
+        const updatedHtml = updatedLabel
+          ? `<span class="updated-line"><strong>${escapeHtml(t("bridgeUpdated"))}</strong> ${escapeHtml(updatedLabel)}</span>`
+          : "";
+        const updatedMobile = updatedLabel
+          ? `<span class="m-row-updated">${escapeHtml(t("bridgeUpdated"))} ${escapeHtml(updatedLabel)}</span>`
+          : "";
         tableRows.push(`
           <tr>
             <td class="bridge">
               ${escapeHtml(port.meta.short)}
               <span class="hours-line"><strong>${escapeHtml(t("hours"))}</strong> ${escapeHtml(hoursLabel)}</span>
+              ${updatedHtml}
             </td>
             ${tdHtml}
           </tr>`);
@@ -3152,6 +3272,7 @@
             <div>
               <div class="m-row-bridge">${escapeHtml(port.meta.short)}</div>
               <span class="m-row-hours">${escapeHtml(hoursLabel)}</span>
+              ${updatedMobile}
             </div>
             <div class="m-row-waits">${waitBlocks}</div>
           </article>`);
@@ -3573,6 +3694,85 @@
         themeBtn.setAttribute("aria-label", theme === "dark" ? t("themeToLight") : t("themeToDark"));
         themeBtn.title = theme === "dark" ? t("themeToLight") : t("themeToDark");
       }
+      // Re-render X timeline so it matches light/dark (skip first paint)
+      const host = document.getElementById("dfoTimeline");
+      if (host && host.dataset.loaded === "1") {
+        host.dataset.loaded = "";
+        host.innerHTML = `<p class="x-timeline-fallback">${escapeHtml(t("xUpdatesLoading"))}</p>`;
+        loadDfoTimeline();
+      }
+    }
+
+    function loadTwitterWidgets(cb) {
+      if (window.twttr && window.twttr.widgets) {
+        cb();
+        return;
+      }
+      if (document.getElementById("twitter-wjs")) {
+        const prev = window.twttr && window.twttr.ready;
+        window.twttr = window.twttr || {};
+        window.twttr.ready = function (fn) {
+          if (prev) prev(fn);
+          else if (window.twttr.widgets) fn(window.twttr);
+          else setTimeout(function () { loadTwitterWidgets(cb); }, 100);
+        };
+        window.twttr.ready(cb);
+        return;
+      }
+      window.twttr = (function (d, s, id) {
+        const fjs = d.getElementsByTagName(s)[0];
+        const t = window.twttr || {};
+        if (d.getElementById(id)) return t;
+        const js = d.createElement(s);
+        js.id = id;
+        js.src = "https://platform.twitter.com/widgets.js";
+        fjs.parentNode.insertBefore(js, fjs);
+        t._e = [];
+        t.ready = function (f) { t._e.push(f); };
+        return t;
+      }(document, "script", "twitter-wjs"));
+      window.twttr.ready(cb);
+    }
+
+    /** Official X profile timeline for @DFOLaredo (latest posts; no API key). */
+    function loadDfoTimeline() {
+      const host = document.getElementById("dfoTimeline");
+      if (!host || host.dataset.loaded === "1") return;
+      host.dataset.loaded = "1";
+      const theme = currentTheme() === "dark" ? "dark" : "light";
+      loadTwitterWidgets(function () {
+        try {
+          host.innerHTML = "";
+          window.twttr.widgets.createTimeline(
+            {
+              sourceType: "profile",
+              screenName: "DFOLaredo"
+            },
+            host,
+            {
+              height: 420,
+              tweetLimit: 5,
+              chrome: "nofooter transparent",
+              theme: theme,
+              dnt: true
+            }
+          ).then(function (el) {
+            if (!el) {
+              host.innerHTML =
+                `<p class="x-timeline-fallback">${escapeHtml(t("xUpdatesFallback"))} ` +
+                `<a href="https://x.com/DFOLaredo" target="_blank" rel="noopener">@DFOLaredo</a></p>`;
+            }
+          }).catch(function () {
+            host.innerHTML =
+              `<p class="x-timeline-fallback">${escapeHtml(t("xUpdatesFallback"))} ` +
+              `<a href="https://x.com/DFOLaredo" target="_blank" rel="noopener">@DFOLaredo</a></p>`;
+          });
+        } catch (_) {
+          host.innerHTML =
+            `<p class="x-timeline-fallback">${escapeHtml(t("xUpdatesFallback"))} ` +
+            `<a href="https://x.com/DFOLaredo" target="_blank" rel="noopener">@DFOLaredo</a></p>`;
+        }
+      });
     }
 
     function toggleTheme() {
@@ -3861,6 +4061,7 @@
     applyStaticLang();
     setupInstallButton();
     registerServiceWorker();
+    loadDfoTimeline();
     loadData(true);
   </script>
 </body>
