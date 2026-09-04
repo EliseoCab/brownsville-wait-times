@@ -11,6 +11,13 @@ A clean viewer for CBP border wait times at Brownsville, Texas bridges:
 
 **https://eliseocab.github.io/brownsville-wait-times/**
 
+Nearby amenities (static community guides, not CBP):
+
+- [Gateway](https://eliseocab.github.io/brownsville-wait-times/gateway/)
+- [B&amp;M](https://eliseocab.github.io/brownsville-wait-times/bm/)
+- [Veterans](https://eliseocab.github.io/brownsville-wait-times/veterans/)
+- [Los Indios](https://eliseocab.github.io/brownsville-wait-times/los-indios/)
+
 ## How data stays fresh (hybrid)
 
 Browsers cannot call `bwt.cbp.gov` directly (**CORS**). This project uses two layers:

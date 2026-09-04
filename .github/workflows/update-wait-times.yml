@@ -85,12 +85,7 @@ jobs:
       - name: Stage site files
         if: steps.fetch.outputs.changed == 'true'
         run: |
-          mkdir -p _site/data _site/icons
-          cp index.html README.md manifest.webmanifest sw.js _site/
-          cp icons/icon-192.png icons/icon-512.png icons/apple-touch-icon.png _site/icons/
-          cp data/bwt.xml _site/data/bwt.xml
-          cp data/last-fetch.txt _site/data/last-fetch.txt 2>/dev/null || true
-          touch _site/.nojekyll
+          bash scripts/stage-site.sh
           echo "Deploying feed:"
           grep -o '<pubDate>[^<]*' _site/data/bwt.xml | head -1
           grep -oE 'At [0-9:]+ [ap]m C[DS]T' _site/data/bwt.xml | sort | uniq -c | head -5

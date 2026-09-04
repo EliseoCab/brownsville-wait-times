@@ -1577,6 +1577,34 @@
     .tips strong { color: var(--ink); font-weight: 650; }
 
     /* CBP Laredo Field Office — @DFOLaredo carousel (via Worker + X API) */
+    .nearby-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.35rem 0.75rem;
+      margin: 1rem 0 0;
+      padding: 0.55rem 0.85rem;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: var(--shadow-sm);
+      font-size: 0.8125rem;
+    }
+    .nearby-strip .nearby-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .nearby-strip a {
+      font-weight: 650;
+      color: var(--sky-deep);
+      text-decoration: none;
+    }
+    .nearby-strip a:hover { text-decoration: underline; color: var(--navy); }
+    html[data-theme="dark"] .nearby-strip a:hover { color: #e0f2fe; }
+
     .x-updates {
       margin: 1.75rem 0 0;
       padding: 1rem 1.1rem 1.15rem;
@@ -1974,6 +2002,14 @@
     </div>
     <div class="ports" id="portGrid" aria-live="polite"></div>
 
+    <nav class="nearby-strip" aria-label="Nearby amenities" data-i18n-aria="nearbyAria">
+      <span class="nearby-label" data-i18n="nearbyLabel">Nearby</span>
+      <a href="gateway/">Gateway</a>
+      <a href="bm/">B&amp;M</a>
+      <a href="veterans/">Veterans</a>
+      <a href="los-indios/">Los Indios</a>
+    </nav>
+
     <section class="x-updates" aria-label="CBP Laredo Field Office updates on X">
       <div class="x-updates-head">
         <div>
@@ -2001,6 +2037,12 @@
         <span><span data-i18n="source">Source:</span> <a href="https://bwt.cbp.gov" target="_blank" rel="noopener">CBP Border Wait Times (bwt.cbp.gov)</a></span>
         <a href="https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43" target="_blank" rel="noopener" data-i18n="rawRss">Raw RSS feed</a>
         <a href="https://www.cbp.gov/travel/trusted-traveler-programs" target="_blank" rel="noopener" data-i18n="trustedTraveler">Trusted Traveler</a>
+        <span><span data-i18n="nearbyLabel">Nearby</span>
+          <a href="gateway/">Gateway</a> ·
+          <a href="bm/">B&amp;M</a> ·
+          <a href="veterans/">Veterans</a> ·
+          <a href="los-indios/">Los Indios</a>
+        </span>
       </div>
     </div>
   </footer>
@@ -2072,6 +2114,8 @@
         source: "Source:",
         rawRss: "Raw RSS feed",
         trustedTraveler: "Trusted Traveler",
+        nearbyLabel: "Nearby",
+        nearbyAria: "Nearby amenities by bridge",
 
         hours: "Hours",
         hours24: "24 hours",
@@ -2185,6 +2229,8 @@
         source: "Fuente:",
         rawRss: "Fuente RSS",
         trustedTraveler: "Viajero de confianza",
+        nearbyLabel: "Cercanos",
+        nearbyAria: "Servicios cercanos por puente",
 
         hours: "Horario",
         hours24: "24 horas",
