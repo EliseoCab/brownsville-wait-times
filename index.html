@@ -1577,33 +1577,97 @@
     .tips strong { color: var(--ink); font-weight: 650; }
 
     /* CBP Laredo Field Office — @DFOLaredo carousel (via Worker + X API) */
-    .nearby-strip {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.35rem 0.75rem;
-      margin: 0 0 1rem;
-      padding: 0.55rem 0.85rem;
+    .nearby-section {
+      margin: 0 0 1.15rem;
+      padding: 1rem 1.1rem 1.1rem;
       background: var(--white);
       border: 1px solid var(--line);
-      border-radius: 12px;
+      border-radius: var(--radius);
       box-shadow: var(--shadow-sm);
-      font-size: 0.8125rem;
     }
-    .nearby-strip .nearby-label {
-      font-size: 0.68rem;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+    .nearby-head {
+      margin-bottom: 0.75rem;
+    }
+    .nearby-head h2 {
+      font-size: 1.2rem;
+      font-weight: 750;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .nearby-sub {
+      display: block;
+      margin-top: 0.2rem;
+      font-size: 0.85rem;
+      font-weight: 500;
       color: var(--muted);
+      line-height: 1.4;
     }
-    .nearby-strip a {
-      font-weight: 650;
-      color: var(--sky-deep);
+    .nearby-bridges {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.5rem;
+    }
+    .nearby-chip {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      padding: 0.7rem 0.75rem 0.75rem;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--line-soft) 0%, var(--white) 55%);
       text-decoration: none;
+      color: inherit;
+      min-width: 0;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+      box-shadow: var(--shadow-sm);
     }
-    .nearby-strip a:hover { text-decoration: underline; color: var(--navy); }
-    html[data-theme="dark"] .nearby-strip a:hover { color: #e0f2fe; }
+    .nearby-chip:hover {
+      border-color: #93c5fd;
+      box-shadow: var(--shadow);
+      transform: translateY(-1px);
+    }
+    .nearby-chip:focus-visible {
+      outline: 2px solid var(--sky);
+      outline-offset: 2px;
+    }
+    .nearby-chip-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.35rem;
+    }
+    .nearby-chip-name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+    .nearby-chip-go {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--sky-deep);
+      line-height: 1;
+    }
+    .nearby-chip-hint {
+      font-size: 0.68rem;
+      font-weight: 650;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+    html[data-theme="dark"] .nearby-chip {
+      background: linear-gradient(180deg, var(--line-soft) 0%, var(--white) 70%);
+    }
+    html[data-theme="dark"] .nearby-chip:hover {
+      border-color: #38bdf8;
+    }
+    @media (max-width: 720px) {
+      .nearby-bridges { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 380px) {
+      .nearby-section { padding: 0.85rem 0.8rem 0.95rem; }
+      .nearby-chip { padding: 0.6rem 0.65rem 0.65rem; }
+    }
 
     .x-updates {
       margin: 1.75rem 0 0;
@@ -1960,13 +2024,42 @@
 
     <div class="alert" id="alertBox" role="status"></div>
 
-    <nav class="nearby-strip" aria-label="Nearby amenities" data-i18n-aria="nearbyAria">
-      <span class="nearby-label" data-i18n="nearbyLabel">Nearby</span>
-      <a href="bm/">B&amp;M</a>
-      <a href="gateway/">Gateway</a>
-      <a href="los-indios/">Los Indios</a>
-      <a href="veterans/">Veterans</a>
-    </nav>
+    <section class="nearby-section" aria-label="Nearby amenities by bridge" data-i18n-aria="nearbyAria">
+      <div class="nearby-head">
+        <h2 data-i18n="nearbyTitle">Near each bridge</h2>
+        <span class="nearby-sub" data-i18n="nearbySub">Gas, food, parking, hotels &amp; Starbase</span>
+      </div>
+      <div class="nearby-bridges">
+        <a class="nearby-chip" href="bm/">
+          <span class="nearby-chip-top">
+            <span class="nearby-chip-name">B&amp;M</span>
+            <span class="nearby-chip-go" aria-hidden="true">→</span>
+          </span>
+          <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
+        </a>
+        <a class="nearby-chip" href="gateway/">
+          <span class="nearby-chip-top">
+            <span class="nearby-chip-name">Gateway</span>
+            <span class="nearby-chip-go" aria-hidden="true">→</span>
+          </span>
+          <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
+        </a>
+        <a class="nearby-chip" href="los-indios/">
+          <span class="nearby-chip-top">
+            <span class="nearby-chip-name">Los Indios</span>
+            <span class="nearby-chip-go" aria-hidden="true">→</span>
+          </span>
+          <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
+        </a>
+        <a class="nearby-chip" href="veterans/">
+          <span class="nearby-chip-top">
+            <span class="nearby-chip-name">Veterans</span>
+            <span class="nearby-chip-go" aria-hidden="true">→</span>
+          </span>
+          <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
+        </a>
+      </div>
+    </section>
 
     <div class="toolbar" id="ports">
       <h2 class="section-title">
@@ -2037,7 +2130,7 @@
         <span><span data-i18n="source">Source:</span> <a href="https://bwt.cbp.gov" target="_blank" rel="noopener">CBP Border Wait Times (bwt.cbp.gov)</a></span>
         <a href="https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43" target="_blank" rel="noopener" data-i18n="rawRss">Raw RSS feed</a>
         <a href="https://www.cbp.gov/travel/trusted-traveler-programs" target="_blank" rel="noopener" data-i18n="trustedTraveler">Trusted Traveler</a>
-        <span><span data-i18n="nearbyLabel">Nearby</span>
+        <span><span data-i18n="nearbyTitle">Near each bridge</span>:
           <a href="bm/">B&amp;M</a> ·
           <a href="gateway/">Gateway</a> ·
           <a href="los-indios/">Los Indios</a> ·
@@ -2114,7 +2207,9 @@
         source: "Source:",
         rawRss: "Raw RSS feed",
         trustedTraveler: "Trusted Traveler",
-        nearbyLabel: "Nearby",
+        nearbyTitle: "Near each bridge",
+        nearbySub: "Gas, food, parking, hotels & Starbase",
+        nearbyChipHint: "Amenities guide",
         nearbyAria: "Nearby amenities by bridge",
 
         hours: "Hours",
@@ -2229,7 +2324,9 @@
         source: "Fuente:",
         rawRss: "Fuente RSS",
         trustedTraveler: "Viajero de confianza",
-        nearbyLabel: "Cercanos",
+        nearbyTitle: "Cerca de cada puente",
+        nearbySub: "Gasolina, comida, estacionamiento, hoteles y Starbase",
+        nearbyChipHint: "Guía de servicios",
         nearbyAria: "Servicios cercanos por puente",
 
         hours: "Horario",

@@ -64,17 +64,32 @@
 
     <div class="chips" role="group" aria-label="Filter amenities">
         <button type="button" class="chip active" data-filter="all" aria-pressed="true" onclick="filterAmenities('all', this)"><span class="lang-en">All</span><span class="lang-es">Todos</span></button>
+        <button type="button" class="chip" data-filter="spacex" aria-pressed="false" onclick="filterAmenities('spacex', this)"><span class="lang-en">SpaceX City</span><span class="lang-es">SpaceX City</span></button>
         <button type="button" class="chip" data-filter="gas" aria-pressed="false" onclick="filterAmenities('gas', this)"><span class="lang-en">Gas</span><span class="lang-es">Gasolina</span></button>
         <button type="button" class="chip" data-filter="food" aria-pressed="false" onclick="filterAmenities('food', this)"><span class="lang-en">Food</span><span class="lang-es">Comida</span></button>
         <button type="button" class="chip" data-filter="parking" aria-pressed="false" onclick="filterAmenities('parking', this)"><span class="lang-en">Parking</span><span class="lang-es">Estacionamiento</span></button>
         <button type="button" class="chip" data-filter="hotels" aria-pressed="false" onclick="filterAmenities('hotels', this)"><span class="lang-en">Hotels</span><span class="lang-es">Hoteles</span></button>
         <button type="button" class="chip" data-filter="cbp" aria-pressed="false" onclick="filterAmenities('cbp', this)"><span class="lang-en">CBP</span><span class="lang-es">CBP</span></button>
         <button type="button" class="chip" data-filter="superchargers" aria-pressed="false" onclick="filterAmenities('superchargers', this)"><span class="lang-en">Superchargers</span><span class="lang-es">Superchargers</span></button>
-        <button type="button" class="chip" data-filter="spacex" aria-pressed="false" onclick="filterAmenities('spacex', this)"><span class="lang-en">SpaceX City</span><span class="lang-es">SpaceX City</span></button>
     </div>
       <p class="sparse" id="sparseNote"><span class="lang-en">Los Indios is a rural crossing. Expect one travel-center cluster on US 281, CBP at the plaza, and a drive to San Benito or Harlingen for hotels and sit-down food. Distances below are honest, not plaza-adjacent.</span><span class="lang-es">Los Indios es un cruce rural. Hay un centro de viaje en la US 281, CBP en la plaza, y hay que manejar a San Benito o Harlingen para hoteles y restaurantes. Las distancias son reales, no “junto a la plaza”.</span></p>
 
     <div class="grid" id="amenityGrid">
+        <article class="poi poi-has-photo" data-cats="spacex">
+          <figure class="poi-photo">
+            <img src="../images/starbase-boca-chica.jpg" width="800" height="450" loading="lazy" decoding="async" alt="Starship prototypes at SpaceX Starbase build site in Boca Chica, Texas" />
+            <figcaption>
+              <span class="lang-en">Photo: <a href="https://commons.wikimedia.org/wiki/File:Boca_Chica_Starbase_(52775909489).jpg" target="_blank" rel="noopener">Mobilus In Mobili</a> · <a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank" rel="noopener">CC BY-SA 2.0</a></span>
+              <span class="lang-es">Foto: <a href="https://commons.wikimedia.org/wiki/File:Boca_Chica_Starbase_(52775909489).jpg" target="_blank" rel="noopener">Mobilus In Mobili</a> · <a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank" rel="noopener">CC BY-SA 2.0</a></span>
+            </figcaption>
+          </figure>
+          <div class="poi-body">
+            <div class="tags"><span class="tag">SpaceX City</span></div>
+            <h2>SpaceX Starbase (Boca Chica)</h2>
+            <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Boca+Chica+Beach+Starbase+SH-4+Texas" target="_blank" rel="noopener"><span class="lang-en">~35–40 mi east · Maps</span><span class="lang-es">~35–40 mi al este · Mapas</span></a>
+            <p class="note"><span class="lang-en">SpaceX’s Starship factory and launch site about 20 miles east of Brownsville at the end of Highway 4. You can see the build site from the public road when it is open; launches are viewed from South Padre Island or Port Isabel. Road closures are common on test days.</span><span class="lang-es">Fábrica y sitio de lanzamiento de Starship de SpaceX, a unas 20 millas al este de Brownsville al final de la Highway 4. Se puede ver el sitio de construcción desde la vía pública cuando está abierta; los lanzamientos se observan desde South Padre Island o Port Isabel. Los cierres de carretera son comunes en días de prueba.</span></p>
+          </div>
+        </article>
         <article class="poi" data-cats="gas">
           <div class="tags"><span class="tag">Gas</span></div>
           <h2>Stripes #40780</h2>
@@ -119,21 +134,6 @@
           <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Tesla+Supercharger+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~20+ mi east · Maps</span><span class="lang-es">~20+ mi al este · Mapas</span></a>
           <p class="note"><span class="lang-en">No Supercharger is listed in Los Indios. The public Brownsville sites are at H-E-B Plus! (Paredes Line Rd) and Ruben M. Torres / Boca Chica Blvd.</span><span class="lang-es">No hay Supercharger listado en Los Indios. Los sitios públicos de Brownsville están en H-E-B Plus! (Paredes Line Rd) y Ruben M. Torres / Boca Chica Blvd.</span></p>
           <p class="note"><a href="https://www.tesla.com/findus" target="_blank" rel="noopener"><span class="lang-en">Tesla Find Us</span><span class="lang-es">Tesla Find Us</span></a></p>
-        </article>
-        <article class="poi poi-has-photo" data-cats="spacex">
-          <figure class="poi-photo">
-            <img src="../images/starbase-boca-chica.jpg" width="800" height="450" loading="lazy" decoding="async" alt="Starship prototypes at SpaceX Starbase build site in Boca Chica, Texas" />
-            <figcaption>
-              <span class="lang-en">Photo: <a href="https://commons.wikimedia.org/wiki/File:Boca_Chica_Starbase_(52775909489).jpg" target="_blank" rel="noopener">Mobilus In Mobili</a> · <a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank" rel="noopener">CC BY-SA 2.0</a></span>
-              <span class="lang-es">Foto: <a href="https://commons.wikimedia.org/wiki/File:Boca_Chica_Starbase_(52775909489).jpg" target="_blank" rel="noopener">Mobilus In Mobili</a> · <a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank" rel="noopener">CC BY-SA 2.0</a></span>
-            </figcaption>
-          </figure>
-          <div class="poi-body">
-            <div class="tags"><span class="tag">SpaceX City</span></div>
-            <h2>SpaceX Starbase (Boca Chica)</h2>
-            <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Boca+Chica+Beach+Starbase+SH-4+Texas" target="_blank" rel="noopener"><span class="lang-en">~35–40 mi east · Maps</span><span class="lang-es">~35–40 mi al este · Mapas</span></a>
-            <p class="note"><span class="lang-en">SpaceX’s Starship factory and launch site about 20 miles east of Brownsville at the end of Highway 4. You can see the build site from the public road when it is open; launches are viewed from South Padre Island or Port Isabel. Road closures are common on test days.</span><span class="lang-es">Fábrica y sitio de lanzamiento de Starship de SpaceX, a unas 20 millas al este de Brownsville al final de la Highway 4. Se puede ver el sitio de construcción desde la vía pública cuando está abierta; los lanzamientos se observan desde South Padre Island o Port Isabel. Los cierres de carretera son comunes en días de prueba.</span></p>
-          </div>
         </article>
       <p class="filter-empty" id="filterEmpty" hidden><span class="lang-en">No places in this category on this page.</span><span class="lang-es">No hay lugares de esta categoría en esta página.</span></p>
     </div>
