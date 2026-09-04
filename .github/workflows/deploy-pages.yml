@@ -41,12 +41,7 @@ jobs:
           grep -o '<pubDate>[^<]*' data/bwt.xml | head -1
 
       - name: Stage site files
-        run: |
-          mkdir -p _site/data _site/icons
-          cp index.html README.md manifest.webmanifest sw.js _site/
-          cp icons/icon-192.png icons/icon-512.png icons/apple-touch-icon.png _site/icons/
-          cp data/bwt.xml _site/data/bwt.xml
-          touch _site/.nojekyll
+        run: bash scripts/stage-site.sh
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(location.search);
+        var qLang = params.get("lang");
+        if (qLang === "es" || qLang === "en") localStorage.setItem("bwt-lang", qLang);
+        var qTheme = params.get("theme");
+        if (qTheme === "light" || qTheme === "dark") localStorage.setItem("bwt-theme", qTheme);
+        var lang = localStorage.getItem("bwt-lang");
+        if (lang === "es" || lang === "en") document.documentElement.lang = lang;
+        var theme = localStorage.getItem("bwt-theme");
+        if (theme !== "light" && theme !== "dark") {
+          theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) { /* private mode */ }
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1f3a" />
+  <meta name="description" content="Curated gas, food, parking, hotels, CBP, Superchargers, and Starbase pointers near B&amp;M (Brownsville &amp; Matamoros Bridge) in downtown Brownsville." />
+  <title data-i18n-en="Nearby amenities · Brownsville &amp; Matamoros Bridge" data-i18n-es="Servicios cercanos · Puente Brownsville &amp; Matamoros">Nearby amenities · Brownsville &amp; Matamoros Bridge</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1f3a'/%3E%3Ccircle cx='16' cy='16' r='5.5' fill='%230ea5e9'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&amp;family=Instrument+Serif:ital@0;1&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../amenities.css" />
+</head>
+<body>
+  <div class="topbar">
+    <a class="back" href="../"><span class="lang-en">← Back to wait times</span><span class="lang-es">← Volver a tiempos de espera</span></a>
+    <div class="topbar-controls">
+      <div class="seg" role="group" aria-label="Language">
+        <button type="button" id="langEn" class="active" onclick="setLang('en')" lang="en">EN</button>
+        <button type="button" id="langEs" onclick="setLang('es')" lang="es">ES</button>
+      </div>
+      <button type="button" class="icon-btn" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle color theme">
+        <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <main class="shell">
+    <p class="eyebrow" data-i18n-en="Nearby amenities" data-i18n-es="Servicios cercanos">Nearby amenities</p>
+    <h1>B&amp;M</h1>
+    <p class="bridge-aka"><span class="lang-en">Brownsville &amp; Matamoros Bridge</span><span class="lang-es">Puente Brownsville &amp; Matamoros</span></p>
+
+    <nav class="bridge-tabs" aria-label="Bridges">
+        <a class="active" href="./" aria-current="page">B&amp;M</a>
+        <a href="../gateway/">Gateway</a>
+        <a href="../los-indios/">Los Indios</a>
+        <a href="../veterans/">Veterans</a>
+    </nav>
+
+    <div class="chips" role="group" aria-label="Filter amenities">
+        <button type="button" class="chip active" data-filter="all" aria-pressed="true" onclick="filterAmenities('all', this)"><span class="lang-en">All</span><span class="lang-es">Todos</span></button>
+        <button type="button" class="chip" data-filter="gas" aria-pressed="false" onclick="filterAmenities('gas', this)"><span class="lang-en">Gas</span><span class="lang-es">Gasolina</span></button>
+        <button type="button" class="chip" data-filter="food" aria-pressed="false" onclick="filterAmenities('food', this)"><span class="lang-en">Food</span><span class="lang-es">Comida</span></button>
+        <button type="button" class="chip" data-filter="parking" aria-pressed="false" onclick="filterAmenities('parking', this)"><span class="lang-en">Parking</span><span class="lang-es">Estacionamiento</span></button>
+        <button type="button" class="chip" data-filter="hotels" aria-pressed="false" onclick="filterAmenities('hotels', this)"><span class="lang-en">Hotels</span><span class="lang-es">Hoteles</span></button>
+        <button type="button" class="chip" data-filter="cbp" aria-pressed="false" onclick="filterAmenities('cbp', this)"><span class="lang-en">CBP</span><span class="lang-es">CBP</span></button>
+        <button type="button" class="chip" data-filter="superchargers" aria-pressed="false" onclick="filterAmenities('superchargers', this)"><span class="lang-en">Superchargers</span><span class="lang-es">Superchargers</span></button>
+        <button type="button" class="chip" data-filter="spacex" aria-pressed="false" onclick="filterAmenities('spacex', this)"><span class="lang-en">SpaceX City</span><span class="lang-es">SpaceX City</span></button>
+    </div>
+
+    <div class="grid" id="amenityGrid">
+        <article class="poi" data-cats="gas">
+          <div class="tags"><span class="tag">Gas</span></div>
+          <h2>City Stop</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=City+Stop+1204+Mexico+Blvd+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~0.2 mi · Maps</span><span class="lang-es">~0.2 mi · Mapas</span></a>
+          <p class="note"><span class="lang-en">Closest listed c-store/fuel on Mexico Blvd, on the B&amp;M approach.</span><span class="lang-es">La tienda/gasolinera más cercana en Mexico Blvd, en la llegada al B&amp;M.</span></p>
+        </article>
+        <article class="poi" data-cats="gas">
+          <div class="tags"><span class="tag">Gas</span></div>
+          <h2>Stripes</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Stripes+845+International+Blvd+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~0.5 mi · Maps</span><span class="lang-es">~0.5 mi · Mapas</span></a>
+          <p class="note"><span class="lang-en">24-hour fuel on International Blvd between the two downtown bridges.</span><span class="lang-es">Gasolina 24 horas en International Blvd, entre los dos puentes del centro.</span></p>
+        </article>
+        <article class="poi" data-cats="food">
+          <div class="tags"><span class="tag">Food</span></div>
+          <h2>Whataburger</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Whataburger+2021+International+Blvd+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~1.3 mi · Maps</span><span class="lang-es">~1.3 mi · Mapas</span></a>
+          <p class="note"><span class="lang-en">Quick meal and a lot up International Blvd — useful before or after a downtown crossing.</span><span class="lang-es">Comida rápida y estacionamiento en International Blvd, útil antes o después del cruce.</span></p>
+        </article>
+        <article class="poi" data-cats="food">
+          <div class="tags"><span class="tag">Food</span></div>
+          <h2>Vermillion Restaurant and Watering Hole</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Vermillion+Restaurant+115+Paredes+Line+Rd+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~1.4 mi · Maps</span><span class="lang-es">~1.4 mi · Mapas</span></a>
+          <p class="note"><span class="lang-en">Long-running Brownsville dining room on Paredes Line Rd. Not on the plaza itself.</span><span class="lang-es">Restaurante histórico de Brownsville en Paredes Line Rd. No está en la plaza.</span></p>
+        </article>
+        <article class="poi" data-cats="parking">
+          <div class="tags"><span class="tag">Parking</span></div>
+          <h2>Downtown street parking · Mexico Blvd / Levee</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=1300+Mexico+Blvd+Brownsville+TX+B%26M+Bridge+parking" target="_blank" rel="noopener"><span class="lang-en">~0.2 mi · Maps</span><span class="lang-es">~0.2 mi · Mapas</span></a>
+          <p class="note"><span class="lang-en">Limited on-street parking near the privately owned B&amp;M approach. There is no large public garage at this plaza.</span><span class="lang-es">Estacionamiento en la calle limitado junto al B&amp;M (puente privado). No hay un gran estacionamiento público en esta plaza.</span></p>
+        </article>
+        <article class="poi" data-cats="parking">
+          <div class="tags"><span class="tag">Parking</span></div>
+          <h2>14th Street Plaza (walk to Gateway)</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=14th+Street+Plaza+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~0.5 mi · Maps</span><span class="lang-es">~0.5 mi · Mapas</span></a>
+          <p class="note"><span class="lang-en">City plaza by Gateway if you are walking between the two downtown bridges.</span><span class="lang-es">Plaza municipal junto a Gateway si camina entre los dos puentes del centro.</span></p>
+        </article>
+        <article class="poi" data-cats="hotels">
+          <div class="tags"><span class="tag">Hotels</span></div>
+          <h2>Hotel O Colonial Inn</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Hotel+O+Colonial+Inn+1147+E+Levee+St+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~0.3 mi · Maps</span><span class="lang-es">~0.3 mi · Mapas</span></a>
+          <p class="note"><span class="lang-en">Closest listed inn to the B&amp;M / Levee riverfront.</span><span class="lang-es">La posada listada más cercana al B&amp;M y al malecón de Levee.</span></p>
+        </article>
+        <article class="poi" data-cats="hotels">
+          <div class="tags"><span class="tag">Hotels</span></div>
+          <h2>OYO Historic Cameron Hotel</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=OYO+Historic+Cameron+Hotel+912+E+Washington+St+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~0.5 mi · Maps</span><span class="lang-es">~0.5 mi · Mapas</span></a>
+          <p class="note"><span class="lang-en">Historic downtown rooms a few blocks from both B&amp;M and Gateway.</span><span class="lang-es">Habitaciones históricas a pocas cuadras del B&amp;M y de Gateway.</span></p>
+        </article>
+        <article class="poi" data-cats="cbp">
+          <div class="tags"><span class="tag">CBP</span></div>
+          <h2>Brownsville &amp; Matamoros Bridge — CBP crossing</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Brownsville+and+Matamoros+Bridge+1300+Mexico+Blvd+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">On site · Maps</span><span class="lang-es">En el sitio · Mapas</span></a>
+          <p class="note"><span class="lang-en">Historic downtown crossing (B&amp;M Bridge Co.). CBP lists this facility as 24 hours. Confirm operations on the official port page.</span><span class="lang-es">Cruce histórico del centro (B&amp;M Bridge Co.). CBP lo publica como 24 horas. Confirme operaciones en la página oficial.</span></p>
+          <p class="note"><a href="https://www.cbp.gov/about/contact/ports/brownsville-texas-2301" target="_blank" rel="noopener"><span class="lang-en">Official CBP Brownsville port page</span><span class="lang-es">Página oficial de CBP Brownsville</span></a></p>
+        </article>
+        <article class="poi" data-cats="superchargers">
+          <div class="tags"><span class="tag">Superchargers</span></div>
+          <h2>Tesla Supercharger · H-E-B Plus!</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Tesla+Supercharger+H-E-B+Plus+2155+Paredes+Line+Road+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~4 mi · Maps</span><span class="lang-es">~4 mi · Mapas</span></a>
+          <p class="note"><span class="lang-en">Same city Supercharger that serves downtown crossings. Verify stalls on Tesla’s map.</span><span class="lang-es">El mismo Supercharger de la ciudad que sirve a los cruces del centro. Verifique puestos en el mapa de Tesla.</span></p>
+          <p class="note"><a href="https://www.tesla.com/findus" target="_blank" rel="noopener"><span class="lang-en">Tesla Find Us</span><span class="lang-es">Tesla Find Us</span></a></p>
+        </article>
+        <article class="poi" data-cats="superchargers">
+          <div class="tags"><span class="tag">Superchargers</span></div>
+          <h2>Tesla Supercharger · Boca Chica Boulevard</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Tesla+Supercharger+5850+Ruben+M+Torres+Blvd+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~5 mi · Maps</span><span class="lang-es">~5 mi · Mapas</span></a>
+          <p class="note"><span class="lang-en">16-stall Brownsville Supercharger on the east side of town — not next to B&amp;M.</span><span class="lang-es">Supercharger de Brownsville en el lado este de la ciudad — no está junto al B&amp;M.</span></p>
+        </article>
+        <article class="poi" data-cats="spacex">
+          <div class="tags"><span class="tag">SpaceX City</span></div>
+          <h2>Starbase / Boca Chica via SH-4</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Boca+Chica+Beach+Starbase+SH-4+Texas" target="_blank" rel="noopener"><span class="lang-en">~22–25 mi east · Maps</span><span class="lang-es">~22–25 mi al este · Mapas</span></a>
+          <p class="note"><span class="lang-en">From downtown, take local streets to Boca Chica Blvd (SH-4) and continue east. This is a long drive, not a plaza-side POI. Road and beach close for tests and launches.</span><span class="lang-es">Desde el centro, tome Boca Chica Blvd (SH-4) hacia el este. Es un viaje largo, no un punto junto a la plaza. La vía y la playa cierran por pruebas y lanzamientos.</span></p>
+        </article>
+      <p class="filter-empty" id="filterEmpty" hidden><span class="lang-en">No places in this category on this page.</span><span class="lang-es">No hay lugares de esta categoría en esta página.</span></p>
+    </div>
+
+    <aside class="callout">
+      <strong data-i18n-en="Independent community guide" data-i18n-es="Guía comunitaria independiente">Independent community guide</strong>
+      <span class="lang-en">Curated for trip planning only. Hours, prices, and wait times change. This site is not affiliated with CBP, DHS, Cameron County, Tesla, SpaceX, or the businesses listed. Confirm details on official or business pages before you go.</span>
+      <span class="lang-es">Solo para planear el viaje. Horarios, precios y esperas cambian. Este sitio no está afiliado a CBP, DHS, el Condado de Cameron, Tesla, SpaceX ni a los negocios listados. Confirme en páginas oficiales o del negocio antes de ir.</span>
+    </aside>
+  </main>
+
+  <p class="page-foot">
+    <span class="lang-en">Brownsville Border Wait Times · not official CBP</span>
+    <span class="lang-es">Tiempos de espera en Brownsville · no es CBP oficial</span>
+  </p>
+  <script src="../amenities.js"></script>
+</body>
+</html>

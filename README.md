@@ -2,14 +2,21 @@
 
 A clean viewer for CBP border wait times at Brownsville, Texas bridges:
 
-- B&M  
-- Gateway  
-- Los Indios  
-- Veterans  
+- B&M — Brownsville & Matamoros Bridge
+- Gateway — International Gateway Bridge
+- Los Indios — Free Trade Bridge
+- Veterans — Veterans Bridge at Los Tomates
 
 ## Live site
 
 **https://eliseocab.github.io/brownsville-wait-times/**
+
+Nearby amenities (static community guides, not CBP) for B&M, Gateway, Veterans International, and Los Indios:
+
+- [B&amp;M](https://eliseocab.github.io/brownsville-wait-times/bm/)
+- [Gateway](https://eliseocab.github.io/brownsville-wait-times/gateway/)
+- [Los Indios](https://eliseocab.github.io/brownsville-wait-times/los-indios/)
+- [Veterans](https://eliseocab.github.io/brownsville-wait-times/veterans/)
 
 ## How data stays fresh (hybrid)
 
