@@ -1582,7 +1582,7 @@
       flex-wrap: wrap;
       align-items: center;
       gap: 0.35rem 0.75rem;
-      margin: 1rem 0 0;
+      margin: 0 0 1rem;
       padding: 0.55rem 0.85rem;
       background: var(--white);
       border: 1px solid var(--line);
@@ -1960,6 +1960,14 @@
 
     <div class="alert" id="alertBox" role="status"></div>
 
+    <nav class="nearby-strip" aria-label="Nearby amenities" data-i18n-aria="nearbyAria">
+      <span class="nearby-label" data-i18n="nearbyLabel">Nearby</span>
+      <a href="bm/">B&amp;M</a>
+      <a href="gateway/">Gateway</a>
+      <a href="los-indios/">Los Indios</a>
+      <a href="veterans/">Veterans</a>
+    </nav>
+
     <div class="toolbar" id="ports">
       <h2 class="section-title">
         <span data-i18n="crossingTimes">Crossing times</span>
@@ -2001,14 +2009,6 @@
       <button type="button" class="btn btn-primary" onclick="closeInstallHelp()" data-i18n="installHelpOk">Got it</button>
     </div>
     <div class="ports" id="portGrid" aria-live="polite"></div>
-
-    <nav class="nearby-strip" aria-label="Nearby amenities" data-i18n-aria="nearbyAria">
-      <span class="nearby-label" data-i18n="nearbyLabel">Nearby</span>
-      <a href="bm/">B&amp;M</a>
-      <a href="gateway/">Gateway</a>
-      <a href="los-indios/">Los Indios</a>
-      <a href="veterans/">Veterans</a>
-    </nav>
 
     <section class="x-updates" aria-label="CBP Laredo Field Office updates on X">
       <div class="x-updates-head">
