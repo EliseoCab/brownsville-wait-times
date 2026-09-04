@@ -11,4 +11,10 @@ cp data/bwt.xml _site/data/bwt.xml
 if [[ -f data/last-fetch.txt ]]; then
   cp data/last-fetch.txt _site/data/last-fetch.txt
 fi
+# Google Search Console HTML verification files (must be at site root)
+shopt -s nullglob
+for f in google*.html; do
+  cp "$f" _site/
+done
+shopt -u nullglob
 touch _site/.nojekyll
