@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(location.search);
+        var qLang = params.get("lang");
+        if (qLang === "es" || qLang === "en") localStorage.setItem("bwt-lang", qLang);
+        var qTheme = params.get("theme");
+        if (qTheme === "light" || qTheme === "dark") localStorage.setItem("bwt-theme", qTheme);
+        var lang = localStorage.getItem("bwt-lang");
+        if (lang === "es" || lang === "en") document.documentElement.lang = lang;
+        var theme = localStorage.getItem("bwt-theme");
+        if (theme !== "light" && theme !== "dark") {
+          theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) { /* private mode */ }
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1f3a" />
+  <meta name="description" content="Curated amenities near the Los Indios Free Trade Bridge. Services are sparse — most lodging and dining are in San Benito or Harlingen." />
+  <title data-i18n-en="Nearby amenities · Los Indios Free Trade Bridge" data-i18n-es="Servicios cercanos · Puente de Libre Comercio Los Indios">Nearby amenities · Los Indios Free Trade Bridge</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1f3a'/%3E%3Ccircle cx='16' cy='16' r='5.5' fill='%230ea5e9'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&amp;family=Instrument+Serif:ital@0;1&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../amenities.css" />
+</head>
+<body>
+  <div class="topbar">
+    <a class="back" href="../"><span class="lang-en">← Back to wait times</span><span class="lang-es">← Volver a tiempos de espera</span></a>
+    <div class="topbar-controls">
+      <div class="seg" role="group" aria-label="Language">
+        <button type="button" id="langEn" class="active" onclick="setLang('en')" lang="en">EN</button>
+        <button type="button" id="langEs" onclick="setLang('es')" lang="es">ES</button>
+      </div>
+      <button type="button" class="icon-btn" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle color theme">
+        <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <main class="shell">
+    <p class="eyebrow" data-i18n-en="Nearby amenities" data-i18n-es="Servicios cercanos">Nearby amenities</p>
+    <h1>Los Indios</h1>
+    <p class="bridge-aka"><span class="lang-en">Free Trade Bridge</span><span class="lang-es">Puente de Libre Comercio</span></p>
+
+    <nav class="bridge-tabs" aria-label="Bridges">
+        <a href="../gateway/">Gateway</a>
+        <a href="../bm/">B&amp;M</a>
+        <a href="../veterans/">Veterans</a>
+        <a class="active" href="./" aria-current="page">Los Indios</a>
+    </nav>
+
+    <div class="chips" role="group" aria-label="Filter amenities">
+        <button type="button" class="chip active" data-filter="all" aria-pressed="true" onclick="filterAmenities('all', this)"><span class="lang-en">All</span><span class="lang-es">Todos</span></button>
+        <button type="button" class="chip" data-filter="gas" aria-pressed="false" onclick="filterAmenities('gas', this)"><span class="lang-en">Gas</span><span class="lang-es">Gasolina</span></button>
+        <button type="button" class="chip" data-filter="food" aria-pressed="false" onclick="filterAmenities('food', this)"><span class="lang-en">Food</span><span class="lang-es">Comida</span></button>
+        <button type="button" class="chip" data-filter="parking" aria-pressed="false" onclick="filterAmenities('parking', this)"><span class="lang-en">Parking</span><span class="lang-es">Estacionamiento</span></button>
+        <button type="button" class="chip" data-filter="hotels" aria-pressed="false" onclick="filterAmenities('hotels', this)"><span class="lang-en">Hotels</span><span class="lang-es">Hoteles</span></button>
+        <button type="button" class="chip" data-filter="cbp" aria-pressed="false" onclick="filterAmenities('cbp', this)"><span class="lang-en">CBP</span><span class="lang-es">CBP</span></button>
+        <button type="button" class="chip" data-filter="superchargers" aria-pressed="false" onclick="filterAmenities('superchargers', this)"><span class="lang-en">Superchargers</span><span class="lang-es">Superchargers</span></button>
+        <button type="button" class="chip" data-filter="spacex" aria-pressed="false" onclick="filterAmenities('spacex', this)"><span class="lang-en">SpaceX City</span><span class="lang-es">SpaceX City</span></button>
+    </div>
+      <p class="sparse" id="sparseNote"><span class="lang-en">Los Indios is a rural crossing. Expect one travel-center cluster on US 281, CBP at the plaza, and a drive to San Benito or Harlingen for hotels and sit-down food. Distances below are honest, not plaza-adjacent.</span><span class="lang-es">Los Indios es un cruce rural. Hay un centro de viaje en la US 281, CBP en la plaza, y hay que manejar a San Benito o Harlingen para hoteles y restaurantes. Las distancias son reales, no “junto a la plaza”.</span></p>
+
+    <div class="grid" id="amenityGrid">
+        <article class="poi" data-cats="gas">
+          <div class="tags"><span class="tag">Gas</span></div>
+          <h2>Stripes #40780</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Stripes+702+E+US+281+Los+Indios+TX" target="_blank" rel="noopener"><span class="lang-en">~2–3 mi · Maps</span><span class="lang-es">~2–3 mi · Mapas</span></a>
+          <p class="note"><span class="lang-en">Primary 24-hour fuel, diesel, and c-store in Los Indios (US 281). The main services stop for this crossing.</span><span class="lang-es">Principal gasolina, diésel y tienda 24 horas en Los Indios (US 281). La parada de servicios de este cruce.</span></p>
+        </article>
+        <article class="poi" data-cats="food">
+          <div class="tags"><span class="tag">Food</span></div>
+          <h2>Laredo Taco Company at Stripes</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Laredo+Taco+Company+702+E+US+281+Los+Indios+TX" target="_blank" rel="noopener"><span class="lang-en">~2–3 mi · Maps</span><span class="lang-es">~2–3 mi · Mapas</span></a>
+          <p class="note"><span class="lang-en">Fast food inside the same US 281 travel center. Sit-down dining is in San Benito / Harlingen (~8–12 mi north).</span><span class="lang-es">Comida rápida en el mismo centro de viaje de la US 281. Para restaurantes, San Benito / Harlingen (~8–12 mi al norte).</span></p>
+        </article>
+        <article class="poi" data-cats="parking">
+          <div class="tags"><span class="tag">Parking</span></div>
+          <h2>Free Trade Bridge approach</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Los+Indios+Free+Trade+Bridge+100+S+Los+Indios+Blvd+TX" target="_blank" rel="noopener"><span class="lang-en">On site · Maps</span><span class="lang-es">En el sitio · Mapas</span></a>
+          <p class="note"><span class="lang-en">Rural plaza. Use marked public approach areas. Commercial import lots are CBP-controlled. No downtown garage.</span><span class="lang-es">Plaza rural. Use las áreas públicas señalizadas. Los lotes de importación comercial son de CBP. No hay estacionamiento de centro urbano.</span></p>
+        </article>
+        <article class="poi" data-cats="hotels">
+          <div class="tags"><span class="tag">Hotels</span></div>
+          <h2>Holiday Inn Express Harlingen</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Holiday+Inn+Express+501+South+P+Street+Harlingen+TX" target="_blank" rel="noopener"><span class="lang-en">~8–10 mi north · Maps</span><span class="lang-es">~8–10 mi al norte · Mapas</span></a>
+          <p class="note"><span class="lang-en">Nearest widely listed chain hotel (Harlingen / Valle Vista). Los Indios itself has essentially no lodging at the plaza.</span><span class="lang-es">Hotel de cadena más cercano con listado amplio (Harlingen / Valle Vista). En Los Indios casi no hay hospedaje junto a la plaza.</span></p>
+        </article>
+        <article class="poi" data-cats="cbp">
+          <div class="tags"><span class="tag">CBP</span></div>
+          <h2>Los Indios Free Trade Bridge — CBP crossing</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Los+Indios+Free+Trade+Bridge+100+S+Los+Indios+Blvd+Texas" target="_blank" rel="noopener"><span class="lang-en">On site · Maps</span><span class="lang-es">En el sitio · Mapas</span></a>
+          <p class="note"><span class="lang-en">Passenger and commercial crossing (FAST). CBP lists 6:00 a.m.–10:00 p.m. daily. Confirm on the official port page.</span><span class="lang-es">Cruce de pasajeros y comercial (FAST). CBP publica 6:00 a.m.–10:00 p.m. Confirme en la página oficial.</span></p>
+          <p class="note"><a href="https://www.cbp.gov/about/contact/ports/brownsville-texas-2301" target="_blank" rel="noopener"><span class="lang-en">Official CBP Brownsville port page</span><span class="lang-es">Página oficial de CBP Brownsville</span></a></p>
+        </article>
+        <article class="poi" data-cats="cbp">
+          <div class="tags"><span class="tag">CBP</span></div>
+          <h2>Cameron County · Free Trade Bridge</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Free+Trade+International+Bridge+Los+Indios+TX" target="_blank" rel="noopener"><span class="lang-en">Toll &amp; commercial context · Maps</span><span class="lang-es">Peaje y contexto comercial · Mapas</span></a>
+          <p class="note"><span class="lang-en">County-operated Free Trade Bridge (with Harlingen and San Benito). Tolls and commercial hours are on the county site — not CBP.</span><span class="lang-es">Puente operado por el condado (con Harlingen y San Benito). Peajes y horarios comerciales están en el sitio del condado — no es CBP.</span></p>
+          <p class="note"><a href="https://www.ccibstx.us/bridges/free-trade-bridge" target="_blank" rel="noopener"><span class="lang-en">Cameron County Free Trade page</span><span class="lang-es">Página del condado · Free Trade</span></a></p>
+        </article>
+        <article class="poi" data-cats="superchargers">
+          <div class="tags"><span class="tag">Superchargers</span></div>
+          <h2>Tesla Superchargers in Brownsville</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Tesla+Supercharger+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~20+ mi east · Maps</span><span class="lang-es">~20+ mi al este · Mapas</span></a>
+          <p class="note"><span class="lang-en">No Supercharger is listed in Los Indios. The public Brownsville sites are at H-E-B Plus! (Paredes Line Rd) and Ruben M. Torres / Boca Chica Blvd.</span><span class="lang-es">No hay Supercharger listado en Los Indios. Los sitios públicos de Brownsville están en H-E-B Plus! (Paredes Line Rd) y Ruben M. Torres / Boca Chica Blvd.</span></p>
+          <p class="note"><a href="https://www.tesla.com/findus" target="_blank" rel="noopener"><span class="lang-en">Tesla Find Us</span><span class="lang-es">Tesla Find Us</span></a></p>
+        </article>
+        <article class="poi" data-cats="spacex">
+          <div class="tags"><span class="tag">SpaceX City</span></div>
+          <h2>Starbase / Boca Chica via US-77 then SH-4</h2>
+          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Boca+Chica+Beach+Starbase+SH-4+Texas" target="_blank" rel="noopener"><span class="lang-en">~35–40 mi east · Maps</span><span class="lang-es">~35–40 mi al este · Mapas</span></a>
+          <p class="note"><span class="lang-en">Not nearby. Typical drive is north/east toward Brownsville, then SH-4 (Boca Chica Blvd) to the public road and beach. Closures for tests and launches.</span><span class="lang-es">No está cerca. El viaje típico es hacia Brownsville y luego SH-4 (Boca Chica Blvd) hasta la vía pública y la playa. Cierran por pruebas y lanzamientos.</span></p>
+        </article>
+      <p class="filter-empty" id="filterEmpty" hidden><span class="lang-en">No places in this category on this page.</span><span class="lang-es">No hay lugares de esta categoría en esta página.</span></p>
+    </div>
+
+    <aside class="callout">
+      <strong data-i18n-en="Independent community guide" data-i18n-es="Guía comunitaria independiente">Independent community guide</strong>
+      <span class="lang-en">Curated for trip planning only. Hours, prices, and wait times change. This site is not affiliated with CBP, DHS, Cameron County, Tesla, SpaceX, or the businesses listed. Confirm details on official or business pages before you go.</span>
+      <span class="lang-es">Solo para planear el viaje. Horarios, precios y esperas cambian. Este sitio no está afiliado a CBP, DHS, el Condado de Cameron, Tesla, SpaceX ni a los negocios listados. Confirme en páginas oficiales o del negocio antes de ir.</span>
+    </aside>
+  </main>
+
+  <p class="page-foot">
+    <span class="lang-en">Brownsville Border Wait Times · not official CBP</span>
+    <span class="lang-es">Tiempos de espera en Brownsville · no es CBP oficial</span>
+  </p>
+  <script src="../amenities.js"></script>
+</body>
+</html>
