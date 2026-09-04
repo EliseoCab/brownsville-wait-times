@@ -1576,7 +1576,7 @@
     }
     .tips strong { color: var(--ink); font-weight: 650; }
 
-    /* CBP Laredo Field Office — official X timeline (latest posts) */
+    /* CBP Laredo Field Office — @DFOLaredo carousel (via Worker + X API) */
     .x-updates {
       margin: 1.75rem 0 0;
       padding: 1rem 1.1rem 1.15rem;
@@ -1614,17 +1614,114 @@
       text-decoration: none;
     }
     .x-updates-head a:hover { text-decoration: underline; }
-    .x-timeline-host {
-      min-height: 180px;
-      max-width: 100%;
-      overflow: hidden;
-      border-radius: 12px;
+    .x-carousel {
+      position: relative;
     }
+    .x-carousel-track {
+      display: flex;
+      gap: 0.75rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      padding: 0.15rem 0.1rem 0.5rem;
+    }
+    .x-carousel-track::-webkit-scrollbar { height: 6px; }
+    .x-carousel-track::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 999px;
+    }
+    .x-post-card {
+      flex: 0 0 min(88%, 320px);
+      scroll-snap-align: start;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.85rem 0.95rem;
+      background: var(--paper);
+      box-sizing: border-box;
+      min-height: 150px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+    .x-post-who {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+    .x-post-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: var(--navy);
+      flex-shrink: 0;
+    }
+    .x-post-who strong {
+      display: block;
+      font-size: 0.88rem;
+      color: var(--ink);
+    }
+    .x-post-who span {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .x-post-text {
+      margin: 0;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      color: var(--ink);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      flex: 1 1 auto;
+    }
+    .x-post-media {
+      width: 100%;
+      max-height: 160px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid var(--line-soft);
+    }
+    .x-post-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .x-post-meta a {
+      color: var(--sky-deep);
+      font-weight: 650;
+      text-decoration: none;
+    }
+    .x-post-meta a:hover { text-decoration: underline; }
+    .x-carousel-nav {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.4rem;
+      margin-top: 0.35rem;
+    }
+    .x-nav-btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: var(--white);
+      color: var(--ink);
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      box-shadow: var(--shadow-sm);
+    }
+    .x-nav-btn:hover { background: var(--line-soft); }
     .x-timeline-fallback {
       font-size: 0.875rem;
       color: var(--muted);
       padding: 0.75rem 0;
     }
+    .x-timeline-fallback a { color: var(--sky-deep); font-weight: 650; }
 
     .legend-grid {
       display: grid;
@@ -1885,7 +1982,7 @@
         </div>
         <a href="https://x.com/DFOLaredo" target="_blank" rel="noopener">@DFOLaredo</a>
       </div>
-      <div id="dfoTimeline" class="x-timeline-host">
+      <div id="dfoTimeline" class="x-carousel" aria-live="polite">
         <p class="x-timeline-fallback" data-i18n="xUpdatesLoading">Loading posts…</p>
       </div>
     </section>
@@ -3694,85 +3791,109 @@
         themeBtn.setAttribute("aria-label", theme === "dark" ? t("themeToLight") : t("themeToDark"));
         themeBtn.title = theme === "dark" ? t("themeToLight") : t("themeToDark");
       }
-      // Re-render X timeline so it matches light/dark (skip first paint)
+    }
+
+    function dfoPostsUrl() {
+      const base = (FEED_PROXY_URL && String(FEED_PROXY_URL).trim())
+        ? String(FEED_PROXY_URL).replace(/\/$/, "")
+        : "https://brownsville-bwt.borderwait.workers.dev";
+      return base + "/x/dfolaredo";
+    }
+
+    function formatPostTime(iso) {
+      if (!iso) return "";
+      try {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return "";
+        return d.toLocaleString(undefined, {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        });
+      } catch (_) {
+        return "";
+      }
+    }
+
+    function renderDfoCarousel(payload) {
       const host = document.getElementById("dfoTimeline");
-      if (host && host.dataset.loaded === "1") {
-        host.dataset.loaded = "";
-        host.innerHTML = `<p class="x-timeline-fallback">${escapeHtml(t("xUpdatesLoading"))}</p>`;
-        loadDfoTimeline();
-      }
-    }
-
-    function loadTwitterWidgets(cb) {
-      if (window.twttr && window.twttr.widgets) {
-        cb();
+      if (!host) return;
+      const user = payload && payload.user;
+      const posts = (payload && payload.posts) || [];
+      if (!posts.length) {
+        host.innerHTML =
+          `<p class="x-timeline-fallback">${escapeHtml(t("xUpdatesFallback"))} ` +
+          `<a href="https://x.com/DFOLaredo" target="_blank" rel="noopener">@DFOLaredo</a></p>`;
         return;
       }
-      if (document.getElementById("twitter-wjs")) {
-        const prev = window.twttr && window.twttr.ready;
-        window.twttr = window.twttr || {};
-        window.twttr.ready = function (fn) {
-          if (prev) prev(fn);
-          else if (window.twttr.widgets) fn(window.twttr);
-          else setTimeout(function () { loadTwitterWidgets(cb); }, 100);
-        };
-        window.twttr.ready(cb);
-        return;
-      }
-      window.twttr = (function (d, s, id) {
-        const fjs = d.getElementsByTagName(s)[0];
-        const t = window.twttr || {};
-        if (d.getElementById(id)) return t;
-        const js = d.createElement(s);
-        js.id = id;
-        js.src = "https://platform.twitter.com/widgets.js";
-        fjs.parentNode.insertBefore(js, fjs);
-        t._e = [];
-        t.ready = function (f) { t._e.push(f); };
-        return t;
-      }(document, "script", "twitter-wjs"));
-      window.twttr.ready(cb);
+      const avatar = user && user.avatar
+        ? `<img class="x-post-avatar" src="${escapeHtml(user.avatar)}" alt="" width="40" height="40" loading="lazy" />`
+        : `<div class="x-post-avatar" aria-hidden="true"></div>`;
+      const name = escapeHtml((user && user.name) || "Laredo Field Office");
+      const handle = escapeHtml((user && user.username) || "DFOLaredo");
+
+      const cards = posts.map(function (p) {
+        const img = p.images && p.images[0]
+          ? `<img class="x-post-media" src="${escapeHtml(p.images[0].url)}" alt="" loading="lazy" />`
+          : "";
+        const when = formatPostTime(p.createdAt);
+        return `<article class="x-post-card">
+          <div class="x-post-who">
+            ${avatar}
+            <div><strong>${name}</strong><span>@${handle}</span></div>
+          </div>
+          <p class="x-post-text">${escapeHtml(p.text || "")}</p>
+          ${img}
+          <div class="x-post-meta">
+            <span>${escapeHtml(when)}</span>
+            <a href="${escapeHtml(p.url)}" target="_blank" rel="noopener">View on X</a>
+          </div>
+        </article>`;
+      }).join("");
+
+      host.innerHTML =
+        `<div class="x-carousel-track" id="dfoTrack">${cards}</div>` +
+        `<div class="x-carousel-nav">` +
+        `<button type="button" class="x-nav-btn" id="dfoPrev" aria-label="Previous post">‹</button>` +
+        `<button type="button" class="x-nav-btn" id="dfoNext" aria-label="Next post">›</button>` +
+        `</div>`;
+
+      const track = document.getElementById("dfoTrack");
+      const step = function (dir) {
+        if (!track) return;
+        const card = track.querySelector(".x-post-card");
+        const w = card ? card.getBoundingClientRect().width + 12 : 300;
+        track.scrollBy({ left: dir * w, behavior: "smooth" });
+      };
+      const prev = document.getElementById("dfoPrev");
+      const next = document.getElementById("dfoNext");
+      if (prev) prev.onclick = function () { step(-1); };
+      if (next) next.onclick = function () { step(1); };
     }
 
-    /** Official X profile timeline for @DFOLaredo (latest posts; no API key). */
-    function loadDfoTimeline() {
+    /** Latest @DFOLaredo posts via Worker (X_BEARER_TOKEN stays on the server). */
+    async function loadDfoTimeline() {
       const host = document.getElementById("dfoTimeline");
       if (!host || host.dataset.loaded === "1") return;
       host.dataset.loaded = "1";
-      const theme = currentTheme() === "dark" ? "dark" : "light";
-      loadTwitterWidgets(function () {
-        try {
-          host.innerHTML = "";
-          window.twttr.widgets.createTimeline(
-            {
-              sourceType: "profile",
-              screenName: "DFOLaredo"
-            },
-            host,
-            {
-              height: 420,
-              tweetLimit: 5,
-              chrome: "nofooter transparent",
-              theme: theme,
-              dnt: true
-            }
-          ).then(function (el) {
-            if (!el) {
-              host.innerHTML =
-                `<p class="x-timeline-fallback">${escapeHtml(t("xUpdatesFallback"))} ` +
-                `<a href="https://x.com/DFOLaredo" target="_blank" rel="noopener">@DFOLaredo</a></p>`;
-            }
-          }).catch(function () {
-            host.innerHTML =
-              `<p class="x-timeline-fallback">${escapeHtml(t("xUpdatesFallback"))} ` +
-              `<a href="https://x.com/DFOLaredo" target="_blank" rel="noopener">@DFOLaredo</a></p>`;
-          });
-        } catch (_) {
-          host.innerHTML =
-            `<p class="x-timeline-fallback">${escapeHtml(t("xUpdatesFallback"))} ` +
-            `<a href="https://x.com/DFOLaredo" target="_blank" rel="noopener">@DFOLaredo</a></p>`;
+      host.innerHTML = `<p class="x-timeline-fallback">${escapeHtml(t("xUpdatesLoading"))}</p>`;
+      try {
+        const res = await fetch(dfoPostsUrl() + "?t=" + Date.now(), {
+          cache: "no-store",
+          mode: "cors",
+          credentials: "omit"
+        });
+        const data = await res.json();
+        if (!res.ok || !data || data.ok === false) {
+          throw new Error((data && data.error) || ("HTTP " + res.status));
         }
-      });
+        renderDfoCarousel(data);
+      } catch (_) {
+        host.innerHTML =
+          `<p class="x-timeline-fallback">${escapeHtml(t("xUpdatesFallback"))} ` +
+          `<a href="https://x.com/DFOLaredo" target="_blank" rel="noopener">@DFOLaredo</a></p>`;
+      }
     }
 
     function toggleTheme() {

@@ -66,3 +66,39 @@ npx wrangler deploy
 ```
 
 No need to change `FEED_PROXY_URL` unless the workers.dev hostname changes.
+
+## @DFOLaredo posts (`/x/dfolaredo`)
+
+The Worker exposes latest posts for the page carousel:
+
+```text
+GET https://brownsville-bwt.borderwait.workers.dev/x/dfolaredo
+```
+
+### Secret (required)
+
+Use an **X API Bearer Token** (not the API Key / API Key Secret):
+
+1. https://developer.x.com/en/portal/dashboard  
+2. Your App → **Keys and tokens** → **Bearer Token** → copy  
+3. Store it:
+
+```bash
+cd worker
+npx wrangler secret put X_BEARER_TOKEN
+# paste the Bearer Token when prompted (no quotes)
+npx wrangler secret list   # should show X_BEARER_TOKEN
+npx wrangler deploy
+```
+
+### Check
+
+```bash
+curl -sS "https://brownsville-bwt.borderwait.workers.dev/health"
+# hasXBearer should be true
+
+curl -sS "https://brownsville-bwt.borderwait.workers.dev/x/dfolaredo?fresh=1" | head -c 400
+# should return JSON with ok:true and posts[]
+```
+
+If you see `401 Unauthorized`, the secret name is fine but the token value is wrong or the app lacks read access.
