@@ -271,15 +271,20 @@ html[data-theme="dark"] .sparse {
   .poi-has-photo .poi-photo {
     flex: 1.15 1 0;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    border-radius: 14px 0 0 14px;
+  }
+  .poi-has-photo .poi-photo img {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 220px;
   }
   .poi-has-photo .poi-body {
     flex: 1 1 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
-  }
-  .poi-photo {
-    border-radius: 14px 0 0 14px;
   }
 }
 
@@ -296,7 +301,7 @@ html[data-theme="dark"] .sparse {
   width: 100%;
   height: 200px;
   object-fit: cover;
-  object-position: center top;
+  object-position: center center;
   cursor: zoom-in;
 }
 

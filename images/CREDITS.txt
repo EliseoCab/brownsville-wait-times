@@ -1,7 +1,7 @@
 starbase-boca-chica.jpg
-  Subject: SpaceX Starship / tower top (card crop — nose & chopsticks)
+  Subject: SpaceX Starship / launch tower (card crop — nose, chopsticks, illuminated stack)
   Source: User-supplied night photo for Brownsville Border Wait Times
-  Note: Top-weighted crop of the full frame so the card does not show engines.
+  Note: Top + horizontal crop to fill the card without empty left sky or engines.
 
 starbase-boca-chica-full.jpg
   Subject: Full-frame Starship stacked on the launch tower at Starbase (Boca Chica), night/dusk
