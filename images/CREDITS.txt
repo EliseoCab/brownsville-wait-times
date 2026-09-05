@@ -1,5 +1,9 @@
 starbase-boca-chica.jpg
-  Subject: SpaceX Starship stacked on the launch tower at Starbase (Boca Chica), night/dusk
-  Source: User-supplied image for Brownsville Border Wait Times
-  Note: Replaces the previous Wikimedia Commons photo (Mobilus In Mobili, CC BY-SA 2.0).
-  Processing: Resized/compressed for web; no other creative edits.
+  Subject: SpaceX Starship / tower top (card crop — nose & chopsticks)
+  Source: User-supplied night photo for Brownsville Border Wait Times
+  Note: Top-weighted crop of the full frame so the card does not show engines.
+
+starbase-boca-chica-full.jpg
+  Subject: Full-frame Starship stacked on the launch tower at Starbase (Boca Chica), night/dusk
+  Source: Same user-supplied image (lightbox / hover expand)
+  Processing: Resized/compressed for web.

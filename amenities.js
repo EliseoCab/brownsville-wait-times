@@ -62,51 +62,89 @@
   }
 
   function setupPhotoExpand() {
+    var lightbox = document.createElement("div");
+    lightbox.className = "photo-lightbox";
+    lightbox.setAttribute("hidden", "");
+    lightbox.innerHTML =
+      '<button type="button" class="photo-lightbox-close" aria-label="Close">×</button>' +
+      '<img alt="" />';
+    document.body.appendChild(lightbox);
+    var lightImg = lightbox.querySelector("img");
+    var closeBtn = lightbox.querySelector(".photo-lightbox-close");
+    var hoverTimer = null;
+    var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+    function fullSrc(thumb) {
+      var src = thumb.getAttribute("data-full-src") || thumb.getAttribute("src") || "";
+      return src;
+    }
+
+    function openLightbox(thumb) {
+      lightImg.src = fullSrc(thumb);
+      lightImg.alt = thumb.getAttribute("alt") || "";
+      lightbox.removeAttribute("hidden");
+      requestAnimationFrame(function () {
+        lightbox.classList.add("is-open");
+      });
+      document.documentElement.style.overflow = "hidden";
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove("is-open");
+      document.documentElement.style.overflow = "";
+      setTimeout(function () {
+        if (!lightbox.classList.contains("is-open")) {
+          lightbox.setAttribute("hidden", "");
+          lightImg.removeAttribute("src");
+        }
+      }, 200);
+    }
+
+    lightbox.addEventListener("click", function (e) {
+      if (e.target === lightbox || e.target === lightImg || e.target === closeBtn) {
+        closeLightbox();
+      }
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && lightbox.classList.contains("is-open")) closeLightbox();
+    });
+
     document.querySelectorAll(".poi-photo").forEach(function (photo) {
       var img = photo.querySelector("img");
       if (!img) return;
       photo.setAttribute("tabindex", "0");
       photo.setAttribute("role", "button");
-      var labelEn = "Expand Starbase photo";
-      var labelEs = "Ampliar foto de Starbase";
-      photo.setAttribute("aria-label", document.documentElement.lang === "es" ? labelEs : labelEn);
-      photo.setAttribute("aria-expanded", "false");
+      photo.setAttribute(
+        "aria-label",
+        document.documentElement.lang === "es" ? "Ampliar foto de Starbase" : "Expand Starbase photo"
+      );
 
-      function toggle() {
-        var on = photo.classList.toggle("is-expanded");
-        var card = photo.closest(".poi-has-photo");
-        if (card) card.classList.toggle("is-photo-expanded", on);
-        photo.setAttribute("aria-expanded", on ? "true" : "false");
+      if (finePointer) {
+        photo.addEventListener("mouseenter", function () {
+          clearTimeout(hoverTimer);
+          hoverTimer = setTimeout(function () {
+            openLightbox(img);
+          }, 150);
+        });
+        photo.addEventListener("mouseleave", function () {
+          clearTimeout(hoverTimer);
+        });
       }
 
       photo.addEventListener("click", function (e) {
-        // Avoid hijacking caption links
         if (e.target && e.target.closest && e.target.closest("a")) return;
-        toggle();
+        e.preventDefault();
+        if (lightbox.classList.contains("is-open")) closeLightbox();
+        else openLightbox(img);
       });
       photo.addEventListener("keydown", function (e) {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          toggle();
-        }
-        if (e.key === "Escape" && photo.classList.contains("is-expanded")) {
-          photo.classList.remove("is-expanded");
-          var card = photo.closest(".poi-has-photo");
-          if (card) card.classList.remove("is-photo-expanded");
-          photo.setAttribute("aria-expanded", "false");
+          openLightbox(img);
         }
       });
     });
 
-    document.addEventListener("click", function (e) {
-      if (e.target.closest && e.target.closest(".poi-photo")) return;
-      document.querySelectorAll(".poi-photo.is-expanded").forEach(function (photo) {
-        photo.classList.remove("is-expanded");
-        photo.setAttribute("aria-expanded", "false");
-        var card = photo.closest(".poi-has-photo");
-        if (card) card.classList.remove("is-photo-expanded");
-      });
-    });
   }
 
   window.setLang = setLang;

@@ -257,7 +257,7 @@ html[data-theme="dark"] .sparse {
 
 .poi-has-photo {
   padding: 0;
-  overflow: visible;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   grid-column: 1 / -1; /* first tile: full-width hero */
@@ -278,30 +278,17 @@ html[data-theme="dark"] .sparse {
     flex-direction: column;
     justify-content: center;
   }
+  .poi-photo {
+    border-radius: 14px 0 0 14px;
+  }
 }
 
 .poi-photo {
   margin: 0;
   position: relative;
-  z-index: 1;
   background: #0b1f3a;
   border-radius: 14px 14px 0 0;
   overflow: hidden;
-}
-
-@media (min-width: 861px) {
-  .poi-has-photo {
-    border-radius: 14px;
-    overflow: hidden;
-  }
-  .poi-photo {
-    border-radius: 14px 0 0 14px;
-  }
-  .poi-has-photo.is-photo-expanded,
-  .poi-has-photo:has(.poi-photo:hover),
-  .poi-has-photo:has(.poi-photo:focus-within) {
-    overflow: visible;
-  }
 }
 
 .poi-photo img {
@@ -309,45 +296,8 @@ html[data-theme="dark"] .sparse {
   width: 100%;
   height: 200px;
   object-fit: cover;
-  /* Keep the illuminated tower / stack top in frame */
   object-position: center top;
   cursor: zoom-in;
-  transition: height 0.35s ease, box-shadow 0.35s ease, object-fit 0.35s ease;
-}
-
-/* Desktop / devices that support hover: expand to show full photo */
-@media (hover: hover) and (pointer: fine) {
-  .poi-photo:hover,
-  .poi-photo:focus-within,
-  .poi-photo.is-expanded {
-    z-index: 40;
-    overflow: visible;
-  }
-  .poi-photo:hover img,
-  .poi-photo:focus-within img,
-  .poi-photo.is-expanded img {
-    height: min(68vh, 520px);
-    object-fit: contain;
-    object-position: center top;
-    background: #07101c;
-    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
-    cursor: zoom-out;
-  }
-}
-
-/* Touch: tap toggles expand (class set by amenities.js) */
-@media (hover: none) {
-  .poi-photo.is-expanded {
-    z-index: 40;
-    overflow: visible;
-  }
-  .poi-photo.is-expanded img {
-    height: min(68vh, 520px);
-    object-fit: contain;
-    object-position: center top;
-    background: #07101c;
-    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
-  }
 }
 
 .poi-photo figcaption {
@@ -356,6 +306,59 @@ html[data-theme="dark"] .sparse {
   line-height: 1.35;
   color: var(--muted);
   background: var(--line-soft);
+}
+
+/* Fixed lightbox — avoids overflow clipping from card/grid */
+.photo-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(7, 16, 28, 0.82);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  cursor: zoom-out;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.photo-lightbox.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.photo-lightbox img {
+  display: block;
+  max-width: min(960px, 94vw);
+  max-height: 88vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+  cursor: zoom-out;
+}
+.photo-lightbox-close {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(15, 23, 42, 0.75);
+  color: #f8fafc;
+  font: inherit;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.photo-lightbox-close:hover {
+  background: rgba(15, 23, 42, 0.95);
 }
 
 .poi-photo figcaption a {
@@ -461,5 +464,5 @@ html[data-theme="dark"] .callout {
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .poi-photo img { transition: none; }
+  .photo-lightbox { transition: none; }
 }
