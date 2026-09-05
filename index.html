@@ -547,12 +547,12 @@
       }
     }
 
-    /* Toolbar — heading, then filter pills (stacked to match the section order) */
+    /* Toolbar — heading, then filters + latest-report chip in one row */
     .toolbar {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 0.85rem;
+      gap: 0.75rem;
       margin-bottom: 0.75rem;
     }
     .section-title {
@@ -569,15 +569,24 @@
       margin-top: 0.15rem;
       letter-spacing: 0;
     }
+    .toolbar-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem 0.65rem;
+      width: 100%;
+    }
     .filters {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.4rem;
+      gap: 0.35rem;
       background: var(--white);
       border: 1px solid var(--line);
       border-radius: 999px;
-      padding: 0.3rem;
+      padding: 0.28rem;
       box-shadow: var(--shadow-sm);
+      flex: 1 1 auto;
+      min-width: min(100%, 16rem);
     }
     .filter-btn {
       appearance: none;
@@ -1083,20 +1092,32 @@
       font-weight: 600;
     }
     .asof-bar {
-      padding: 0.5rem 1rem;
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.25rem 0.4rem;
+      padding: 0.45rem 0.75rem;
       background: var(--paper);
       border: 1px solid var(--line);
-      border-radius: 12px;
-      font-size: 0.8rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
       color: var(--muted);
       margin: 0;
-      width: 100%;
+      width: fit-content;
+      max-width: 100%;
       box-sizing: border-box;
+      flex: 0 1 auto;
+      line-height: 1.35;
+      box-shadow: var(--shadow-sm);
     }
     .toolbar .asof-bar {
       max-width: 100%;
     }
-    .asof-bar strong { color: var(--ink); font-weight: 700; }
+    .asof-bar strong {
+      color: var(--ink);
+      font-weight: 750;
+      word-break: break-word;
+    }
 
     .notices-block {
       margin-top: 1rem;
@@ -1192,9 +1213,15 @@
       .toolbar {
         flex-direction: column;
         align-items: stretch;
-        gap: 0.85rem;
+        gap: 0.75rem;
       }
       .section-title { font-size: 1.2rem; }
+      .toolbar-controls {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .toolbar-controls .filters { width: 100%; }
+      .toolbar-controls .asof-bar { width: fit-content; max-width: 100%; }
       .filters {
         width: 100%;
         overflow-x: auto;
@@ -1586,18 +1613,18 @@
 
     /* CBP Laredo Field Office — @DFOLaredo carousel (via Worker + X API) */
     .nearby-section {
-      margin: 0 0 1.15rem;
-      padding: 1rem 1.1rem 1.1rem;
+      margin: 0 0 0.85rem;
+      padding: 0.75rem 0.85rem 0.8rem;
       background: var(--white);
       border: 1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow-sm);
     }
     .nearby-head {
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.5rem;
     }
     .nearby-head h2 {
-      font-size: 1.2rem;
+      font-size: 1.05rem;
       font-weight: 750;
       letter-spacing: -0.02em;
       color: var(--ink);
@@ -1605,23 +1632,23 @@
     }
     .nearby-sub {
       display: block;
-      margin-top: 0.2rem;
-      font-size: 0.85rem;
+      margin-top: 0.12rem;
+      font-size: 0.75rem;
       font-weight: 500;
       color: var(--muted);
-      line-height: 1.4;
+      line-height: 1.35;
     }
     .nearby-bridges {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 0.5rem;
+      gap: 0.35rem;
     }
     .nearby-chip {
       display: flex;
       flex-direction: column;
-      gap: 0.2rem;
-      padding: 0.7rem 0.75rem 0.75rem;
-      border-radius: 12px;
+      gap: 0.05rem;
+      padding: 0.42rem 0.55rem 0.48rem;
+      border-radius: 10px;
       border: 1px solid var(--line);
       background: linear-gradient(180deg, var(--line-soft) 0%, var(--white) 55%);
       text-decoration: none;
@@ -1643,25 +1670,25 @@
       display: flex;
       align-items: baseline;
       justify-content: space-between;
-      gap: 0.35rem;
+      gap: 0.25rem;
     }
     .nearby-chip-name {
-      font-size: 0.95rem;
+      font-size: 0.82rem;
       font-weight: 800;
       letter-spacing: -0.02em;
       color: var(--ink);
     }
     .nearby-chip-go {
-      font-size: 0.95rem;
+      font-size: 0.82rem;
       font-weight: 700;
       color: var(--sky-deep);
       line-height: 1;
     }
     .nearby-chip-hint {
-      font-size: 0.68rem;
+      font-size: 0.62rem;
       font-weight: 650;
       color: var(--muted);
-      line-height: 1.35;
+      line-height: 1.25;
     }
     html[data-theme="dark"] .nearby-chip {
       background: linear-gradient(180deg, var(--line-soft) 0%, var(--white) 70%);
@@ -1673,8 +1700,117 @@
       .nearby-bridges { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     @media (max-width: 380px) {
-      .nearby-section { padding: 0.85rem 0.8rem 0.95rem; }
-      .nearby-chip { padding: 0.6rem 0.65rem 0.65rem; }
+      .nearby-section { padding: 0.65rem 0.7rem 0.7rem; }
+      .nearby-chip { padding: 0.38rem 0.45rem 0.42rem; }
+    }
+
+    /* COMTODO live bridge cameras */
+    .live-cams {
+      margin: 0 0 1rem;
+      padding: 0.75rem 0.85rem 0.9rem;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+    }
+    .live-cams-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.35rem 1rem;
+      margin-bottom: 0.65rem;
+    }
+    .live-cams-head h2 {
+      font-size: 1.05rem;
+      font-weight: 750;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .live-cams-sub {
+      display: block;
+      margin-top: 0.12rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+    .live-cams-link {
+      font-size: 0.78rem;
+      font-weight: 750;
+      color: var(--sky-deep);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .live-cams-link:hover { text-decoration: underline; color: var(--navy); }
+    html[data-theme="dark"] .live-cams-link:hover { color: #e0f2fe; }
+    .live-cams-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.65rem;
+    }
+    .live-cam-card {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #0b1f3a;
+      box-shadow: var(--shadow-sm);
+    }
+    .live-cam-frame {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      background: #07101c;
+      overflow: hidden;
+    }
+    .live-cam-frame iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      background: #07101c;
+    }
+    .live-cam-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.2rem 0.5rem;
+      padding: 0.45rem 0.6rem 0.5rem;
+      background: var(--white);
+      border-top: 1px solid var(--line);
+    }
+    .live-cam-name {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .live-cam-tag {
+      font-size: 0.62rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+    .live-cams-credit {
+      margin-top: 0.55rem;
+      font-size: 0.68rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .live-cams-credit a {
+      color: var(--sky-deep);
+      font-weight: 650;
+      text-decoration: none;
+    }
+    .live-cams-credit a:hover { text-decoration: underline; }
+    @media (max-width: 560px) {
+      .live-cams-grid { grid-template-columns: 1fr; }
+      .live-cam-frame { aspect-ratio: 16 / 9; }
     }
 
     .x-updates {
@@ -2069,20 +2205,68 @@
       </div>
     </section>
 
+    <section class="live-cams" aria-label="Live bridge cameras" data-i18n-aria="liveCamsAria">
+      <div class="live-cams-head">
+        <div>
+          <h2 data-i18n="liveCamsTitle">Live bridge cameras</h2>
+          <span class="live-cams-sub" data-i18n="liveCamsSub">Streaming views of downtown Brownsville crossings</span>
+        </div>
+        <a class="live-cams-link" href="https://comtodo.com/en/cameras/" target="_blank" rel="noopener" data-i18n="liveCamsOpen">Open COMTODO cameras →</a>
+      </div>
+      <div class="live-cams-grid">
+        <article class="live-cam-card">
+          <div class="live-cam-frame">
+            <iframe
+              src="https://g3.ipcamlive.com/player/player.php?alias=5df59f3827371"
+              title="Live camera · Old Bridge (B&amp;M Express)"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              allowfullscreen
+            ></iframe>
+          </div>
+          <div class="live-cam-meta">
+            <span class="live-cam-name" data-i18n="liveCamOld">Old Bridge (B&amp;M Express)</span>
+            <span class="live-cam-tag" data-i18n="liveCamLive">Live</span>
+          </div>
+        </article>
+        <article class="live-cam-card">
+          <div class="live-cam-frame">
+            <iframe
+              src="https://g3.ipcamlive.com/player/player.php?alias=61af904e45b24"
+              title="Live camera · New Bridge (Gateway)"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              allowfullscreen
+            ></iframe>
+          </div>
+          <div class="live-cam-meta">
+            <span class="live-cam-name" data-i18n="liveCamNew">New Bridge (Gateway)</span>
+            <span class="live-cam-tag" data-i18n="liveCamLive">Live</span>
+          </div>
+        </article>
+      </div>
+      <p class="live-cams-credit">
+        <span data-i18n="liveCamsCredit">Free community cameras by</span>
+        <a href="https://comtodo.com/en/cameras/" target="_blank" rel="noopener">COMTODO</a>.
+      </p>
+    </section>
+
     <div class="toolbar" id="ports">
       <h2 class="section-title">
         <span data-i18n="crossingTimes">Crossing times</span>
         <span class="section-sub" data-i18n="crossingTimesSub">Estimates to primary inspection booth · CBP updates about hourly</span>
       </h2>
-      <div class="asof-bar" id="asofBar" aria-live="polite">
-        <span data-i18n="latestReport">Latest report:</span>
-        <strong id="asofStamp">—</strong>
-      </div>
-      <div class="filters" role="tablist" aria-label="Filter by traffic type" data-i18n-aria="filterAria">
-        <button type="button" class="filter-btn active" data-filter="all" data-i18n="filterAll" onclick="setFilter('all', this)">All</button>
-        <button type="button" class="filter-btn" data-filter="passenger" data-i18n="filterVehicles" onclick="setFilter('passenger', this)">Vehicles</button>
-        <button type="button" class="filter-btn" data-filter="pedestrian" data-i18n="filterPedestrian" onclick="setFilter('pedestrian', this)">Pedestrian</button>
-        <button type="button" class="filter-btn" data-filter="commercial" data-i18n="filterCommercial" onclick="setFilter('commercial', this)">Commercial</button>
+      <div class="toolbar-controls">
+        <div class="filters" role="tablist" aria-label="Filter by traffic type" data-i18n-aria="filterAria">
+          <button type="button" class="filter-btn active" data-filter="all" data-i18n="filterAll" onclick="setFilter('all', this)">All</button>
+          <button type="button" class="filter-btn" data-filter="passenger" data-i18n="filterVehicles" onclick="setFilter('passenger', this)">Vehicles</button>
+          <button type="button" class="filter-btn" data-filter="pedestrian" data-i18n="filterPedestrian" onclick="setFilter('pedestrian', this)">Pedestrian</button>
+          <button type="button" class="filter-btn" data-filter="commercial" data-i18n="filterCommercial" onclick="setFilter('commercial', this)">Commercial</button>
+        </div>
+        <div class="asof-bar" id="asofBar" aria-live="polite">
+          <span data-i18n="latestReport">Latest report:</span>
+          <strong id="asofStamp">—</strong>
+        </div>
       </div>
     </div>
     <div class="refresh-row">
@@ -2219,6 +2403,14 @@
         nearbySub: "Gas, food, parking, hotels & Starbase",
         nearbyChipHint: "Amenities guide",
         nearbyAria: "Nearby amenities by bridge",
+        liveCamsTitle: "Live bridge cameras",
+        liveCamsSub: "Streaming views of downtown Brownsville crossings",
+        liveCamsOpen: "Open COMTODO cameras →",
+        liveCamsAria: "Live bridge cameras",
+        liveCamOld: "Old Bridge (B&M Express)",
+        liveCamNew: "New Bridge (Gateway)",
+        liveCamLive: "Live",
+        liveCamsCredit: "Free community cameras by",
 
         hours: "Hours",
         hours24: "24 hours",
@@ -2336,6 +2528,14 @@
         nearbySub: "Gasolina, comida, estacionamiento, hoteles y Starbase",
         nearbyChipHint: "Guía de servicios",
         nearbyAria: "Servicios cercanos por puente",
+        liveCamsTitle: "Cámaras en vivo de los puentes",
+        liveCamsSub: "Vistas en streaming de los cruces del centro de Brownsville",
+        liveCamsOpen: "Abrir cámaras COMTODO →",
+        liveCamsAria: "Cámaras en vivo de los puentes",
+        liveCamOld: "Puente Viejo (B&M Express)",
+        liveCamNew: "Puente Nuevo (Gateway)",
+        liveCamLive: "En vivo",
+        liveCamsCredit: "Cámaras comunitarias gratis de",
 
         hours: "Horario",
         hours24: "24 horas",
