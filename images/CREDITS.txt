@@ -1,9 +1,5 @@
 starbase-boca-chica.jpg
-  Source: Wikimedia Commons / Flickr
-  Title: Boca Chica Starbase
-  Author: Mobilus In Mobili (https://www.flickr.com/people/52257493@N00)
-  Original: https://commons.wikimedia.org/wiki/File:Boca_Chica_Starbase_(52775909489).jpg
-  Flickr: https://www.flickr.com/photos/mobili/52775909489/
-  License: Creative Commons Attribution-ShareAlike 2.0 Generic (CC BY-SA 2.0)
-  License URL: https://creativecommons.org/licenses/by-sa/2.0/
-  Note: Cropped to 16:9 and resized/compressed for web from the 1280px Commons derivative.
+  Subject: SpaceX Starship stacked on the launch tower at Starbase (Boca Chica), night/dusk
+  Source: User-supplied image for Brownsville Border Wait Times
+  Note: Replaces the previous Wikimedia Commons photo (Mobilus In Mobili, CC BY-SA 2.0).
+  Processing: Resized/compressed for web; no other creative edits.
