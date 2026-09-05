@@ -61,9 +61,58 @@
     if (empty) empty.hidden = shown > 0;
   }
 
+  function setupPhotoExpand() {
+    document.querySelectorAll(".poi-photo").forEach(function (photo) {
+      var img = photo.querySelector("img");
+      if (!img) return;
+      photo.setAttribute("tabindex", "0");
+      photo.setAttribute("role", "button");
+      var labelEn = "Expand Starbase photo";
+      var labelEs = "Ampliar foto de Starbase";
+      photo.setAttribute("aria-label", document.documentElement.lang === "es" ? labelEs : labelEn);
+      photo.setAttribute("aria-expanded", "false");
+
+      function toggle() {
+        var on = photo.classList.toggle("is-expanded");
+        var card = photo.closest(".poi-has-photo");
+        if (card) card.classList.toggle("is-photo-expanded", on);
+        photo.setAttribute("aria-expanded", on ? "true" : "false");
+      }
+
+      photo.addEventListener("click", function (e) {
+        // Avoid hijacking caption links
+        if (e.target && e.target.closest && e.target.closest("a")) return;
+        toggle();
+      });
+      photo.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggle();
+        }
+        if (e.key === "Escape" && photo.classList.contains("is-expanded")) {
+          photo.classList.remove("is-expanded");
+          var card = photo.closest(".poi-has-photo");
+          if (card) card.classList.remove("is-photo-expanded");
+          photo.setAttribute("aria-expanded", "false");
+        }
+      });
+    });
+
+    document.addEventListener("click", function (e) {
+      if (e.target.closest && e.target.closest(".poi-photo")) return;
+      document.querySelectorAll(".poi-photo.is-expanded").forEach(function (photo) {
+        photo.classList.remove("is-expanded");
+        photo.setAttribute("aria-expanded", "false");
+        var card = photo.closest(".poi-has-photo");
+        if (card) card.classList.remove("is-photo-expanded");
+      });
+    });
+  }
+
   window.setLang = setLang;
   window.toggleTheme = toggleTheme;
   window.filterAmenities = filterAmenities;
 
   applyI18n();
+  setupPhotoExpand();
 })();
