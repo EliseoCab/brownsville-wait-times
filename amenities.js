@@ -75,17 +75,23 @@
     var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
     function fullSrc(thumb) {
-      var src = thumb.getAttribute("data-full-src") || thumb.getAttribute("src") || "";
-      return src;
+      var raw = thumb.getAttribute("data-full-src") || thumb.getAttribute("src") || "";
+      try {
+        return new URL(raw, document.baseURI).href;
+      } catch (e) {
+        return raw;
+      }
     }
 
     function openLightbox(thumb) {
-      lightImg.src = fullSrc(thumb);
+      var src = fullSrc(thumb);
+      if (!src) return;
+      lightImg.src = src;
       lightImg.alt = thumb.getAttribute("alt") || "";
       lightbox.removeAttribute("hidden");
-      requestAnimationFrame(function () {
-        lightbox.classList.add("is-open");
-      });
+      // Force reflow so opacity transition runs even on stubborn mobile WebKits
+      void lightbox.offsetWidth;
+      lightbox.classList.add("is-open");
       document.documentElement.style.overflow = "hidden";
     }
 
