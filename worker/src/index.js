@@ -4,6 +4,8 @@
  * Deploy:  cd worker && npx wrangler deploy
  * Secret:  npx wrangler secret put X_BEARER_TOKEN
  * Cron:    every 5 minutes warms the CBP cache
+ *
+ * Security: CORS allowlist, security headers, per-IP rate limits (Cache API).
  */
 
 const CBP_URL =
@@ -19,23 +21,159 @@ const X_CACHE_TTL_SECONDS = 300; // 5 min
 const X_SCREEN_NAME = "DFOLaredo";
 const X_POST_COUNT = 5;
 
-function corsHeaders(extra) {
+/** Allowed browser Origins for CORS (GitHub Pages + local preview). */
+const ALLOWED_ORIGINS = [
+  "https://eliseocab.github.io",
+  "http://localhost",
+  "http://127.0.0.1",
+];
+
+/** Per-IP limits: { limit, windowSeconds } */
+const RATE_LIMITS = {
+  xFresh: { limit: 8, windowSeconds: 60 }, // ?fresh=1 hits X API
+  x: { limit: 45, windowSeconds: 60 },
+  feedFresh: { limit: 20, windowSeconds: 60 },
+  feed: { limit: 90, windowSeconds: 60 },
+  health: { limit: 60, windowSeconds: 60 },
+};
+
+function isAllowedOrigin(origin) {
+  if (!origin) return false;
+  if (ALLOWED_ORIGINS.indexOf(origin) !== -1) return true;
+  // Any localhost / 127.0.0.1 port for local python/http.server previews
+  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
+}
+
+function corsOrigin(request) {
+  const origin = request && request.headers ? request.headers.get("Origin") : null;
+  if (origin && isAllowedOrigin(origin)) return origin;
+  // Non-browser clients (curl) have no Origin — allow read
+  if (!origin) return "*";
+  // Unknown browser Origin: do not reflect it
+  return "https://eliseocab.github.io";
+}
+
+function securityHeaders() {
+  return {
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+    "X-Frame-Options": "DENY",
+    "Cross-Origin-Resource-Policy": "cross-origin",
+  };
+}
+
+function corsHeaders(request, extra) {
   return Object.assign(
     {
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": corsOrigin(request),
       "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
-      "Access-Control-Allow-Headers": "*",
+      "Access-Control-Allow-Headers": "Accept, Content-Type",
       "Access-Control-Max-Age": "86400",
+      Vary: "Origin",
     },
+    securityHeaders(),
     extra || {}
   );
 }
 
-function jsonResponse(obj, status, maxAge) {
+function clientIp(request) {
+  return (
+    request.headers.get("CF-Connecting-IP") ||
+    request.headers.get("X-Forwarded-For") ||
+    "unknown"
+  );
+}
+
+/**
+ * Best-effort per-IP rate limit using the Cache API (edge-local, free-tier friendly).
+ * Returns null if allowed, or a 429 Response if blocked.
+ */
+async function enforceRateLimit(request, bucket) {
+  const cfg = RATE_LIMITS[bucket] || RATE_LIMITS.feed;
+  const ip = clientIp(request);
+  const windowId = Math.floor(Date.now() / (cfg.windowSeconds * 1000));
+  const keyUrl =
+    "https://brownsville-bwt.internal/ratelimit/" +
+    bucket +
+    "/" +
+    encodeURIComponent(ip) +
+    "/" +
+    windowId;
+  const cacheReq = new Request(keyUrl);
+  const cache = caches.default;
+
+  let count = 0;
+  try {
+    const hit = await cache.match(cacheReq);
+    if (hit) {
+      const body = await hit.text();
+      count = parseInt(body, 10) || 0;
+    }
+  } catch (_) {
+    /* ignore cache read errors */
+  }
+
+  count += 1;
+
+  try {
+    await cache.put(
+      cacheReq,
+      new Response(String(count), {
+        headers: {
+          "Cache-Control": "max-age=" + cfg.windowSeconds,
+          "Content-Type": "text/plain",
+        },
+      })
+    );
+  } catch (_) {
+    /* ignore cache write errors — fail open */
+  }
+
+  const remaining = Math.max(0, cfg.limit - count);
+  const headers = {
+    "X-RateLimit-Limit": String(cfg.limit),
+    "X-RateLimit-Remaining": String(remaining),
+    "X-RateLimit-Window": String(cfg.windowSeconds),
+  };
+
+  if (count > cfg.limit) {
+    return new Response(
+      JSON.stringify({
+        ok: false,
+        error: "Rate limit exceeded. Try again shortly.",
+        bucket: bucket,
+        retryAfterSeconds: cfg.windowSeconds,
+      }),
+      {
+        status: 429,
+        headers: corsHeaders(request, {
+          "Content-Type": "application/json; charset=utf-8",
+          "Cache-Control": "no-store",
+          "Retry-After": String(cfg.windowSeconds),
+          ...headers,
+        }),
+      }
+    );
+  }
+
+  return { allowed: true, headers: headers };
+}
+
+function withRateHeaders(response, rateMeta) {
+  if (!rateMeta || !rateMeta.headers) return response;
+  const headers = new Headers(response.headers);
+  Object.keys(rateMeta.headers).forEach(function (k) {
+    headers.set(k, rateMeta.headers[k]);
+  });
+  return new Response(response.body, { status: response.status, headers: headers });
+}
+
+function jsonResponse(request, obj, status, maxAge) {
   const age = typeof maxAge === "number" ? maxAge : 60;
   return new Response(JSON.stringify(obj), {
     status: status || 200,
-    headers: corsHeaders({
+    headers: corsHeaders(request, {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control":
         age === 0
@@ -63,10 +201,10 @@ async function fetchCbpFeed() {
   return text;
 }
 
-function xmlResponse(text, source, maxAge) {
+function xmlResponse(request, text, source, maxAge) {
   return new Response(text, {
     status: 200,
-    headers: corsHeaders({
+    headers: corsHeaders(request, {
       "Content-Type": "application/xml; charset=utf-8",
       "Cache-Control":
         maxAge === 0
@@ -78,11 +216,11 @@ function xmlResponse(text, source, maxAge) {
   });
 }
 
-function withSource(response, source, clientMaxAge) {
+function withSource(request, response, source, clientMaxAge) {
   const headers = new Headers(response.headers);
   const age =
     typeof clientMaxAge === "number" ? clientMaxAge : CACHE_TTL_SECONDS;
-  const cors = corsHeaders({
+  const cors = corsHeaders(request, {
     "X-BWT-Source": source,
     "Cache-Control":
       age === 0
@@ -97,7 +235,16 @@ function withSource(response, source, clientMaxAge) {
 
 async function putCachedFeed(text, source) {
   const cacheReq = new Request(CACHE_KEY);
-  const stored = xmlResponse(text, source, STALE_TTL_SECONDS);
+  // Internal cache entry — request object not needed for CORS
+  const stored = new Response(text, {
+    status: 200,
+    headers: {
+      "Content-Type": "application/xml; charset=utf-8",
+      "Cache-Control": "public, max-age=" + STALE_TTL_SECONDS,
+      "X-BWT-Source": source,
+      "X-BWT-Stored-At": new Date().toISOString(),
+    },
+  });
   await caches.default.put(cacheReq, stored);
 }
 
@@ -113,10 +260,10 @@ function cacheAgeSeconds(response) {
   return Number.isFinite(ms) ? ms / 1000 : Number.POSITIVE_INFINITY;
 }
 
-async function cachedFeed(ctx) {
+async function cachedFeed(request, ctx) {
   const hit = await matchCachedFeed();
   if (hit && cacheAgeSeconds(hit) < CACHE_TTL_SECONDS) {
-    return withSource(hit, "cache", CACHE_TTL_SECONDS);
+    return withSource(request, hit, "cache", CACHE_TTL_SECONDS);
   }
 
   try {
@@ -126,10 +273,10 @@ async function cachedFeed(ctx) {
     } else {
       await putCachedFeed(text, "cbp-live");
     }
-    return xmlResponse(text, "cbp-live", CACHE_TTL_SECONDS);
+    return xmlResponse(request, text, "cbp-live", CACHE_TTL_SECONDS);
   } catch (err) {
     if (hit) {
-      return withSource(hit, "stale", 30);
+      return withSource(request, hit, "stale", 30);
     }
     throw err;
   }
@@ -225,7 +372,7 @@ async function fetchDfoLaredoPosts(env) {
   };
 }
 
-async function cachedDfoPosts(env, ctx, fresh) {
+async function cachedDfoPosts(request, env, ctx, fresh) {
   const cache = caches.default;
   const cacheReq = new Request(X_CACHE_KEY);
 
@@ -238,8 +385,8 @@ async function cachedDfoPosts(env, ctx, fresh) {
         : Number.POSITIVE_INFINITY;
       if (Number.isFinite(age) && age < X_CACHE_TTL_SECONDS) {
         const headers = new Headers(hit.headers);
-        Object.keys(corsHeaders()).forEach(function (k) {
-          headers.set(k, corsHeaders()[k]);
+        Object.keys(corsHeaders(request)).forEach(function (k) {
+          headers.set(k, corsHeaders(request)[k]);
         });
         headers.set("X-BWT-Source", "x-cache");
         return new Response(hit.body, { status: hit.status, headers: headers });
@@ -250,7 +397,7 @@ async function cachedDfoPosts(env, ctx, fresh) {
   const payload = await fetchDfoLaredoPosts(env);
   const res = new Response(JSON.stringify(payload), {
     status: 200,
-    headers: corsHeaders({
+    headers: corsHeaders(request, {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "public, max-age=" + X_CACHE_TTL_SECONDS,
       "X-BWT-Source": "x-live",
@@ -268,68 +415,88 @@ async function cachedDfoPosts(env, ctx, fresh) {
 export default {
   async fetch(request, env, ctx) {
     if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: corsHeaders() });
+      return new Response(null, { status: 204, headers: corsHeaders(request) });
     }
     if (request.method !== "GET" && request.method !== "HEAD") {
       return new Response("Method not allowed", {
         status: 405,
-        headers: corsHeaders({ "Content-Type": "text/plain; charset=utf-8" }),
+        headers: corsHeaders(request, { "Content-Type": "text/plain; charset=utf-8" }),
       });
     }
 
     try {
       const url = new URL(request.url);
       const path = url.pathname.replace(/\/+$/, "") || "/";
+      const fresh = url.searchParams.get("fresh") === "1";
 
       if (path === "/health") {
-        return jsonResponse(
-          {
-            ok: true,
-            service: "brownsville-bwt",
-            cbp: CBP_URL,
-            x: "/x/dfolaredo",
-            hasXBearer: !!(env && env.X_BEARER_TOKEN),
-            cacheTtlSeconds: CACHE_TTL_SECONDS,
-          },
-          200,
-          60
+        const rate = await enforceRateLimit(request, "health");
+        if (rate instanceof Response) return rate;
+        return withRateHeaders(
+          jsonResponse(
+            request,
+            {
+              ok: true,
+              service: "brownsville-bwt",
+              cbp: CBP_URL,
+              x: "/x/dfolaredo",
+              hasXBearer: !!(env && env.X_BEARER_TOKEN),
+              cacheTtlSeconds: CACHE_TTL_SECONDS,
+              rateLimits: {
+                x: RATE_LIMITS.x,
+                xFresh: RATE_LIMITS.xFresh,
+                feed: RATE_LIMITS.feed,
+                feedFresh: RATE_LIMITS.feedFresh,
+              },
+            },
+            200,
+            60
+          ),
+          rate
         );
       }
 
       if (path === "/x/dfolaredo") {
+        const rate = await enforceRateLimit(request, fresh ? "xFresh" : "x");
+        if (rate instanceof Response) return rate;
         try {
-          return await cachedDfoPosts(env, ctx, url.searchParams.get("fresh") === "1");
+          const res = await cachedDfoPosts(request, env, ctx, fresh);
+          return withRateHeaders(res, rate);
         } catch (xErr) {
           const message = xErr && xErr.message ? xErr.message : String(xErr);
-          return jsonResponse({ ok: false, error: message }, 502, 0);
+          return withRateHeaders(jsonResponse(request, { ok: false, error: message }, 502, 0), rate);
         }
       }
 
       // Default: CBP Brownsville RSS (existing behavior for FEED_PROXY_URL root)
-      if (url.searchParams.get("fresh") === "1") {
+      if (fresh) {
+        const rate = await enforceRateLimit(request, "feedFresh");
+        if (rate instanceof Response) return rate;
         try {
           const text = await fetchCbpFeed();
           ctx.waitUntil(putCachedFeed(text, "cbp-live-fresh"));
-          return xmlResponse(text, "cbp-live-fresh", 0);
+          return withRateHeaders(xmlResponse(request, text, "cbp-live-fresh", 0), rate);
         } catch (freshErr) {
           const stale = await matchCachedFeed();
           if (stale) {
-            return withSource(stale, "stale", 30);
+            return withRateHeaders(withSource(request, stale, "stale", 30), rate);
           }
           throw freshErr;
         }
       }
 
-      return await cachedFeed(ctx);
+      const rate = await enforceRateLimit(request, "feed");
+      if (rate instanceof Response) return rate;
+      return withRateHeaders(await cachedFeed(request, ctx), rate);
     } catch (err) {
       const stale = await matchCachedFeed();
       if (stale) {
-        return withSource(stale, "stale", 30);
+        return withSource(request, stale, "stale", 30);
       }
       const message = err && err.message ? err.message : String(err);
       return new Response(JSON.stringify({ error: message }), {
         status: 502,
-        headers: corsHeaders({ "Content-Type": "application/json" }),
+        headers: corsHeaders(request, { "Content-Type": "application/json; charset=utf-8" }),
       });
     }
   },
@@ -344,7 +511,9 @@ export default {
           // Keep the last good cache if CBP blips during cron.
         }
         try {
-          await cachedDfoPosts(env, null, true);
+          // Cron warm — synthetic request for CORS/header helpers
+          const fakeReq = new Request("https://brownsville-bwt.internal/x/dfolaredo?fresh=1");
+          await cachedDfoPosts(fakeReq, env, null, true);
         } catch (_) {
           // X warm is best-effort
         }

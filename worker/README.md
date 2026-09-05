@@ -53,10 +53,27 @@ On the live page, after hard-refresh, **Refresh times** should show **Live · CB
 
 - `GET /` — CBP Brownsville RSS (cached ~2 minutes at the edge)
 - `GET /?fresh=1` — skip edge cache, hit CBP now
-- `GET /health` — small JSON status
+- `GET /health` — small JSON status (includes rate-limit config)
 - `OPTIONS` — CORS preflight
 - **Cron every 5 min** — re-fetch CBP so the cache stays warm
 - If CBP is down, serves the last good feed (up to ~30 minutes old) instead of failing
+
+## Security
+
+- **Secret hygiene:** `X_BEARER_TOKEN` stays in Wrangler secrets only (never in git / Pages JS)
+- **CORS allowlist:** `https://eliseocab.github.io` + localhost preview origins (unknown Origins are not reflected)
+- **Security headers** on every response: `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options`, `Cross-Origin-Resource-Policy`
+- **Per-IP rate limits** (Cache API, best-effort per edge):
+
+| Route | Limit |
+|-------|--------|
+| `GET /x/dfolaredo?fresh=1` | 8 / minute |
+| `GET /x/dfolaredo` | 45 / minute |
+| `GET /?fresh=1` | 20 / minute |
+| `GET /` (cached feed) | 90 / minute |
+| `GET /health` | 60 / minute |
+
+Over-limit requests return **429** with `Retry-After` and `X-RateLimit-*` headers.
 
 ## Redeploy after code changes
 
