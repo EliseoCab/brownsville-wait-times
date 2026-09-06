@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
 
+# XML sitemap. GitHub Pages serves .xml as application/xml with no charset.
+# GSC has historically reported “Sitemap could not be read” for valid github.io
+# XML sitemaps even when the file is HTTP 200. Submit the full absolute URL
+# (not only /sitemap.xml) on the URL-prefix property.
 Sitemap: https://eliseocab.github.io/brownsville-wait-times/sitemap.xml
+
+# Google-supported URL-list sitemap. Pages serves .txt as text/plain; charset=utf-8.
+Sitemap: https://eliseocab.github.io/brownsville-wait-times/sitemap.txt
