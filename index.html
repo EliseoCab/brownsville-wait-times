@@ -1743,6 +1743,9 @@
       color: var(--muted);
       line-height: 1.25;
     }
+    html:not([lang="es"]) .nearby-chip-mx {
+      display: none;
+    }
     .nearby-chip-hint {
       font-size: 0.62rem;
       font-weight: 650;
@@ -2287,7 +2290,7 @@
             <span class="nearby-chip-name">B&amp;M</span>
             <span class="nearby-chip-go" aria-hidden="true">→</span>
           </span>
-          <span class="nearby-chip-mx">México: Puente Viejo</span>
+          <span class="nearby-chip-mx" hidden>México: Puente Viejo</span>
           <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
         </a>
         <a class="nearby-chip" href="gateway/">
@@ -2295,7 +2298,7 @@
             <span class="nearby-chip-name">Gateway</span>
             <span class="nearby-chip-go" aria-hidden="true">→</span>
           </span>
-          <span class="nearby-chip-mx">México: Puente Nuevo</span>
+          <span class="nearby-chip-mx" hidden>México: Puente Nuevo</span>
           <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
         </a>
         <a class="nearby-chip" href="los-indios/">
@@ -2303,7 +2306,7 @@
             <span class="nearby-chip-name">Los Indios</span>
             <span class="nearby-chip-go" aria-hidden="true">→</span>
           </span>
-          <span class="nearby-chip-mx">México: Puente Los Indios</span>
+          <span class="nearby-chip-mx" hidden>México: Puente Los Indios</span>
           <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
         </a>
         <a class="nearby-chip" href="veterans/">
@@ -2311,7 +2314,7 @@
             <span class="nearby-chip-name">Veterans</span>
             <span class="nearby-chip-go" aria-hidden="true">→</span>
           </span>
-          <span class="nearby-chip-mx">México: Puente Los Tomates</span>
+          <span class="nearby-chip-mx" hidden>México: Puente Los Tomates</span>
           <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
         </a>
       </div>
@@ -3727,7 +3730,12 @@
       };
     }
 
+    function showMexicoNames() {
+      return currentLang === "es";
+    }
+
     function mexicoLineHtml(port, className) {
+      if (!showMexicoNames()) return "";
       const mx = port && port.meta && port.meta.mx;
       if (!mx) return "";
       return `<span class="${className}">${escapeHtml(t("mexicoLabel"))} ${escapeHtml(mx)}</span>`;
@@ -4239,6 +4247,9 @@
       const esBtn = document.getElementById("langEs");
       if (enBtn) enBtn.classList.toggle("active", currentLang === "en");
       if (esBtn) esBtn.classList.toggle("active", currentLang === "es");
+      document.querySelectorAll(".nearby-chip-mx").forEach(function (el) {
+        el.hidden = !showMexicoNames();
+      });
       const themeBtn = document.getElementById("themeToggle");
       const theme = document.documentElement.getAttribute("data-theme") || "light";
       if (themeBtn) {
