@@ -983,6 +983,42 @@
       color: var(--ink);
       letter-spacing: -0.01em;
     }
+    .wait-table td.bridge .bridge-title,
+    .m-row-bridge.bridge-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .wait-table td.bridge .bridge-name {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .bridge-map {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: 1.35rem;
+      height: 1.35rem;
+      margin: 0;
+      color: var(--sky-deep);
+      border-radius: 6px;
+      text-decoration: none;
+      line-height: 0;
+    }
+    .bridge-map:hover,
+    .bridge-map:focus-visible {
+      background: var(--line-soft);
+      color: var(--ink);
+      outline: none;
+    }
+    .bridge-map svg {
+      width: 0.95rem;
+      height: 0.95rem;
+      display: block;
+    }
     .wait-table td.bridge .mx-line {
       display: block;
       margin-top: 0.12rem;
@@ -991,6 +1027,11 @@
       letter-spacing: 0;
       color: var(--muted);
       line-height: 1.25;
+    }
+    html:not([lang="es"]) .wait-table td.bridge .mx-line,
+    html:not([lang="es"]) .m-row-mx,
+    html:not([lang="es"]) .nearby-chip-mx {
+      display: none !important;
     }
     .wait-table td.bridge .hours-line,
     .wait-table td.bridge .updated-line {
@@ -1371,6 +1412,9 @@
       overflow-wrap: anywhere;
       word-break: break-word;
     }
+    .m-row-bridge.bridge-title {
+      display: flex;
+    }
     .m-row-mx {
       display: block;
       margin-top: 0.1rem;
@@ -1744,7 +1788,7 @@
       line-height: 1.25;
     }
     html:not([lang="es"]) .nearby-chip-mx {
-      display: none;
+      display: none !important;
     }
     .nearby-chip-hint {
       font-size: 0.62rem;
@@ -2150,6 +2194,12 @@
       font-size: 0.95rem;
     }
 
+    html[data-theme="dark"] .bridge-map { color: #38bdf8; }
+    html[data-theme="dark"] .bridge-map:hover,
+    html[data-theme="dark"] .bridge-map:focus-visible {
+      background: #1e293b;
+      color: #e2e8f0;
+    }
     html[data-theme="dark"] .wait-table tbody tr:hover { background: #182338; }
     html[data-theme="dark"] .wait-table td.wait-col.has-low { background: rgba(5, 46, 34, 0.55); }
     html[data-theme="dark"] .wait-table td.wait-col.has-med { background: rgba(42, 31, 8, 0.55); }
@@ -2569,6 +2619,7 @@
         installOther2: "Tap Install app or Add to Home Screen.",
         installOther3: "Confirm. You can open it like any other app.",
         mexicoLabel: "México:",
+        openMaps: "Open {name} in maps",
         colBridge: "Bridge",
         na: "N/A",
         closed: "Closed",
@@ -2698,6 +2749,7 @@
         installOther2: "Toca Instalar app o Agregar a pantalla de inicio.",
         installOther3: "Confirma. Podrás abrirla como cualquier otra app.",
         mexicoLabel: "México:",
+        openMaps: "Abrir {name} en mapas",
         colBridge: "Puente",
         na: "N/D",
         closed: "Cerrado",
@@ -2740,24 +2792,28 @@
         short: "B&M",
         aka: "Brownsville & Matamoros Bridge; Puente Internacional B&M; Puente Internacional Brownsville-Matamoros; Puente Viejo",
         mx: "Puente Viejo",
+        mapsQuery: "Brownsville and Matamoros Bridge 1300 Mexico Blvd Brownsville TX",
         blurb: "Downtown pedestrian-friendly crossing linking Brownsville and Matamoros."
       },
       "Brownsville - Gateway": {
         short: "Gateway",
         aka: "International Gateway Bridge; Puente Internacional Gateway; Puente Nuevo",
         mx: "Puente Nuevo",
+        mapsQuery: "International Gateway Bridge 510 E 14th St Brownsville TX",
         blurb: "Primary downtown vehicle & pedestrian bridge—often the busiest corridor."
       },
       "Brownsville - Los Indios": {
         short: "Los Indios",
         aka: "Free Trade Bridge; Puente Internacional Lucio Blanco–Los Indios; Puente Lucio Blanco; Puente Internacional Libre Comercio; Puente Los Indios",
         mx: "Puente Los Indios",
+        mapsQuery: "Free Trade Bridge 100 S Los Indios Blvd TX",
         blurb: "West-side free trade bridge with commercial focus and typically lighter passenger traffic."
       },
       "Brownsville - Veterans International": {
         short: "Veterans",
         aka: "Veterans Bridge at Los Tomates; Puente Los Tomates; Puente Internacional de Veteranos en Los Tomates; Puente Ignacio Zaragoza; Puerta Matamoros III",
         mx: "Puente Los Tomates",
+        mapsQuery: "Veterans Bridge at Los Tomates 3300 S Expressway 77 83 Brownsville TX",
         blurb: "Major expressway connection (US‑77/83) with commercial, passenger, and SENTRI options."
       }
     };
@@ -3077,6 +3133,7 @@
           short: titleKey.replace(/^Brownsville\s*-\s*/i, ""),
           aka: titleKey,
           mx: "",
+          mapsQuery: "",
           blurb: "Brownsville Port of Entry crossing."
         };
         const passengerGeneral = findLaneMinutes(parsed.sections, "passenger", "General");
@@ -3734,11 +3791,44 @@
       return currentLang === "es";
     }
 
+    function syncMexicoNameVisibility() {
+      const show = showMexicoNames();
+      document.querySelectorAll(".mx-line, .m-row-mx, .nearby-chip-mx").forEach(function (el) {
+        el.hidden = !show;
+      });
+    }
+
     function mexicoLineHtml(port, className) {
       if (!showMexicoNames()) return "";
       const mx = port && port.meta && port.meta.mx;
       if (!mx) return "";
       return `<span class="${className}">${escapeHtml(t("mexicoLabel"))} ${escapeHtml(mx)}</span>`;
+    }
+
+    function mapsHref(port) {
+      const q = port && port.meta && port.meta.mapsQuery;
+      if (!q) return "";
+      return "https://maps.google.com/?q=" + encodeURIComponent(q);
+    }
+
+    function mapsLinkHtml(port) {
+      const href = mapsHref(port);
+      if (!href) return "";
+      const name = (port && port.meta && port.meta.short) || "bridge";
+      const label = t("openMaps").replace("{name}", name);
+      return (
+        `<a class="bridge-map" href="${escapeHtml(href)}" target="_blank" rel="noopener" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">` +
+        `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">` +
+        `<path d="M12 21s-6.5-5.8-6.5-10.2a6.5 6.5 0 1 1 13 0C18.5 15.2 12 21 12 21z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>` +
+        `<circle cx="12" cy="10.6" r="2.2" fill="currentColor"/>` +
+        `</svg></a>`
+      );
+    }
+
+    function bridgeTitleHtml(port, extraClass) {
+      const name = (port && port.meta && port.meta.short) || "";
+      const cls = extraClass ? "bridge-title " + extraClass : "bridge-title";
+      return `<span class="${cls}"><span class="bridge-name">${escapeHtml(name)}</span>${mapsLinkHtml(port)}</span>`;
     }
 
     function renderPorts(data) {
@@ -3836,7 +3926,7 @@
         tableRows.push(`
           <tr>
             <td class="bridge">
-              ${escapeHtml(port.meta.short)}
+              ${bridgeTitleHtml(port)}
               ${mexicoLineHtml(port, "mx-line")}
               <span class="hours-line"><strong>${escapeHtml(t("hours"))}</strong> ${escapeHtml(hoursLabel)}</span>
               ${updatedHtml}
@@ -3859,7 +3949,7 @@
         mobileCards.push(`
           <article class="m-row">
             <div>
-              <div class="m-row-bridge">${escapeHtml(port.meta.short)}</div>
+              ${bridgeTitleHtml(port, "m-row-bridge")}
               ${mexicoLineHtml(port, "m-row-mx")}
               <span class="m-row-hours">${escapeHtml(hoursLabel)}</span>
               ${updatedMobile}
@@ -3925,6 +4015,7 @@
         ${noticesHtml}`;
 
       // Match every wait chip to the tallest chip in the All filter
+      syncMexicoNameVisibility();
       requestAnimationFrame(function () {
         equalizeAllFilterChipHeights();
       });
@@ -4247,9 +4338,7 @@
       const esBtn = document.getElementById("langEs");
       if (enBtn) enBtn.classList.toggle("active", currentLang === "en");
       if (esBtn) esBtn.classList.toggle("active", currentLang === "es");
-      document.querySelectorAll(".nearby-chip-mx").forEach(function (el) {
-        el.hidden = !showMexicoNames();
-      });
+      syncMexicoNameVisibility();
       const themeBtn = document.getElementById("themeToggle");
       const theme = document.documentElement.getAttribute("data-theme") || "light";
       if (themeBtn) {
