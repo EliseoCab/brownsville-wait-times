@@ -36,15 +36,46 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Brownsville Wait" />
-  <meta name="description" content="Live U.S. Customs wait times for Brownsville’s B&amp;M, Gateway, Veterans International, and Los Indios bridges — vehicles, pedestrians, SENTRI, Ready, and commercial lanes in one clear bilingual view." />
+  <meta name="description" content="Live U.S. Customs wait times for Brownsville–Matamoros bridges: B&amp;M (Puente Viejo), Gateway (Puente Nuevo), Veterans (Puente Los Tomates), and Los Indios (Puente Lucio Blanco) — vehicles, pedestrians, SENTRI, Ready, and commercial lanes." />
   <meta property="og:title" content="Brownsville Bridge Wait Times · Live CBP Estimates" />
-  <meta property="og:description" content="Live U.S. Customs wait times for Brownsville’s B&amp;M, Gateway, Veterans International, and Los Indios bridges — vehicles, pedestrians, SENTRI, Ready, and commercial lanes in one clear bilingual view." />
+  <meta property="og:description" content="Live U.S. Customs wait times for Brownsville–Matamoros bridges: B&amp;M (Puente Viejo), Gateway (Puente Nuevo), Veterans (Puente Los Tomates), and Los Indios (Puente Lucio Blanco) — vehicles, pedestrians, SENTRI, Ready, and commercial lanes." />
   <meta property="og:url" content="https://eliseocab.github.io/brownsville-wait-times/" />
   <meta property="og:type" content="website" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1f3a'/%3E%3Ccircle cx='16' cy='16' r='5.5' fill='%230ea5e9'/%3E%3C/svg%3E" />
   <title>Brownsville Bridge Wait Times · Live CBP Estimates</title>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Brownsville Bridge Wait Times",
+    "description": "Live U.S. Customs wait times for Brownsville–Matamoros bridges, including Mexican names Puente Nuevo, Puente Viejo, Puente Los Tomates, and Puente Lucio Blanco.",
+    "url": "https://eliseocab.github.io/brownsville-wait-times/",
+    "about": [
+      {
+        "@type": "Place",
+        "name": "Gateway International Bridge",
+        "alternateName": ["International Gateway Bridge", "Puente Internacional Gateway", "Puente Nuevo"]
+      },
+      {
+        "@type": "Place",
+        "name": "Brownsville & Matamoros International Bridge",
+        "alternateName": ["B&M", "Brownsville & Matamoros Bridge", "Puente Internacional B&M", "Puente Internacional Brownsville-Matamoros", "Puente Viejo"]
+      },
+      {
+        "@type": "Place",
+        "name": "Veterans International Bridge",
+        "alternateName": ["Veterans Bridge at Los Tomates", "Puente Los Tomates", "Puente Internacional de Veteranos en Los Tomates", "Puente Ignacio Zaragoza", "Puerta Matamoros III"]
+      },
+      {
+        "@type": "Place",
+        "name": "Los Indios Free Trade Bridge",
+        "alternateName": ["Free Trade Bridge", "Puente Internacional Lucio Blanco–Los Indios", "Puente Lucio Blanco", "Puente Internacional Libre Comercio", "Puente Los Indios"]
+      }
+    ]
+  }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
@@ -952,6 +983,15 @@
       color: var(--ink);
       letter-spacing: -0.01em;
     }
+    .wait-table td.bridge .mx-line {
+      display: block;
+      margin-top: 0.12rem;
+      font-size: 0.68rem;
+      font-weight: 650;
+      letter-spacing: 0;
+      color: var(--muted);
+      line-height: 1.25;
+    }
     .wait-table td.bridge .hours-line,
     .wait-table td.bridge .updated-line {
       display: block;
@@ -1331,6 +1371,16 @@
       overflow-wrap: anywhere;
       word-break: break-word;
     }
+    .m-row-mx {
+      display: block;
+      margin-top: 0.1rem;
+      font-size: 0.62rem;
+      font-weight: 650;
+      color: var(--muted);
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
     .m-row-hours,
     .m-row-updated {
       display: block;
@@ -1686,6 +1736,12 @@
       font-weight: 700;
       color: var(--sky-deep);
       line-height: 1;
+    }
+    .nearby-chip-mx {
+      font-size: 0.62rem;
+      font-weight: 650;
+      color: var(--muted);
+      line-height: 1.25;
     }
     .nearby-chip-hint {
       font-size: 0.62rem;
@@ -2231,6 +2287,7 @@
             <span class="nearby-chip-name">B&amp;M</span>
             <span class="nearby-chip-go" aria-hidden="true">→</span>
           </span>
+          <span class="nearby-chip-mx">México: Puente Viejo</span>
           <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
         </a>
         <a class="nearby-chip" href="gateway/">
@@ -2238,6 +2295,7 @@
             <span class="nearby-chip-name">Gateway</span>
             <span class="nearby-chip-go" aria-hidden="true">→</span>
           </span>
+          <span class="nearby-chip-mx">México: Puente Nuevo</span>
           <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
         </a>
         <a class="nearby-chip" href="los-indios/">
@@ -2245,6 +2303,7 @@
             <span class="nearby-chip-name">Los Indios</span>
             <span class="nearby-chip-go" aria-hidden="true">→</span>
           </span>
+          <span class="nearby-chip-mx">México: Puente Los Indios</span>
           <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
         </a>
         <a class="nearby-chip" href="veterans/">
@@ -2252,6 +2311,7 @@
             <span class="nearby-chip-name">Veterans</span>
             <span class="nearby-chip-go" aria-hidden="true">→</span>
           </span>
+          <span class="nearby-chip-mx">México: Puente Los Tomates</span>
           <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
         </a>
       </div>
@@ -2402,7 +2462,7 @@
     const STR = {
       en: {
         pageTitle: "Brownsville Bridge Wait Times · Live CBP Estimates",
-        pageDesc: "Live U.S. Customs wait times for Brownsville’s B&M, Gateway, Veterans International, and Los Indios bridges — vehicles, pedestrians, SENTRI, Ready, and commercial lanes in one clear bilingual view.",
+        pageDesc: "Live U.S. Customs wait times for Brownsville–Matamoros bridges: B&M (Puente Viejo), Gateway (Puente Nuevo), Veterans (Puente Los Tomates), and Los Indios (Puente Lucio Blanco) — vehicles, pedestrians, SENTRI, Ready, and commercial lanes.",
         checkingFeed: "Checking CBP feed…",
         officialData: "Official CBP data",
         eyebrow: "U.S. – Mexico Land Border · Texas",
@@ -2505,6 +2565,7 @@
         installOther1: "Open your browser menu (⋮ or ⋯).",
         installOther2: "Tap Install app or Add to Home Screen.",
         installOther3: "Confirm. You can open it like any other app.",
+        mexicoLabel: "México:",
         colBridge: "Bridge",
         na: "N/A",
         closed: "Closed",
@@ -2530,7 +2591,7 @@
       },
       es: {
         pageTitle: "Tiempos de espera en puentes de Brownsville · Estimaciones CBP en vivo",
-        pageDesc: "Tiempos de espera oficiales de CBP para los puentes B&M, Gateway, Veterans International y Los Indios en Brownsville: vehículos, peatones, SENTRI, Ready y comerciales, en una sola vista clara bilingüe.",
+        pageDesc: "Tiempos de espera oficiales de CBP para los puentes Brownsville–Matamoros: B&M (Puente Viejo), Gateway (Puente Nuevo), Veterans (Puente Los Tomates) y Los Indios (Puente Lucio Blanco) — vehículos, peatones, SENTRI, Ready y comerciales.",
         checkingFeed: "Revisando datos de CBP…",
         officialData: "Datos oficiales de CBP",
         eyebrow: "Frontera terrestre EE. UU. – México · Texas",
@@ -2633,6 +2694,7 @@
         installOther1: "Abre el menú del navegador (⋮ o ⋯).",
         installOther2: "Toca Instalar app o Agregar a pantalla de inicio.",
         installOther3: "Confirma. Podrás abrirla como cualquier otra app.",
+        mexicoLabel: "México:",
         colBridge: "Puente",
         na: "N/D",
         closed: "Cerrado",
@@ -2673,22 +2735,26 @@
     const PORT_META = {
       "Brownsville - B&M": {
         short: "B&M",
-        aka: "Brownsville & Matamoros Bridge",
+        aka: "Brownsville & Matamoros Bridge; Puente Internacional B&M; Puente Internacional Brownsville-Matamoros; Puente Viejo",
+        mx: "Puente Viejo",
         blurb: "Downtown pedestrian-friendly crossing linking Brownsville and Matamoros."
       },
       "Brownsville - Gateway": {
         short: "Gateway",
-        aka: "International Gateway Bridge",
+        aka: "International Gateway Bridge; Puente Internacional Gateway; Puente Nuevo",
+        mx: "Puente Nuevo",
         blurb: "Primary downtown vehicle & pedestrian bridge—often the busiest corridor."
       },
       "Brownsville - Los Indios": {
         short: "Los Indios",
-        aka: "Free Trade Bridge",
+        aka: "Free Trade Bridge; Puente Internacional Lucio Blanco–Los Indios; Puente Lucio Blanco; Puente Internacional Libre Comercio; Puente Los Indios",
+        mx: "Puente Los Indios",
         blurb: "West-side free trade bridge with commercial focus and typically lighter passenger traffic."
       },
       "Brownsville - Veterans International": {
         short: "Veterans",
-        aka: "Veterans Bridge at Los Tomates",
+        aka: "Veterans Bridge at Los Tomates; Puente Los Tomates; Puente Internacional de Veteranos en Los Tomates; Puente Ignacio Zaragoza; Puerta Matamoros III",
+        mx: "Puente Los Tomates",
         blurb: "Major expressway connection (US‑77/83) with commercial, passenger, and SENTRI options."
       }
     };
@@ -3007,6 +3073,7 @@
         const meta = PORT_META[titleKey] || PORT_META[title] || {
           short: titleKey.replace(/^Brownsville\s*-\s*/i, ""),
           aka: titleKey,
+          mx: "",
           blurb: "Brownsville Port of Entry crossing."
         };
         const passengerGeneral = findLaneMinutes(parsed.sections, "passenger", "General");
@@ -3660,6 +3727,12 @@
       };
     }
 
+    function mexicoLineHtml(port, className) {
+      const mx = port && port.meta && port.meta.mx;
+      if (!mx) return "";
+      return `<span class="${className}">${escapeHtml(t("mexicoLabel"))} ${escapeHtml(mx)}</span>`;
+    }
+
     function renderPorts(data) {
       const grid = document.getElementById("portGrid");
       const notices = [];
@@ -3756,6 +3829,7 @@
           <tr>
             <td class="bridge">
               ${escapeHtml(port.meta.short)}
+              ${mexicoLineHtml(port, "mx-line")}
               <span class="hours-line"><strong>${escapeHtml(t("hours"))}</strong> ${escapeHtml(hoursLabel)}</span>
               ${updatedHtml}
             </td>
@@ -3778,6 +3852,7 @@
           <article class="m-row">
             <div>
               <div class="m-row-bridge">${escapeHtml(port.meta.short)}</div>
+              ${mexicoLineHtml(port, "m-row-mx")}
               <span class="m-row-hours">${escapeHtml(hoursLabel)}</span>
               ${updatedMobile}
             </div>
