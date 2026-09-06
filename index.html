@@ -1715,6 +1715,25 @@
       border: 1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow-sm);
+      transition: padding 0.2s ease;
+    }
+    .live-cams[data-state="offline"] {
+      padding: 0.55rem 0.75rem 0.6rem;
+    }
+    .live-cams[data-state="checking"] .live-cams-grid,
+    .live-cams[data-state="checking"] .live-cams-credit {
+      display: none;
+    }
+    .live-cams[data-state="offline"] .live-cams-grid,
+    .live-cams[data-state="offline"] .live-cams-credit,
+    .live-cams[data-state="offline"] .live-cams-sub {
+      display: none;
+    }
+    .live-cams[data-state="online"] .live-cams-status {
+      display: none;
+    }
+    .live-cams[data-state="partial"] .live-cams-status {
+      display: block;
     }
     .live-cams-head {
       display: flex;
@@ -1723,6 +1742,10 @@
       justify-content: space-between;
       gap: 0.35rem 1rem;
       margin-bottom: 0.65rem;
+    }
+    .live-cams[data-state="offline"] .live-cams-head,
+    .live-cams[data-state="checking"] .live-cams-head {
+      margin-bottom: 0.35rem;
     }
     .live-cams-head h2 {
       font-size: 1.05rem;
@@ -1748,10 +1771,34 @@
     }
     .live-cams-link:hover { text-decoration: underline; color: var(--navy); }
     html[data-theme="dark"] .live-cams-link:hover { color: #e0f2fe; }
+    .live-cams-status {
+      margin: 0 0 0.35rem;
+      padding: 0.45rem 0.65rem;
+      border-radius: 10px;
+      background: var(--line-soft);
+      border: 1px solid var(--line);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--slate);
+      line-height: 1.4;
+    }
+    .live-cams[data-state="offline"] .live-cams-status {
+      background: var(--amber-bg);
+      border-color: #fde68a;
+      color: #92400e;
+    }
+    html[data-theme="dark"] .live-cams[data-state="offline"] .live-cams-status {
+      color: #fde68a;
+      border-color: #92620a;
+    }
     .live-cams-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 0.65rem;
+    }
+    .live-cams-grid.live-cams-grid-one {
+      grid-template-columns: minmax(0, 1fr);
+      max-width: 36rem;
     }
     .live-cam-card {
       display: flex;
@@ -1763,6 +1810,7 @@
       background: #0b1f3a;
       box-shadow: var(--shadow-sm);
     }
+    .live-cam-card[hidden] { display: none !important; }
     .live-cam-frame {
       position: relative;
       aspect-ratio: 16 / 10;
@@ -1813,6 +1861,7 @@
     .live-cams-credit a:hover { text-decoration: underline; }
     @media (max-width: 560px) {
       .live-cams-grid { grid-template-columns: 1fr; }
+      .live-cams-grid.live-cams-grid-one { max-width: none; }
       .live-cam-frame { aspect-ratio: 16 / 9; }
     }
 
@@ -2208,7 +2257,7 @@
       </div>
     </section>
 
-    <section class="live-cams" aria-label="Live bridge cameras" data-i18n-aria="liveCamsAria">
+    <section class="live-cams" id="liveCams" data-state="checking" aria-label="Live bridge cameras" data-i18n-aria="liveCamsAria">
       <div class="live-cams-head">
         <div>
           <h2 data-i18n="liveCamsTitle">Live bridge cameras</h2>
@@ -2216,11 +2265,12 @@
         </div>
         <a class="live-cams-link" href="https://comtodo.com/en/cameras/" target="_blank" rel="noopener" data-i18n="liveCamsOpen">Open COMTODO cameras →</a>
       </div>
-      <div class="live-cams-grid">
-        <article class="live-cam-card">
+      <p class="live-cams-status" id="liveCamsStatus" role="status">Checking cameras…</p>
+      <div class="live-cams-grid" id="liveCamsGrid">
+        <article class="live-cam-card" data-cam-alias="5df59f3827371" hidden>
           <div class="live-cam-frame">
             <iframe
-              src="https://g3.ipcamlive.com/player/player.php?alias=5df59f3827371"
+              data-src="https://g3.ipcamlive.com/player/player.php?alias=5df59f3827371"
               title="Live camera · Old Bridge (B&amp;M Express)"
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
@@ -2232,10 +2282,10 @@
             <span class="live-cam-tag" data-i18n="liveCamLive">Live</span>
           </div>
         </article>
-        <article class="live-cam-card">
+        <article class="live-cam-card" data-cam-alias="61af904e45b24" hidden>
           <div class="live-cam-frame">
             <iframe
-              src="https://g3.ipcamlive.com/player/player.php?alias=61af904e45b24"
+              data-src="https://g3.ipcamlive.com/player/player.php?alias=61af904e45b24"
               title="Live camera · New Bridge (Gateway)"
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
@@ -2414,6 +2464,9 @@
         liveCamNew: "New Bridge (Gateway)",
         liveCamLive: "Live",
         liveCamsCredit: "Free community cameras by",
+        liveCamsChecking: "Checking cameras…",
+        liveCamsOffline: "Live cameras are temporarily unavailable. You can still open them on COMTODO.",
+        liveCamsPartial: "One camera is offline. Showing the available live feed.",
 
         hours: "Hours",
         hours24: "24 hours",
@@ -2539,6 +2592,9 @@
         liveCamNew: "Puente Nuevo (Gateway)",
         liveCamLive: "En vivo",
         liveCamsCredit: "Cámaras comunitarias gratis de",
+        liveCamsChecking: "Revisando cámaras…",
+        liveCamsOffline: "Las cámaras en vivo no están disponibles por ahora. Aún puede abrirlas en COMTODO.",
+        liveCamsPartial: "Una cámara está fuera de línea. Mostrando la transmisión disponible.",
 
         hours: "Horario",
         hours24: "24 horas",
@@ -4131,10 +4187,127 @@
         render(lastData, t(lastSourceId || "liveProxy"), lastIsLive);
       }
       updateCountdown();
+      refreshLiveCamsStatusCopy();
     }
 
     function currentTheme() {
       return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    }
+
+    let liveCamsState = "checking"; // checking | online | offline
+    let liveCamsOnlineCount = 0;
+    let liveCamsTimer = null;
+
+    function refreshLiveCamsStatusCopy() {
+      const status = document.getElementById("liveCamsStatus");
+      if (!status) return;
+      if (liveCamsState === "checking") status.textContent = t("liveCamsChecking");
+      else if (liveCamsState === "offline") status.textContent = t("liveCamsOffline");
+      else if (liveCamsState === "partial") status.textContent = t("liveCamsPartial");
+      else status.textContent = "";
+    }
+
+    function probeCameraSnapshot(alias, timeoutMs) {
+      return new Promise(function (resolve) {
+        const img = new Image();
+        let settled = false;
+        const timer = setTimeout(function () {
+          if (settled) return;
+          settled = true;
+          try { img.src = ""; } catch (_) { /* ignore */ }
+          resolve(false);
+        }, timeoutMs || 8000);
+        img.onload = function () {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          resolve(!!(img.naturalWidth && img.naturalWidth > 16));
+        };
+        img.onerror = function () {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          resolve(false);
+        };
+        img.referrerPolicy = "no-referrer";
+        img.decoding = "async";
+        img.src =
+          "https://g3.ipcamlive.com/player/snapshot.php?alias=" +
+          encodeURIComponent(alias) +
+          "&_=" +
+          Date.now();
+      });
+    }
+
+    async function setupLiveCams() {
+      const section = document.getElementById("liveCams");
+      const grid = document.getElementById("liveCamsGrid");
+      if (!section || !grid) return;
+
+      const cards = Array.prototype.slice.call(
+        section.querySelectorAll(".live-cam-card[data-cam-alias]")
+      );
+      if (!cards.length) return;
+
+      liveCamsState = "checking";
+      liveCamsOnlineCount = 0;
+      section.setAttribute("data-state", "checking");
+      cards.forEach(function (card) {
+        card.hidden = true;
+        const frame = card.querySelector("iframe");
+        if (frame) {
+          frame.removeAttribute("src");
+        }
+      });
+      grid.classList.remove("live-cams-grid-one");
+      refreshLiveCamsStatusCopy();
+
+      const results = await Promise.all(
+        cards.map(function (card) {
+          const alias = card.getAttribute("data-cam-alias");
+          return probeCameraSnapshot(alias, 8000).then(function (ok) {
+            return { card: card, ok: ok };
+          });
+        })
+      );
+
+      let online = 0;
+      results.forEach(function (r) {
+        if (!r.ok) {
+          r.card.hidden = true;
+          return;
+        }
+        online += 1;
+        r.card.hidden = false;
+        const frame = r.card.querySelector("iframe");
+        if (frame) {
+          const src = frame.getAttribute("data-src");
+          if (src && frame.getAttribute("src") !== src) frame.setAttribute("src", src);
+        }
+      });
+
+      liveCamsOnlineCount = online;
+      if (online === 0) {
+        liveCamsState = "offline";
+        section.setAttribute("data-state", "offline");
+        grid.classList.remove("live-cams-grid-one");
+      } else if (online === 1) {
+        liveCamsState = "partial";
+        section.setAttribute("data-state", "partial");
+        grid.classList.add("live-cams-grid-one");
+      } else {
+        liveCamsState = "online";
+        section.setAttribute("data-state", "online");
+        grid.classList.remove("live-cams-grid-one");
+      }
+      refreshLiveCamsStatusCopy();
+
+      if (liveCamsTimer) clearTimeout(liveCamsTimer);
+      // Recheck later: sooner when offline, slower when online
+      liveCamsTimer = setTimeout(
+        setupLiveCams,
+        online === 0 ? 2 * 60 * 1000 : 10 * 60 * 1000
+      );
     }
 
     function applyTheme(theme, persist) {
@@ -4540,6 +4713,7 @@
     applyStaticLang();
     setupInstallButton();
     registerServiceWorker();
+    setupLiveCams();
     loadDfoTimeline();
     loadData(true);
   </script>
