@@ -4442,18 +4442,79 @@
       }
     }
 
-    function formatShareCell(wait) {
+    function formatShareCell(wait, laneKind) {
       if (!wait) return null;
       if (isActiveWait(wait)) {
         let s = String(wait.minutes) + " min";
         if (wait.lanesOpenCount != null) {
-          s += " (" + wait.lanesOpenCount + " lane" + (wait.lanesOpenCount === 1 ? "" : "s") + " open)";
+          const kind = laneKind || "lane";
+          s +=
+            " (" +
+            wait.lanesOpenCount +
+            " " +
+            kind +
+            (wait.lanesOpenCount === 1 ? "" : "s") +
+            " open)";
         }
         return s;
       }
       if (wait.pending) return "Pending";
       if (wait.closed) return "Closed";
       return null;
+    }
+
+    /** Open-lane breakdown for share text (Gen + Ready + FAST) — not filter-dependent. */
+    function formatShareOpenBreakdown(summary, modeKey, port) {
+      if (!summary) return "";
+      const bits = [];
+      if (summary.primary && !summary.primary.pending && summary.primary.lanesOpenCount != null) {
+        bits.push(summary.primary.lanesOpenCount + " Gen");
+      } else if (summary.primary && summary.primary.closed) {
+        bits.push("Gen closed");
+      }
+      for (const l of summary.extras || []) {
+        if (!/ready/i.test(l.name)) continue;
+        if (l.wait && !l.wait.pending && l.wait.lanesOpenCount != null) {
+          bits.push(l.wait.lanesOpenCount + " Ready");
+        } else if (l.wait && l.wait.closed) {
+          bits.push("Ready closed");
+        }
+      }
+      // FAST open counts are included on the separate FAST share line
+      return bits.join(" · ");
+    }
+
+    /** One share line: "Veh 45 min · 1 Gen · 3 Ready" (includes Ready wait when it differs). */
+    function formatShareModeLine(label, summary, modeKey, port) {
+      if (!summary || !summary.primary) return null;
+      const readyActive = (summary.extras || []).find(
+        (l) => /ready/i.test(l.name) && isShowableWait(l.wait)
+      );
+      const dualReady =
+        readyActive &&
+        isActiveWait(summary.primary) &&
+        isActiveWait(readyActive.wait) &&
+        summary.primary.minutes !== readyActive.wait.minutes;
+
+      let head;
+      if (dualReady) {
+        head =
+          label +
+          " Gen " +
+          summary.primary.minutes +
+          " min / Ready " +
+          readyActive.wait.minutes +
+          " min";
+      } else {
+        const cell = formatShareCell(summary.primary);
+        if (!cell) return null;
+        // Strip generic "(N lanes open)" — replaced by Gen/Ready breakdown below
+        head = label + " " + cell.replace(/\s*\(\d+ lanes? open\)\s*$/i, "");
+      }
+
+      const openBits = formatShareOpenBreakdown(summary, modeKey, port);
+      if (openBits) head += " · " + openBits;
+      return head;
     }
 
     function laneWaitForShare(port, namePart) {
@@ -4517,18 +4578,18 @@
           const veh = summarizeMode(port.sections, "passenger");
           const ped = summarizeMode(port.sections, "pedestrian");
           const parts = [];
-          const vehText = formatShareCell(veh && veh.primary);
-          if (vehText) parts.push("Veh " + vehText);
+          const vehText = formatShareModeLine("Veh", veh, "passenger", port);
+          if (vehText) parts.push(vehText);
           // Los Indios has no pedestrian lanes reported — omit Ped entirely
           if (!isLosIndiosPort(port)) {
-            const pedText = formatShareCell(ped && ped.primary);
-            if (pedText) parts.push("Ped " + pedText);
+            const pedText = formatShareModeLine("Ped", ped, "pedestrian", port);
+            if (pedText) parts.push(pedText);
           }
           if (isVeteransPort(port)) {
-            const sentriText = formatShareCell(laneWaitForShare(port, "sentri"));
+            const sentriText = formatShareCell(laneWaitForShare(port, "sentri"), "SENTRI");
             if (sentriText) parts.push("SENTRI " + sentriText);
           }
-          lines.push(parts.length ? parts.join(", ") : "-");
+          lines.push(parts.length ? parts.join("\n") : "-");
         });
 
         const commercialPorts = ports.filter(isCommercialFastPort);
@@ -4540,13 +4601,16 @@
             const name = (port.meta && port.meta.short) || port.title || "-";
             lines.push("*" + name + "*");
             const comm = summarizeMode(port.sections, "commercial");
-            const fast = laneWaitForShare(port, "fast");
             const parts = [];
-            const commText = formatShareCell(comm && comm.primary);
-            if (commText) parts.push("Comm " + commText);
-            const fastText = formatShareCell(fast);
-            if (fastText) parts.push("FAST " + fastText);
-            lines.push(parts.length ? parts.join(", ") : "-");
+            const commText = formatShareModeLine("Comm", comm, "commercial", port);
+            if (commText) parts.push(commText);
+            // FAST wait time (open count already in Comm breakdown when > 0)
+            const fastWait = laneWaitForShare(port, "fast");
+            if (fastWait && isShowableWait(fastWait)) {
+              const fastText = formatShareCell(fastWait, "FAST");
+              if (fastText) parts.push("FAST " + fastText);
+            }
+            lines.push(parts.length ? parts.join("\n") : "-");
           });
         }
       }
