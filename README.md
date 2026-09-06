@@ -2,10 +2,10 @@
 
 A clean viewer for CBP border wait times at Brownsville, Texas bridges:
 
-- B&M — Brownsville & Matamoros Bridge
-- Gateway — International Gateway Bridge
-- Los Indios — Free Trade Bridge
-- Veterans — Veterans Bridge at Los Tomates
+- B&M — Brownsville & Matamoros Bridge (México: Puente Viejo)
+- Gateway — International Gateway Bridge (México: Puente Nuevo)
+- Los Indios — Free Trade Bridge (México: Puente Los Indios / Lucio Blanco)
+- Veterans — Veterans Bridge at Los Tomates (México: Puente Los Tomates)
 
 ## Live site
 

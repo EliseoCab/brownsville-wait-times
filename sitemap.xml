@@ -5,4 +5,24 @@
     <changefreq>hourly</changefreq>
     <priority>1.0</priority>
   </url>
+  <url>
+    <loc>https://eliseocab.github.io/brownsville-wait-times/bm/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://eliseocab.github.io/brownsville-wait-times/gateway/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://eliseocab.github.io/brownsville-wait-times/veterans/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://eliseocab.github.io/brownsville-wait-times/los-indios/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
 </urlset>
