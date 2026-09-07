@@ -3832,7 +3832,11 @@
     function mapsHref(port) {
       const q = port && port.meta && port.meta.mapsQuery;
       if (!q) return "";
-      return "https://maps.google.com/?q=" + encodeURIComponent(q);
+      // iPhone / iPad → Apple Maps; everyone else → Google Maps
+      if (isAppleMobileUa()) {
+        return "https://maps.apple.com/?q=" + encodeURIComponent(q);
+      }
+      return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
     }
 
     function mapsLinkHtml(port) {

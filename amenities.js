@@ -153,10 +153,34 @@
 
   }
 
+  function isAppleMobile() {
+    var ua = navigator.userAgent || "";
+    if (/iPhone|iPad|iPod/i.test(ua)) return true;
+    // iPadOS desktop UA
+    return navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  }
+
+  /** Prefer Apple Maps on iPhone/iPad; keep Google Maps elsewhere. */
+  function preferNativeMapsLinks() {
+    if (!isAppleMobile()) return;
+    document.querySelectorAll("a.maps[href]").forEach(function (a) {
+      var href = a.getAttribute("href") || "";
+      if (!/google\.com\/maps|maps\.google\.com/i.test(href)) return;
+      try {
+        var u = new URL(href, location.href);
+        var q = u.searchParams.get("query") || u.searchParams.get("q");
+        if (!q) return;
+        a.setAttribute("href", "https://maps.apple.com/?q=" + encodeURIComponent(q));
+        a.setAttribute("data-maps-provider", "apple");
+      } catch (_) { /* keep Google href */ }
+    });
+  }
+
   window.setLang = setLang;
   window.toggleTheme = toggleTheme;
   window.filterAmenities = filterAmenities;
 
   applyI18n();
   setupPhotoExpand();
+  preferNativeMapsLinks();
 })();
