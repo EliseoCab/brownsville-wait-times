@@ -30,6 +30,16 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
     return;
   }
+  // Never cache or HTML-fallback crawler files. A network miss used to return
+  // index.html, which would make sitemap.xml look like a text/html document.
+  if (
+    url.pathname.endsWith("/sitemap.xml") ||
+    url.pathname.endsWith("/sitemap.txt") ||
+    url.pathname.endsWith("/robots.txt")
+  ) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
   event.respondWith(
     fetch(event.request)
       .then((res) => {
@@ -39,6 +49,12 @@ self.addEventListener("fetch", (event) => {
         }
         return res;
       })
-      .catch(() => caches.match(event.request).then((hit) => hit || caches.match("./index.html")))
+      .catch(() =>
+        caches.match(event.request).then((hit) => {
+          if (hit) return hit;
+          if (event.request.mode === "navigate") return caches.match("./index.html");
+          return Response.error();
+        })
+      )
   );
 });

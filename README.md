@@ -18,6 +18,18 @@ Nearby amenities (static community guides, not CBP) for B&M, Gateway, Veterans I
 - [Los Indios](https://eliseocab.github.io/brownsville-wait-times/los-indios/)
 - [Veterans](https://eliseocab.github.io/brownsville-wait-times/veterans/)
 
+## Search Console / sitemap
+
+Published at the Pages artifact root (not nested):
+
+- XML: https://eliseocab.github.io/brownsville-wait-times/sitemap.xml
+- Text: https://eliseocab.github.io/brownsville-wait-times/sitemap.txt
+- robots.txt lists both `Sitemap:` URLs
+
+GitHub Pages serves `.xml` as `application/xml` **with no charset**. That is a known reason Google Search Console reports “Sitemap could not be read” even when the file is well-formed and HTTP 200. Pages does not allow custom `Content-Type` headers, so this repo also publishes `sitemap.txt` (Google’s URL-list format), which Pages serves as `text/plain; charset=utf-8`.
+
+In the GSC URL-prefix property `https://eliseocab.github.io/brownsville-wait-times/`, submit the **full absolute URLs** (not only `/sitemap.xml`). If GSC stays at 0 discovered, that is a common `github.io` crawler issue; use URL Inspection → Request indexing on the five pages. A custom domain in front of Pages is the durable header/crawler fix.
+
 ## How data stays fresh (hybrid)
 
 Browsers cannot call `bwt.cbp.gov` directly (**CORS**). This project uses two layers:
