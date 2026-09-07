@@ -253,8 +253,71 @@
 
     return {
       updated: textOf(doc.documentElement, "last_updated_date") + " " + textOf(doc.documentElement, "last_updated_time"),
-      items: items
+      items: dedupePendingAliases(items)
     };
+  }
+
+  function normName(s) {
+    return String(s || "")
+      .toLowerCase()
+      .replace(/&amp;/g, "&")
+      .replace(/[^a-z0-9]+/g, "");
+  }
+
+  /** True if any lane has a real delay/no-delay reading or closed status (not only Update Pending / N/A). */
+  function crossingHasLiveData(item) {
+    var sections = item.sections || [];
+    for (var i = 0; i < sections.length; i++) {
+      var lanes = sections[i].lanes || [];
+      for (var j = 0; j < lanes.length; j++) {
+        var w = lanes[j].wait;
+        if (!w) continue;
+        if (w.closed) return true;
+        if (!w.pending && w.minutes != null) return true;
+        if (!w.pending && w.lanesOpenCount != null) return true;
+        var st = w.rawStatus || "";
+        if (/no delay|delay/i.test(st) && !/pending/i.test(st)) return true;
+      }
+    }
+    return false;
+  }
+
+  function aliasKeys(item) {
+    var keys = [];
+    var port = normName(item.portName);
+    var cross = normName(item.crossingName);
+    var title = normName(item.title);
+    if (port) keys.push(port);
+    if (cross) keys.push(cross);
+    if (title) keys.push(title);
+    // Brownsville Gateway ↔ Gateway, El Paso Ysleta ↔ YSLETA, etc.
+    if (port && cross && port !== cross) keys.push(port + cross);
+    return keys;
+  }
+
+  /**
+   * CBP's national feed often includes stub rows (e.g. port_name "Gateway" or "B&M Bridge")
+   * stuck on "Update Pending" alongside the real Brownsville/El Paso crossings that have data.
+   * Drop pending stubs that alias a crossing which already has live data.
+   */
+  function dedupePendingAliases(items) {
+    var liveKeys = {};
+    items.forEach(function (it) {
+      if (!crossingHasLiveData(it)) return;
+      aliasKeys(it).forEach(function (k) {
+        liveKeys[k] = true;
+      });
+    });
+
+    return items.filter(function (it) {
+      if (crossingHasLiveData(it)) return true;
+      var keys = aliasKeys(it);
+      for (var i = 0; i < keys.length; i++) {
+        if (liveKeys[keys[i]]) return false;
+      }
+      // Keep unique pending crossings (no live twin) so the port still appears
+      return true;
+    });
   }
 
   function isActiveWait(w) {
