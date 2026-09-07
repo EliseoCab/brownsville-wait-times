@@ -83,6 +83,8 @@
   var state = {
     lang: "en",
     items: [],
+    feedDate: "",
+    feedTime: "",
     userPos: null,
     geoStatus: "pending", // pending | ok | denied | unavailable
     prefs: {
@@ -252,9 +254,38 @@
     });
 
     return {
-      updated: textOf(doc.documentElement, "last_updated_date") + " " + textOf(doc.documentElement, "last_updated_time"),
+      feedDate: textOf(doc.documentElement, "last_updated_date"),
+      feedTime: textOf(doc.documentElement, "last_updated_time"),
       items: dedupePendingAliases(items)
     };
+  }
+
+  /** "2026-9-7" + "18:55:46" → "Sep 7, 2026 · 6:55 pm" (es-US when Spanish). */
+  function formatFeedUpdated(dateStr, timeStr) {
+    var dm = String(dateStr || "").trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    var tm = String(timeStr || "").trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+    if (!dm) {
+      var raw = [dateStr, timeStr].filter(Boolean).join(" ").trim();
+      return raw || "—";
+    }
+    var d = new Date(Number(dm[1]), Number(dm[2]) - 1, Number(dm[3]));
+    if (isNaN(d.getTime())) {
+      return [dateStr, timeStr].filter(Boolean).join(" ").trim() || "—";
+    }
+    var locale = state.lang === "es" ? "es-US" : "en-US";
+    var datePart = d.toLocaleDateString(locale, {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    });
+    if (!tm) return datePart;
+    var h = Number(tm[1]);
+    var min = tm[2];
+    if (h < 0 || h > 23) return datePart;
+    var ampm = h >= 12 ? "pm" : "am";
+    var h12 = h % 12;
+    if (h12 === 0) h12 = 12;
+    return datePart + " · " + h12 + ":" + min + " " + ampm;
   }
 
   function normName(s) {
@@ -612,9 +643,16 @@
     var xml = await res.text();
     var parsed = parsePortXml(xml);
     state.items = parsed.items;
-    var stamp = document.getElementById("asofStamp");
-    if (stamp) stamp.textContent = parsed.updated || "—";
+    state.feedDate = parsed.feedDate || "";
+    state.feedTime = parsed.feedTime || "";
+    refreshAsOfStamp();
     render();
+  }
+
+  function refreshAsOfStamp() {
+    var stamp = document.getElementById("asofStamp");
+    if (!stamp) return;
+    stamp.textContent = formatFeedUpdated(state.feedDate, state.feedTime);
   }
 
   function requestGeo() {
@@ -726,6 +764,7 @@
     try { localStorage.setItem(LANG_KEY, state.lang); } catch (_) {}
     applyChrome();
     syncFilterLabels();
+    refreshAsOfStamp();
     render();
   }
 
