@@ -282,40 +282,81 @@
     return false;
   }
 
-  function aliasKeys(item) {
-    var keys = [];
-    var port = normName(item.portName);
-    var cross = normName(item.crossingName);
-    var title = normName(item.title);
-    if (port) keys.push(port);
-    if (cross) keys.push(cross);
-    if (title) keys.push(title);
-    // Brownsville Gateway ↔ Gateway, El Paso Ysleta ↔ YSLETA, etc.
-    if (port && cross && port !== cross) keys.push(port + cross);
-    return keys;
+  function looseName(s) {
+    return normName(
+      String(s || "")
+        .replace(/\([^)]*\)/g, "")
+        .replace(/international/gi, "")
+        .replace(/bridge/gi, "")
+        .replace(/port of entry/gi, "")
+    );
+  }
+
+  /** Exact match, or one identity contains the other (min length 4) — "bm"↔"bm", "roma"↔"romatexas". */
+  function namesOverlap(a, b) {
+    if (!a || !b) return false;
+    if (a === b) return true;
+    if (a.length >= 4 && b.length >= 4 && (a.indexOf(b) >= 0 || b.indexOf(a) >= 0)) return true;
+    return false;
+  }
+
+  function hitsLiveId(id, liveIds) {
+    if (!id) return false;
+    for (var i = 0; i < liveIds.length; i++) {
+      if (namesOverlap(id, liveIds[i])) return true;
+    }
+    return false;
   }
 
   /**
    * CBP's national feed often includes stub rows (e.g. port_name "Gateway" or "B&M Bridge")
    * stuck on "Update Pending" alongside the real Brownsville/El Paso crossings that have data.
-   * Drop pending stubs that alias a crossing which already has live data.
+   * Drop only those alias stubs — keep real pending crossings like Point Roberts.
    */
   function dedupePendingAliases(items) {
-    var liveKeys = {};
+    var liveIds = [];
+    var liveIdSet = {};
+    var livePortNames = {};
+
+    function addLiveId(id) {
+      if (!id || liveIdSet[id]) return;
+      liveIdSet[id] = true;
+      liveIds.push(id);
+    }
+
     items.forEach(function (it) {
       if (!crossingHasLiveData(it)) return;
-      aliasKeys(it).forEach(function (k) {
-        liveKeys[k] = true;
-      });
+      livePortNames[normName(it.portName)] = true;
+      livePortNames[looseName(it.portName)] = true;
+      // Index port + crossing identities so stubs like "B&M Bridge", "Paso Del Norte",
+      // and "Otay Mesa Port of Entry" match the live Brownsville/El Paso/Otay rows.
+      addLiveId(normName(it.portName));
+      addLiveId(looseName(it.portName));
+      if (it.crossingName) {
+        addLiveId(normName(it.crossingName));
+        addLiveId(looseName(it.crossingName));
+      }
     });
 
     return items.filter(function (it) {
       if (crossingHasLiveData(it)) return true;
-      var keys = aliasKeys(it);
-      for (var i = 0; i < keys.length; i++) {
-        if (liveKeys[keys[i]]) return false;
+
+      var port = normName(it.portName);
+      var portLoose = looseName(it.portName);
+      var cross = normName(it.crossingName);
+      var crossLoose = looseName(it.crossingName);
+      var stubLike = !it.crossingName || cross === port || crossLoose === portLoose;
+
+      // Empty / self-named stub that duplicates a live crossing identity
+      // e.g. "Gateway", "B&M Bridge", "YSLETA", "Paso Del Norte", empty "El Paso"
+      if (stubLike) {
+        if (hitsLiveId(port, liveIds) || hitsLiveId(portLoose, liveIds)) return false;
+        if (cross && (hitsLiveId(cross, liveIds) || hitsLiveId(crossLoose, liveIds))) return false;
+        // Parent city stub with no crossing while siblings under same port_name have data
+        if (!it.crossingName && (livePortNames[port] || livePortNames[portLoose])) return false;
       }
-      // Keep unique pending crossings (no live twin) so the port still appears
+
+      // Keep distinct pending crossings under a multi-crossing port (Point Roberts, etc.)
       return true;
     });
   }
