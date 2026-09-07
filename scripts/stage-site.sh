@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 
 mkdir -p _site/data _site/icons
 cp index.html README.md manifest.webmanifest sw.js amenities.css amenities.js sitemap.xml robots.txt _site/
-cp -R gateway bm veterans los-indios _site/
+cp -R gateway bm veterans los-indios all-ports _site/
 cp icons/icon-192.png icons/icon-512.png icons/apple-touch-icon.png _site/icons/
 cp data/bwt.xml _site/data/bwt.xml
 if [[ -f data/last-fetch.txt ]]; then

@@ -10,13 +10,16 @@
 
 const CBP_URL =
   "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43";
+const CBP_ALL_URL = "https://bwt.cbp.gov/xml/bwt.xml";
 
 /** Stable cache key (not the browser request URL). */
 const CACHE_KEY = "https://brownsville-bwt.internal/feed/bwt.xml";
+const ALL_CACHE_KEY = "https://brownsville-bwt.internal/feed/bwt-all.xml";
 const X_CACHE_KEY = "https://brownsville-bwt.internal/x/dfolaredo.json";
 const CACHE_TTL_SECONDS = 120;
 /** Keep a longer copy in the Cache API so we can serve it if CBP is down. */
 const STALE_TTL_SECONDS = 1800;
+const ALL_CACHE_TTL_SECONDS = 180; // 3 min for national feed
 const X_CACHE_TTL_SECONDS = 300; // 5 min
 const X_SCREEN_NAME = "DFOLaredo";
 const X_POST_COUNT = 5;
@@ -34,6 +37,8 @@ const RATE_LIMITS = {
   x: { limit: 45, windowSeconds: 60 },
   feedFresh: { limit: 20, windowSeconds: 60 },
   feed: { limit: 90, windowSeconds: 60 },
+  allFresh: { limit: 12, windowSeconds: 60 },
+  all: { limit: 60, windowSeconds: 60 },
   health: { limit: 60, windowSeconds: 60 },
 };
 
@@ -199,6 +204,60 @@ async function fetchCbpFeed() {
     throw new Error("CBP feed missing <item> entries");
   }
   return text;
+}
+
+async function fetchCbpAllFeed() {
+  const res = await fetch(CBP_ALL_URL, {
+    headers: {
+      Accept: "application/xml, text/xml, */*",
+      "User-Agent":
+        "brownsville-wait-times-worker/1.0 (+https://eliseocab.github.io/brownsville-wait-times/)",
+    },
+  });
+  if (!res.ok) {
+    throw new Error("CBP all-ports HTTP " + res.status);
+  }
+  const text = await res.text();
+  if (!text || text.indexOf("<port>") === -1) {
+    throw new Error("CBP all-ports feed missing <port> entries");
+  }
+  return text;
+}
+
+async function putCachedAllFeed(text, source) {
+  const stored = new Response(text, {
+    status: 200,
+    headers: {
+      "Content-Type": "application/xml; charset=utf-8",
+      "Cache-Control": "public, max-age=" + STALE_TTL_SECONDS,
+      "X-BWT-Source": source,
+      "X-BWT-Stored-At": new Date().toISOString(),
+    },
+  });
+  await caches.default.put(new Request(ALL_CACHE_KEY), stored);
+}
+
+async function matchCachedAllFeed() {
+  return (await caches.default.match(new Request(ALL_CACHE_KEY))) || null;
+}
+
+async function cachedAllFeed(request, ctx, fresh) {
+  const hit = await matchCachedAllFeed();
+  if (!fresh && hit && cacheAgeSeconds(hit) < ALL_CACHE_TTL_SECONDS) {
+    return withSource(request, hit, "all-cache", ALL_CACHE_TTL_SECONDS);
+  }
+  try {
+    const text = await fetchCbpAllFeed();
+    if (ctx && ctx.waitUntil) {
+      ctx.waitUntil(putCachedAllFeed(text, "cbp-all-live"));
+    } else {
+      await putCachedAllFeed(text, "cbp-all-live");
+    }
+    return xmlResponse(request, text, fresh ? "cbp-all-fresh" : "cbp-all-live", fresh ? 0 : ALL_CACHE_TTL_SECONDS);
+  } catch (err) {
+    if (hit) return withSource(request, hit, "all-stale", 30);
+    throw err;
+  }
 }
 
 function xmlResponse(request, text, source, maxAge) {
@@ -439,6 +498,8 @@ export default {
               ok: true,
               service: "brownsville-bwt",
               cbp: CBP_URL,
+              cbpAll: CBP_ALL_URL,
+              all: "/all",
               x: "/x/dfolaredo",
               hasXBearer: !!(env && env.X_BEARER_TOKEN),
               cacheTtlSeconds: CACHE_TTL_SECONDS,
@@ -447,6 +508,8 @@ export default {
                 xFresh: RATE_LIMITS.xFresh,
                 feed: RATE_LIMITS.feed,
                 feedFresh: RATE_LIMITS.feedFresh,
+                all: RATE_LIMITS.all,
+                allFresh: RATE_LIMITS.allFresh,
               },
             },
             200,
@@ -454,6 +517,12 @@ export default {
           ),
           rate
         );
+      }
+
+      if (path === "/all") {
+        const rate = await enforceRateLimit(request, fresh ? "allFresh" : "all");
+        if (rate instanceof Response) return rate;
+        return withRateHeaders(await cachedAllFeed(request, ctx, fresh), rate);
       }
 
       if (path === "/x/dfolaredo") {
@@ -509,6 +578,12 @@ export default {
           await putCachedFeed(text, "cbp-cron");
         } catch (_) {
           // Keep the last good cache if CBP blips during cron.
+        }
+        try {
+          const allText = await fetchCbpAllFeed();
+          await putCachedAllFeed(allText, "cbp-all-cron");
+        } catch (_) {
+          // Keep last good national feed if CBP blips.
         }
         try {
           // Cron warm — synthetic request for CORS/header helpers

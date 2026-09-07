@@ -618,6 +618,17 @@
       margin-top: 0.15rem;
       letter-spacing: 0;
     }
+    .all-ports-link {
+      display: inline-block;
+      margin-top: 0.35rem;
+      font-size: 0.78rem;
+      font-weight: 750;
+      color: var(--sky-deep);
+      text-decoration: none;
+      letter-spacing: 0;
+    }
+    .all-ports-link:hover { text-decoration: underline; color: var(--navy); }
+    html[data-theme="dark"] .all-ports-link:hover { color: #e0f2fe; }
     .toolbar-controls {
       display: flex;
       flex-wrap: wrap;
@@ -2443,6 +2454,7 @@
       <h2 class="section-title">
         <span data-i18n="crossingTimes">Crossing times</span>
         <span class="section-sub" data-i18n="crossingTimesSub">Estimates to primary inspection booth · CBP updates about hourly</span>
+        <a class="all-ports-link" href="all-ports/" data-i18n="allPortsLink">All U.S. ports →</a>
       </h2>
       <div class="toolbar-controls">
         <div class="filters" role="tablist" aria-label="Filter by traffic type" data-i18n-aria="filterAria">
@@ -2573,6 +2585,7 @@
         activeOnly: "Active waits only (N/A & closed hidden)",
         crossingTimes: "Crossing times",
         crossingTimesSub: "Estimates to primary inspection booth · CBP updates about hourly",
+        allPortsLink: "All U.S. ports →",
         filterAll: "All",
         filterVehicles: "Vehicles",
         filterPedestrian: "Pedestrian",
@@ -2704,6 +2717,7 @@
         activeOnly: "Solo esperas activas (se ocultan N/D y cerrados)",
         crossingTimes: "Tiempos de cruce",
         crossingTimesSub: "Estimaciones hasta la inspección primaria · CBP actualiza cada hora aprox.",
+        allPortsLink: "Todos los puertos de EE. UU. →",
         filterAll: "Todos",
         filterVehicles: "Vehículos",
         filterPedestrian: "Peatonal",

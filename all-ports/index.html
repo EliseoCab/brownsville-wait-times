@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https://brownsville-bwt.borderwait.workers.dev; upgrade-insecure-requests" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1f3a" />
+  <meta name="description" content="Live CBP wait times for all U.S. land border ports — sort by nearest location or filter by Mexico/Northern border, state, and port." />
+  <title>All U.S. land ports · BWT</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1f3a'/%3E%3Ccircle cx='16' cy='16' r='5.5' fill='%230ea5e9'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #0c1222;
+      --slate: #334155;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --line-soft: #f1f5f9;
+      --paper: #eef6fb;
+      --white: #ffffff;
+      --navy: #0b1f3a;
+      --sky: #0ea5e9;
+      --sky-deep: #0284c7;
+      --green: #059669;
+      --orange: #d97706;
+      --red: #dc2626;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+      --radius: 16px;
+      --font: "DM Sans", system-ui, -apple-system, sans-serif;
+      --display: "Instrument Serif", Georgia, serif;
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --ink: #f4f7fb;
+      --slate: #c9d4e2;
+      --muted: #b4c2d4;
+      --line: #3a4d68;
+      --line-soft: #243044;
+      --paper: #0a1220;
+      --white: #162033;
+      --sky-deep: #7dd3fc;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+      --shadow: 0 4px 24px rgba(0,0,0,.4);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.5;
+      min-height: 100dvh;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--sky-deep); }
+    .topbar {
+      background: var(--navy);
+      color: #e2e8f0;
+      padding: 0.55rem 1rem;
+    }
+    .topbar-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem 1rem;
+      font-size: 0.82rem;
+    }
+    .topbar a { color: #7dd3fc; text-decoration: none; font-weight: 650; }
+    .topbar a:hover { text-decoration: underline; }
+    .seg {
+      display: inline-flex;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .seg button {
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font: inherit;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 0.22rem 0.55rem;
+      cursor: pointer;
+    }
+    .seg button.active { background: #fff; color: var(--navy); }
+    .icon-btn {
+      appearance: none;
+      border: 1px solid rgba(255,255,255,.2);
+      background: transparent;
+      color: #e2e8f0;
+      border-radius: 999px;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.1rem 1rem 2.5rem;
+    }
+    h1 {
+      font-family: var(--display);
+      font-weight: 400;
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      letter-spacing: -0.02em;
+      margin: 0.35rem 0 0.25rem;
+    }
+    .sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 1rem; }
+    .panel {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 0.85rem 0.9rem 1rem;
+      margin-bottom: 0.85rem;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem 0.55rem;
+      align-items: center;
+      margin-bottom: 0.55rem;
+    }
+    .row:last-child { margin-bottom: 0; }
+    .seg-lite {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.15rem;
+      gap: 0.15rem;
+      background: var(--line-soft);
+    }
+    .seg-lite button {
+      appearance: none;
+      border: none;
+      background: transparent;
+      font: inherit;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--slate);
+      padding: 0.32rem 0.62rem;
+      min-height: 32px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .seg-lite button.active { background: var(--navy); color: #fff; }
+    select {
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 650;
+      color: var(--ink);
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.35rem 0.75rem;
+      min-height: 34px;
+    }
+    .asof {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .asof strong { color: var(--ink); }
+    .status {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin: 0.35rem 0 0.65rem;
+      min-height: 1.2em;
+    }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.65rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .port-card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow-sm);
+      padding: 0.75rem 0.85rem 0.85rem;
+      margin-bottom: 0.65rem;
+    }
+    .port-title {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .port-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      margin-top: 0.3rem;
+      align-items: center;
+    }
+    .pill {
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 0.15rem 0.4rem;
+      border-radius: 6px;
+      background: var(--line-soft);
+      color: var(--muted);
+      border: 1px solid var(--line);
+    }
+    .pill.dist { color: var(--sky-deep); border-color: #bae6fd; background: #e0f2fe; }
+    html[data-theme="dark"] .pill.dist { background: #0b2740; border-color: #1e4a66; }
+    .port-hours { font-size: 0.72rem; color: var(--muted); margin-top: 0.25rem; }
+    .maps {
+      font-size: 0.72rem;
+      font-weight: 750;
+      text-decoration: none;
+      color: var(--sky-deep);
+      margin-left: 0.15rem;
+    }
+    .port-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.45rem;
+      margin-top: 0.65rem;
+    }
+    .cell {
+      background: linear-gradient(180deg, var(--line-soft) 0%, var(--white) 55%);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 0.5rem 0.55rem 0.55rem;
+      min-width: 0;
+    }
+    .cell-kicker {
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+    .wait { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; }
+    .wait.good { color: var(--green); }
+    .wait.warn { color: var(--orange); }
+    .wait.bad { color: var(--red); }
+    .wait.closed, .wait.pending { font-size: 0.9rem; color: var(--muted); }
+    .wait-empty { color: var(--muted); font-weight: 650; }
+    .open-line { margin-top: 0.25rem; font-size: 0.68rem; font-weight: 650; color: var(--muted); }
+    .compact-waits { display: flex; flex-direction: column; gap: 0.2rem; }
+    .compact-pair { font-size: 0.92rem; font-weight: 800; }
+    .dual-label { font-size: 0.62rem; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-right: 0.2rem; }
+    .empty { text-align: center; color: var(--muted); padding: 1.5rem 0.5rem; }
+    #showMoreBtn {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: var(--white);
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.5rem 0.9rem;
+      border-radius: 999px;
+      cursor: pointer;
+      display: block;
+      margin: 0.5rem auto 0;
+      box-shadow: var(--shadow-sm);
+    }
+    @media (max-width: 720px) {
+      .port-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a id="backLink" href="../">← Brownsville wait times</a>
+      <div style="display:flex;gap:.4rem;align-items:center;">
+        <div class="seg" role="group" aria-label="Language">
+          <button type="button" id="langEn" class="active">EN</button>
+          <button type="button" id="langEs">ES</button>
+        </div>
+        <button type="button" class="icon-btn" id="themeToggle" aria-label="Toggle theme">◐</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <h1 id="pageTitle">All U.S. land ports</h1>
+    <p class="sub" id="pageSub">Live CBP wait times · nearest to you, with optional filters</p>
+
+    <section class="panel">
+      <div class="row">
+        <div class="seg-lite" role="group" aria-label="View mode">
+          <button type="button" data-view="nearest" class="active">Nearest</button>
+          <button type="button" data-view="browse">Browse</button>
+        </div>
+        <div class="seg-lite" role="group" aria-label="Traffic type">
+          <button type="button" data-traffic="all" class="active">All</button>
+          <button type="button" data-traffic="passenger">Vehicles</button>
+          <button type="button" data-traffic="pedestrian">Pedestrian</button>
+          <button type="button" data-traffic="commercial">Commercial</button>
+        </div>
+      </div>
+      <div class="row">
+        <select id="filterBorder" aria-label="Border">
+          <option value="all">All borders</option>
+          <option value="mexican">Mexico</option>
+          <option value="canadian">Northern</option>
+        </select>
+        <select id="filterState" aria-label="State">
+          <option value="all">All states</option>
+        </select>
+        <select id="filterPort" aria-label="Port">
+          <option value="all">All ports</option>
+        </select>
+      </div>
+      <div class="asof"><span id="latestLabel">Latest report:</span> <strong id="asofStamp">—</strong></div>
+    </section>
+
+    <p class="status" id="statusLine">Loading all ports…</p>
+    <div class="meta-row">
+      <span id="resultCount"></span>
+    </div>
+    <div id="portGrid" aria-live="polite"></div>
+    <button type="button" id="showMoreBtn" hidden>Show more</button>
+  </main>
+
+  <script src="port-meta.js"></script>
+  <script src="all-ports.js"></script>
+</body>
+</html>
