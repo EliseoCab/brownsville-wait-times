@@ -850,7 +850,7 @@
         '</span><span class="compact-pair"><span class="dual-label">' + lab + "</span> " + waitHtml(special.wait) + "</span></div>";
     }
     var clock = displayStampClock(collectSectionAsOf(section, date), timeZone);
-    if (clock) html += '<div class="cell-asof"><span class="time-stamp">' + escapeHtml(clock) + "</span></div>";
+    if (clock) html += '<div class="cell-asof">' + escapeHtml(clock) + "</div>";
     if (open) html += '<div class="open-line">' + open + "</div>";
     return html;
   }
@@ -1009,7 +1009,7 @@
       var updatedHtml = updatedLabel
         ? '<div class="port-updated"><strong>' +
           escapeHtml(t("updated")) + "</strong> " +
-          '<span class="time-stamp">' + escapeHtml(updatedLabel) + "</span>" +
+          escapeHtml(updatedLabel) +
           "</div>"
         : "";
       function col(section, key) {
