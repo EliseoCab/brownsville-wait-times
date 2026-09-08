@@ -41,6 +41,10 @@
       title: "All U.S. land ports",
       sub: "Live CBP wait times · nearest to you, with optional filters",
       latest: "Latest report:",
+      hours: "Hours",
+      hours24: "24 hours",
+      midnight: "midnight",
+      updated: "Updated",
       countLabel: "Showing"
     },
     es: {
@@ -76,6 +80,10 @@
       title: "Todos los puertos terrestres de EE. UU.",
       sub: "Tiempos CBP en vivo · más cercanos a usted, con filtros opcionales",
       latest: "Último reporte:",
+      hours: "Horario",
+      hours24: "24 horas",
+      midnight: "medianoche",
+      updated: "Actualizado",
       countLabel: "Mostrando"
     }
   };
@@ -197,6 +205,7 @@
       var portName = textOf(portEl, "port_name").replace(/&amp;/g, "&");
       var crossing = textOf(portEl, "crossing_name").replace(/&amp;/g, "&");
       var hours = textOf(portEl, "hours");
+      var date = textOf(portEl, "date");
       var status = textOf(portEl, "port_status");
       var border = /canadian/i.test(borderRaw) ? "canadian" : "mexican";
       var trustedName = border === "canadian" ? "NEXUS" : "SENTRI";
@@ -237,9 +246,11 @@
         title: title,
         border: border,
         state: meta.state || "XX",
+        timeZone: ianaForState(meta.state || ""),
         portName: portName,
         crossingName: crossing,
         hours: hours || "—",
+        date: date,
         portStatus: status,
         lat: meta.lat,
         lng: meta.lng,
@@ -286,6 +297,266 @@
     var h12 = h % 12;
     if (h12 === 0) h12 = 12;
     return datePart + " · " + h12 + ":" + min + " " + ampm;
+  }
+
+  var TZ_OFFSET_H = {
+    EDT: -4, EST: -5,
+    CDT: -5, CST: -6,
+    MDT: -6, MST: -7,
+    PDT: -7, PST: -8,
+    AKDT: -8, AKST: -9,
+    HADT: -9, HST: -10,
+    GMT: 0, UTC: 0
+  };
+
+  var STATE_IANA = {
+    ME: "America/New_York",
+    VT: "America/New_York",
+    NY: "America/New_York",
+    MI: "America/Detroit",
+    MN: "America/Chicago",
+    ND: "America/Chicago",
+    TX: "America/Chicago",
+    MT: "America/Denver",
+    NM: "America/Denver",
+    AZ: "America/Phoenix",
+    CA: "America/Los_Angeles",
+    WA: "America/Los_Angeles"
+  };
+
+  function ianaForState(state) {
+    return STATE_IANA[state] || "";
+  }
+
+  function stripAtPrefix(s) {
+    return String(s || "").replace(/^At\s+/i, "").trim();
+  }
+
+  function parseCbpDateParts(dateStr) {
+    var s = String(dateStr || "").trim();
+    var m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) return { y: Number(m[3]), mo: Number(m[1]), d: Number(m[2]) };
+    m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (m) return { y: Number(m[1]), mo: Number(m[2]), d: Number(m[3]) };
+    return null;
+  }
+
+  function parseCbpWhen(when) {
+    var s = stripAtPrefix(when);
+    if (!s) return null;
+    var tzTail = s.match(/\b([A-Z]{2,4})\s*$/i);
+    var tz = tzTail ? tzTail[1].toUpperCase() : "";
+    var h;
+    var min;
+    if (/^noon\b/i.test(s) || /^12:00\s*pm/i.test(s)) {
+      h = 12;
+      min = 0;
+    } else if (/^midnight\b/i.test(s) || /^12:00\s*am/i.test(s)) {
+      h = 0;
+      min = 0;
+    } else {
+      var m = s.match(/^(\d{1,2}):(\d{2})\s*(am|pm)\b/i);
+      if (!m) return null;
+      h = Number(m[1]) % 12;
+      if (String(m[3]).toLowerCase() === "pm") h += 12;
+      min = Number(m[2]);
+    }
+    var off = Object.prototype.hasOwnProperty.call(TZ_OFFSET_H, tz) ? TZ_OFFSET_H[tz] : null;
+    return { h: h, min: min, tz: tz, offsetH: off, display: s };
+  }
+
+  function asOfUtcMs(when, dateStr) {
+    var p = parseCbpWhen(when);
+    if (!p) return null;
+    var d = parseCbpDateParts(dateStr);
+    var y;
+    var mo;
+    var day;
+    if (d) {
+      y = d.y;
+      mo = d.mo;
+      day = d.d;
+    } else {
+      var now = new Date();
+      y = now.getFullYear();
+      mo = now.getMonth() + 1;
+      day = now.getDate();
+    }
+    if (p.offsetH == null) {
+      return localClockAsUtcMs(y, mo, day, p.h, p.min, 0, "America/Chicago");
+    }
+    var asUtc = Date.UTC(y, mo - 1, day, p.h, p.min, 0);
+    return asUtc - p.offsetH * 3600 * 1000;
+  }
+
+  function tzOffsetMinutes(ms, timeZone) {
+    var d = new Date(ms);
+    var parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: timeZone,
+      hour12: false,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    }).formatToParts(d);
+    function num(type) {
+      for (var i = 0; i < parts.length; i++) {
+        if (parts[i].type === type) return Number(parts[i].value);
+      }
+      return 0;
+    }
+    var hour = num("hour");
+    if (hour === 24) hour = 0;
+    var asUtc = Date.UTC(num("year"), num("month") - 1, num("day"), hour, num("minute"), num("second"));
+    return (asUtc - ms) / 60000;
+  }
+
+  function localClockAsUtcMs(y, mo, day, h, min, sec, timeZone) {
+    var guess = Date.UTC(y, mo - 1, day, h, min, sec || 0);
+    var off = tzOffsetMinutes(guess, timeZone);
+    var ms = guess - off * 60000;
+    var off2 = tzOffsetMinutes(ms, timeZone);
+    if (off2 !== off) ms = guess - off2 * 60000;
+    return ms;
+  }
+
+  function feedEasternUtcMs(dateStr, timeStr) {
+    var d = parseCbpDateParts(dateStr);
+    var tm = String(timeStr || "").trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+    if (!d || !tm) return null;
+    return localClockAsUtcMs(
+      d.y, d.mo, d.d,
+      Number(tm[1]), Number(tm[2]), Number(tm[3] || 0),
+      "America/New_York"
+    );
+  }
+
+  function isUsDst(ms) {
+    var y = new Date(ms).getUTCFullYear();
+    var jan = tzOffsetMinutes(Date.UTC(y, 0, 1, 12, 0, 0), "America/New_York");
+    var now = tzOffsetMinutes(ms, "America/New_York");
+    return now !== jan;
+  }
+
+  function abbrevForIana(iana, ms) {
+    if (iana === "America/Phoenix") return "MST";
+    var dst = isUsDst(ms);
+    if (iana === "America/Chicago") return dst ? "CDT" : "CST";
+    if (iana === "America/New_York" || iana === "America/Detroit") return dst ? "EDT" : "EST";
+    if (iana === "America/Denver") return dst ? "MDT" : "MST";
+    if (iana === "America/Los_Angeles") return dst ? "PDT" : "PST";
+    return "";
+  }
+
+  function clockPartsInZone(ms, timeZone) {
+    if (ms == null || isNaN(Number(ms)) || !timeZone) return null;
+    var d = new Date(ms);
+    var locale = state.lang === "es" ? "es-US" : "en-US";
+    var parts = new Intl.DateTimeFormat(locale, {
+      timeZone: timeZone,
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZoneName: "short"
+    }).formatToParts(d);
+    function val(type) {
+      for (var i = 0; i < parts.length; i++) {
+        if (parts[i].type === type) return parts[i].value;
+      }
+      return "";
+    }
+    var ampm = val("dayPeriod").replace(/\./g, "").replace(/\s/g, "").toLowerCase();
+    if (ampm !== "am" && ampm !== "pm") ampm = /p/i.test(val("dayPeriod")) ? "pm" : "am";
+    var tz = val("timeZoneName");
+    if (!/^[ECMP][DS]T$/i.test(tz) && tz !== "MST") {
+      tz = abbrevForIana(timeZone, ms) || tz;
+    }
+    return {
+      date: d.toLocaleDateString(locale, {
+        timeZone: timeZone,
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+      }),
+      hour: val("hour"),
+      minute: val("minute"),
+      ampm: ampm,
+      tz: String(tz || "").toUpperCase()
+    };
+  }
+
+  function formatClockInZone(ms, timeZone) {
+    var p = clockPartsInZone(ms, timeZone);
+    if (!p) return "";
+    return p.hour + ":" + p.minute + " " + p.ampm + " " + p.tz;
+  }
+
+  function formatChicagoStamp(ms) {
+    var p = clockPartsInZone(ms, "America/Chicago");
+    if (!p) return "—";
+    return p.date + " · " + p.hour + ":" + p.minute + " " + p.ampm + " " + p.tz;
+  }
+
+  function formatReportDate(dateStr) {
+    var d = parseCbpDateParts(dateStr);
+    if (!d) return "";
+    var dt = new Date(d.y, d.mo - 1, d.d);
+    if (isNaN(dt.getTime())) return "";
+    var locale = state.lang === "es" ? "es-US" : "en-US";
+    return dt.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" });
+  }
+
+  function displayStampClock(stamp, timeZone) {
+    if (!stamp) return "";
+    if (stamp.ms != null && timeZone) {
+      var clock = formatClockInZone(stamp.ms, timeZone);
+      if (clock) return clock;
+    }
+    var parsed = parseCbpWhen(stamp.time);
+    if (!parsed) return stamp.time || "";
+    var h12 = parsed.h % 12;
+    if (h12 === 0) h12 = 12;
+    var ampm = parsed.h >= 12 ? "pm" : "am";
+    var min = parsed.min < 10 ? "0" + parsed.min : String(parsed.min);
+    var tz = parsed.tz || "";
+    return tz ? h12 + ":" + min + " " + ampm + " " + tz : h12 + ":" + min + " " + ampm;
+  }
+
+  /** Home-page stamp: "Sep 7, 2026 · 7:00 pm CDT" */
+  function formatReportStamp(stamp, timeZone) {
+    if (!stamp) return "—";
+    var clock = displayStampClock(stamp, timeZone);
+    if (!clock) return "—";
+    var datePart = formatReportDate(stamp.date);
+    if (datePart) return datePart + " · " + clock;
+    return clock;
+  }
+
+  function portZoneAbbrev(item, stamp) {
+    if (!item || !item.timeZone) {
+      var parsed = stamp && stamp.time ? parseCbpWhen(stamp.time) : null;
+      return parsed && parsed.tz ? parsed.tz : "";
+    }
+    var ms = stamp && stamp.ms != null ? stamp.ms : Date.now();
+    return abbrevForIana(item.timeZone, ms) || "";
+  }
+
+  function formatHoursOfOperation(hours) {
+    if (!hours || hours === "—") return "—";
+    var h = String(hours).replace(/\s+/g, " ").trim();
+    h = h.replace(/24\s*hrs?\/day/i, t("hours24"));
+    h = h.replace(/24 hours/i, t("hours24"));
+    h = h.replace(/Midnight/gi, t("midnight"));
+    h = h.replace(/medianoche/gi, t("midnight"));
+    h = h.replace(/\b(\d{1,2})\s*am\b/gi, function (_, n) { return n + " a.m."; });
+    h = h.replace(/\b(\d{1,2})\s*pm\b/gi, function (_, n) { return n + " p.m."; });
+    h = h.replace(/\s*-\s*/g, "–");
+    return h;
   }
 
   function normName(s) {
@@ -396,6 +667,68 @@
     return w && !w.pending && !w.closed && w.minutes != null;
   }
 
+  /** Newest CBP lane stamp for one crossing. */
+  function collectStampFromLanes(lanes, date) {
+    var best = null;
+    var bestMs = -1;
+    var list = lanes || [];
+    for (var i = 0; i < list.length; i++) {
+      var w = list[i] && list[i].wait;
+      if (!w || !w.when) continue;
+      var ms = asOfUtcMs(w.when, date);
+      var time = stripAtPrefix(w.when);
+      if (!time) continue;
+      if (ms == null) {
+        if (!best) best = { date: date || "", time: time, ms: null };
+        continue;
+      }
+      if (ms >= bestMs) {
+        bestMs = ms;
+        best = { date: date || "", time: time, ms: ms };
+      }
+    }
+    return best;
+  }
+
+  function collectPortAsOf(item) {
+    if (!item) return null;
+    var lanes = [];
+    var sections = item.sections || [];
+    for (var i = 0; i < sections.length; i++) {
+      var secLanes = sections[i].lanes || [];
+      for (var j = 0; j < secLanes.length; j++) lanes.push(secLanes[j]);
+    }
+    return collectStampFromLanes(lanes, item.date);
+  }
+
+  function collectSectionAsOf(section, date) {
+    if (!section) return null;
+    return collectStampFromLanes(section.lanes, date);
+  }
+
+  function newestAsOf(items) {
+    var best = null;
+    var list = items || [];
+    for (var i = 0; i < list.length; i++) {
+      var stamp = collectPortAsOf(list[i]);
+      if (!stamp || stamp.ms == null) continue;
+      if (!best || stamp.ms >= best.ms) best = stamp;
+    }
+    return best;
+  }
+
+  function newestAsOfByTz(items) {
+    var map = {};
+    var list = items || [];
+    for (var i = 0; i < list.length; i++) {
+      var stamp = collectPortAsOf(list[i]);
+      if (!stamp || stamp.ms == null) continue;
+      var tz = portZoneAbbrev(list[i], stamp) || "_";
+      if (!map[tz] || stamp.ms >= map[tz].ms) map[tz] = stamp;
+    }
+    return map;
+  }
+
   function isShowableWait(w) {
     return w && (isActiveWait(w) || w.pending || w.closed);
   }
@@ -434,7 +767,7 @@
     return bits.join(" · ");
   }
 
-  function modeCell(section, border) {
+  function modeCell(section, border, date, timeZone) {
     if (!section) return '<span class="wait-empty">' + t("na") + "</span>";
     var general = section.lanes.find(function (l) { return /general/i.test(l.name); });
     var special = section.lanes.find(function (l) {
@@ -443,13 +776,14 @@
     var primary = general && isShowableWait(general.wait) ? general.wait : (section.lanes[0] && section.lanes[0].wait);
     var html = waitHtml(primary);
     var open = openBits(section, border);
-    if (open) html += '<div class="open-line">' + open + "</div>";
     if (special && special !== general && isActiveWait(special.wait) && primary && isActiveWait(primary) && special.wait.minutes !== primary.minutes) {
       var lab = /ready/i.test(special.name) ? t("ready") : /fast/i.test(special.name) ? t("fast") : /nexus/i.test(special.name) ? t("nexus") : t("sentri");
       html = '<div class="compact-waits"><span class="compact-pair"><span class="dual-label">' + t("gen") + "</span> " + waitHtml(primary) +
-        '</span><span class="compact-pair"><span class="dual-label">' + lab + "</span> " + waitHtml(special.wait) + "</span></div>" +
-        (open ? '<div class="open-line">' + open + "</div>" : "");
+        '</span><span class="compact-pair"><span class="dual-label">' + lab + "</span> " + waitHtml(special.wait) + "</span></div>";
     }
+    var clock = displayStampClock(collectSectionAsOf(section, date), timeZone);
+    if (clock) html += '<div class="cell-asof">' + escapeHtml(clock) + "</div>";
+    if (open) html += '<div class="open-line">' + open + "</div>";
     return html;
   }
 
@@ -582,10 +916,14 @@
     }
 
     var traffic = state.prefs.traffic;
+    refreshAsOfStamp(list);
     if (!shown.length) {
       host.innerHTML = '<p class="empty">' + t("empty") + "</p>";
       return;
     }
+
+    var newestByTz = newestAsOfByTz(state.items);
+    var LAG_MS = 60 * 60 * 1000;
 
     host.innerHTML = shown.map(function (it) {
       var pass = it.sections.find(function (s) { return s.key === "passenger"; });
@@ -596,12 +934,33 @@
       var mapsHref = /iPhone|iPad|iPod/i.test(navigator.userAgent || "")
         ? "https://maps.apple.com/?q=" + mapsQ
         : "https://www.google.com/maps/search/?api=1&query=" + mapsQ;
+      var hoursLabel = formatHoursOfOperation(it.hours);
+      var portStamp = collectPortAsOf(it);
+      var updatedLabel = displayStampClock(portStamp, it.timeZone);
+      var tz = portZoneAbbrev(it, portStamp) || "_";
+      var newestSameTz = newestByTz[tz];
+      var lag = !!(newestSameTz && portStamp && portStamp.ms != null && (newestSameTz.ms - portStamp.ms) >= LAG_MS);
+      var hoursHtml =
+        '<div class="port-hours"><strong>' + escapeHtml(t("hours")) + "</strong> " +
+        escapeHtml(hoursLabel) +
+        "</div>";
+      var updatedHtml = updatedLabel
+        ? '<div class="port-updated' + (lag ? " lag" : "") + '"><strong>' +
+          escapeHtml(t("updated")) + "</strong> " +
+          (lag ? '<span class="lag-time">' : "") +
+          escapeHtml(updatedLabel) +
+          (lag ? "</span>" : "") +
+          "</div>"
+        : "";
+      var tzPill = tz !== "_"
+        ? '<span class="pill tz">' + escapeHtml(tz) + "</span>"
+        : "";
 
       function col(section, key) {
         if (traffic !== "all" && traffic !== key) return "";
         return '<div class="cell"><div class="cell-kicker">' +
           (key === "passenger" ? t("trafficVeh") : key === "pedestrian" ? t("trafficPed") : t("trafficComm")) +
-          "</div>" + modeCell(section, it.border) + "</div>";
+          "</div>" + modeCell(section, it.border, it.date, it.timeZone) + "</div>";
       }
 
       return (
@@ -611,10 +970,12 @@
             '<div class="port-meta">' +
               '<span class="pill">' + escapeHtml(it.state) + "</span>" +
               '<span class="pill">' + (it.border === "mexican" ? "MX" : "CA") + "</span>" +
+              tzPill +
               (dist ? '<span class="pill dist">' + dist + "</span>" : "") +
               '<a class="maps" href="' + mapsHref + '" target="_blank" rel="noopener">Maps</a>' +
             "</div>" +
-            '<div class="port-hours">' + escapeHtml(it.hours) + (it.portStatus ? " · " + escapeHtml(it.portStatus) : "") + "</div>" +
+            hoursHtml +
+            updatedHtml +
           "</div>" +
           '<div class="port-grid">' +
             col(pass, "passenger") +
@@ -649,10 +1010,26 @@
     render();
   }
 
-  function refreshAsOfStamp() {
+  function refreshAsOfStamp(items) {
     var stamp = document.getElementById("asofStamp");
     if (!stamp) return;
-    stamp.textContent = formatFeedUpdated(state.feedDate, state.feedTime);
+    var list = items && items.length ? items : state.items;
+    var newest = newestAsOf(list);
+    if (newest) {
+      var tz = "";
+      if (list && list.length) {
+        for (var i = 0; i < list.length; i++) {
+          var s = collectPortAsOf(list[i]);
+          if (s && newest.ms != null && s.ms === newest.ms) {
+            tz = list[i].timeZone || "";
+            break;
+          }
+        }
+      }
+      stamp.textContent = formatReportStamp(newest, tz);
+      return;
+    }
+    stamp.textContent = "—";
   }
 
   function requestGeo() {

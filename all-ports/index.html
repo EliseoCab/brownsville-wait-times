@@ -218,7 +218,32 @@
     }
     .pill.dist { color: var(--sky-deep); border-color: #bae6fd; background: #e0f2fe; }
     html[data-theme="dark"] .pill.dist { background: #0b2740; border-color: #1e4a66; }
-    .port-hours { font-size: 0.72rem; color: var(--muted); margin-top: 0.25rem; }
+    .pill.tz { color: var(--sky-deep); }
+    .port-hours,
+    .port-updated {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-top: 0.3rem;
+      line-height: 1.35;
+    }
+    .port-hours strong,
+    .port-updated strong {
+      font-weight: 700;
+      color: var(--sky-deep);
+    }
+    .port-updated { margin-top: 0.12rem; }
+    .port-updated .lag-time {
+      background: #fef9c3;
+      padding: 0 0.22rem;
+      border-radius: 3px;
+      color: var(--ink);
+    }
+    html[data-theme="dark"] .port-updated .lag-time {
+      background: #3d3420;
+      color: #fde68a;
+    }
     .maps {
       font-size: 0.72rem;
       font-weight: 750;
@@ -254,6 +279,13 @@
     .wait.closed, .wait.pending { font-size: 0.9rem; color: var(--muted); }
     .wait-empty { color: var(--muted); font-weight: 650; }
     .open-line { margin-top: 0.25rem; font-size: 0.68rem; font-weight: 650; color: var(--muted); }
+    .cell-asof {
+      margin-top: 0.2rem;
+      font-size: 0.68rem;
+      font-weight: 750;
+      color: var(--sky-deep);
+      line-height: 1.3;
+    }
     .compact-waits { display: flex; flex-direction: column; gap: 0.2rem; }
     .compact-pair { font-size: 0.92rem; font-weight: 800; }
     .dual-label { font-size: 0.62rem; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-right: 0.2rem; }
@@ -334,6 +366,6 @@
   </main>
 
   <script src="port-meta.js"></script>
-  <script src="all-ports.js?v=3"></script>
+  <script src="all-ports.js?v=8"></script>
 </body>
 </html>
