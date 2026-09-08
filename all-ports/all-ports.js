@@ -1015,18 +1015,13 @@
     if (!stamp) return;
     var list = items && items.length ? items : state.items;
     var newest = newestAsOf(list);
-    if (newest) {
-      var tz = "";
-      if (list && list.length) {
-        for (var i = 0; i < list.length; i++) {
-          var s = collectPortAsOf(list[i]);
-          if (s && newest.ms != null && s.ms === newest.ms) {
-            tz = list[i].timeZone || "";
-            break;
-          }
-        }
-      }
-      stamp.textContent = formatReportStamp(newest, tz);
+    if (newest && newest.ms != null) {
+      stamp.textContent = formatChicagoStamp(newest.ms);
+      return;
+    }
+    var feedMs = feedEasternUtcMs(state.feedDate, state.feedTime);
+    if (feedMs != null) {
+      stamp.textContent = formatChicagoStamp(feedMs);
       return;
     }
     stamp.textContent = "—";
