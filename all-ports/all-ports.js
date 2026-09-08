@@ -717,6 +717,42 @@
     return best;
   }
 
+  /**
+   * Filter-bar "Latest report" instant in Chicago time.
+   * Prefer the newest Central Time port (same as the Brownsville home page)
+   * so a late MST/PDT stamp cannot display as 1:00 am CDT.
+   */
+  function typicalChicagoMs(items) {
+    var list = items || [];
+    var bestCentral = null;
+    var counts = {};
+    var bestMs = {};
+    for (var i = 0; i < list.length; i++) {
+      var stamp = collectPortAsOf(list[i]);
+      if (!stamp || stamp.ms == null) continue;
+      if (list[i].timeZone === "America/Chicago") {
+        if (bestCentral == null || stamp.ms > bestCentral) bestCentral = stamp.ms;
+      }
+      var parts = clockPartsInZone(stamp.ms, "America/Chicago");
+      if (!parts) continue;
+      var key = parts.hour + ":" + parts.minute + " " + parts.ampm;
+      counts[key] = (counts[key] || 0) + 1;
+      if (bestMs[key] == null || stamp.ms > bestMs[key]) bestMs[key] = stamp.ms;
+    }
+    if (bestCentral != null) return bestCentral;
+    var modeCount = 0;
+    var modeMs = null;
+    Object.keys(counts).forEach(function (key) {
+      var n = counts[key];
+      var ms = bestMs[key];
+      if (n > modeCount || (n === modeCount && (modeMs == null || ms > modeMs))) {
+        modeCount = n;
+        modeMs = ms;
+      }
+    });
+    return modeMs;
+  }
+
   function newestAsOfByTz(items) {
     var map = {};
     var list = items || [];
@@ -1014,14 +1050,14 @@
     var stamp = document.getElementById("asofStamp");
     if (!stamp) return;
     var list = items && items.length ? items : state.items;
+    var typicalMs = typicalChicagoMs(list);
+    if (typicalMs != null) {
+      stamp.textContent = formatChicagoStamp(typicalMs);
+      return;
+    }
     var newest = newestAsOf(list);
     if (newest && newest.ms != null) {
       stamp.textContent = formatChicagoStamp(newest.ms);
-      return;
-    }
-    var feedMs = feedEasternUtcMs(state.feedDate, state.feedTime);
-    if (feedMs != null) {
-      stamp.textContent = formatChicagoStamp(feedMs);
       return;
     }
     stamp.textContent = "—";
