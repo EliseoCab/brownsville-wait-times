@@ -246,7 +246,7 @@
         title: title,
         border: border,
         state: meta.state || "XX",
-        timeZone: ianaForState(meta.state || ""),
+        timeZone: ianaForPort(meta.state || "", portName, crossing),
         portName: portName,
         crossingName: crossing,
         hours: hours || "—",
@@ -326,6 +326,14 @@
 
   function ianaForState(state) {
     return STATE_IANA[state] || "";
+  }
+
+  function ianaForPort(state, portName, crossing) {
+    var blob = ((portName || "") + " " + (crossing || "")).toLowerCase();
+    if (/el paso|ysleta|presidio|tornillo|fabens|santa teresa/.test(blob)) {
+      return "America/Denver";
+    }
+    return ianaForState(state);
   }
 
   function stripAtPrefix(s) {
@@ -841,8 +849,8 @@
       html = '<div class="compact-waits"><span class="compact-pair"><span class="dual-label">' + t("gen") + "</span> " + waitHtml(primary) +
         '</span><span class="compact-pair"><span class="dual-label">' + lab + "</span> " + waitHtml(special.wait) + "</span></div>";
     }
-    var clock = displayStampClock(collectSectionAsOf(section, date), userTimeZone());
-    if (clock) html += '<div class="cell-asof">' + escapeHtml(clock) + "</div>";
+    var clock = displayStampClock(collectSectionAsOf(section, date), timeZone);
+    if (clock) html += '<div class="cell-asof"><span class="time-stamp">' + escapeHtml(clock) + "</span></div>";
     if (open) html += '<div class="open-line">' + open + "</div>";
     return html;
   }
@@ -982,9 +990,6 @@
       return;
     }
 
-    var newestByTz = newestAsOfByTz(state.items);
-    var LAG_MS = 60 * 60 * 1000;
-
     host.innerHTML = shown.map(function (it) {
       var pass = it.sections.find(function (s) { return s.key === "passenger"; });
       var ped = it.sections.find(function (s) { return s.key === "pedestrian"; });
@@ -996,20 +1001,15 @@
         : "https://www.google.com/maps/search/?api=1&query=" + mapsQ;
       var hoursLabel = formatHoursOfOperation(it.hours);
       var portStamp = collectPortAsOf(it);
-      var updatedLabel = displayStampClock(portStamp, userTimeZone());
-      var tz = portZoneAbbrev(it, portStamp) || "_";
-      var newestSameTz = newestByTz[tz];
-      var lag = !!(newestSameTz && portStamp && portStamp.ms != null && (newestSameTz.ms - portStamp.ms) >= LAG_MS);
+      var updatedLabel = displayStampClock(portStamp, it.timeZone);
       var hoursHtml =
         '<div class="port-hours"><strong>' + escapeHtml(t("hours")) + "</strong> " +
         escapeHtml(hoursLabel) +
         "</div>";
       var updatedHtml = updatedLabel
-        ? '<div class="port-updated' + (lag ? " lag" : "") + '"><strong>' +
+        ? '<div class="port-updated"><strong>' +
           escapeHtml(t("updated")) + "</strong> " +
-          (lag ? '<span class="lag-time">' : "") +
-          escapeHtml(updatedLabel) +
-          (lag ? "</span>" : "") +
+          '<span class="time-stamp">' + escapeHtml(updatedLabel) + "</span>" +
           "</div>"
         : "";
       function col(section, key) {
