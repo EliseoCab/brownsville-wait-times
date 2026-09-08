@@ -497,18 +497,26 @@
       hour: String(hour12),
       minute: h24.minute,
       ampm: ampm,
-      tz: String(tz || "CDT").toUpperCase()
+      tz: String(tz || "").toUpperCase()
     };
   }
 
+  function userTimeZone() {
+    try {
+      var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (tz) return tz;
+    } catch (_) { /* ignore */ }
+    return "America/Chicago";
+  }
+
   function formatClockInZone(ms, timeZone) {
-    var p = clockPartsInZone(ms, timeZone);
+    var p = clockPartsInZone(ms, timeZone || userTimeZone());
     if (!p) return "";
     return p.hour + ":" + p.minute + " " + p.ampm + " " + p.tz;
   }
 
-  function formatChicagoStamp(ms) {
-    var p = clockPartsInZone(ms, "America/Chicago");
+  function formatStampInZone(ms, timeZone) {
+    var p = clockPartsInZone(ms, timeZone || userTimeZone());
     if (!p) return "—";
     return p.date + " · " + p.hour + ":" + p.minute + " " + p.ampm + " " + p.tz;
   }
@@ -524,8 +532,9 @@
 
   function displayStampClock(stamp, timeZone) {
     if (!stamp) return "";
-    if (stamp.ms != null && timeZone) {
-      var clock = formatClockInZone(stamp.ms, timeZone);
+    var zone = timeZone || userTimeZone();
+    if (stamp.ms != null && zone) {
+      var clock = formatClockInZone(stamp.ms, zone);
       if (clock) return clock;
     }
     var parsed = parseCbpWhen(stamp.time);
@@ -832,7 +841,7 @@
       html = '<div class="compact-waits"><span class="compact-pair"><span class="dual-label">' + t("gen") + "</span> " + waitHtml(primary) +
         '</span><span class="compact-pair"><span class="dual-label">' + lab + "</span> " + waitHtml(special.wait) + "</span></div>";
     }
-    var clock = displayStampClock(collectSectionAsOf(section, date), timeZone);
+    var clock = displayStampClock(collectSectionAsOf(section, date), userTimeZone());
     if (clock) html += '<div class="cell-asof">' + escapeHtml(clock) + "</div>";
     if (open) html += '<div class="open-line">' + open + "</div>";
     return html;
@@ -987,7 +996,7 @@
         : "https://www.google.com/maps/search/?api=1&query=" + mapsQ;
       var hoursLabel = formatHoursOfOperation(it.hours);
       var portStamp = collectPortAsOf(it);
-      var updatedLabel = displayStampClock(portStamp, it.timeZone);
+      var updatedLabel = displayStampClock(portStamp, userTimeZone());
       var tz = portZoneAbbrev(it, portStamp) || "_";
       var newestSameTz = newestByTz[tz];
       var lag = !!(newestSameTz && portStamp && portStamp.ms != null && (newestSameTz.ms - portStamp.ms) >= LAG_MS);
@@ -1003,10 +1012,6 @@
           (lag ? "</span>" : "") +
           "</div>"
         : "";
-      var tzPill = tz !== "_"
-        ? '<span class="pill tz">' + escapeHtml(tz) + "</span>"
-        : "";
-
       function col(section, key) {
         if (traffic !== "all" && traffic !== key) return "";
         return '<div class="cell"><div class="cell-kicker">' +
@@ -1021,7 +1026,6 @@
             '<div class="port-meta">' +
               '<span class="pill">' + escapeHtml(it.state) + "</span>" +
               '<span class="pill">' + (it.border === "mexican" ? "MX" : "CA") + "</span>" +
-              tzPill +
               (dist ? '<span class="pill dist">' + dist + "</span>" : "") +
               '<a class="maps" href="' + mapsHref + '" target="_blank" rel="noopener">Maps</a>' +
             "</div>" +
@@ -1067,12 +1071,12 @@
     var list = items && items.length ? items : state.items;
     var typicalMs = typicalChicagoMs(list);
     if (typicalMs != null) {
-      stamp.textContent = formatChicagoStamp(typicalMs);
+      stamp.textContent = formatStampInZone(typicalMs, userTimeZone());
       return;
     }
     var newest = newestAsOf(list);
     if (newest && newest.ms != null) {
-      stamp.textContent = formatChicagoStamp(newest.ms);
+      stamp.textContent = formatStampInZone(newest.ms, userTimeZone());
       return;
     }
     stamp.textContent = "—";
