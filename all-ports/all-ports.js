@@ -450,31 +450,42 @@
     return "";
   }
 
-  function clockPartsInZone(ms, timeZone) {
-    if (ms == null || isNaN(Number(ms)) || !timeZone) return null;
-    var d = new Date(ms);
-    var locale = state.lang === "es" ? "es-US" : "en-US";
-    var parts = new Intl.DateTimeFormat(locale, {
+  function hour24InZone(ms, timeZone) {
+    var parts = new Intl.DateTimeFormat("en-US", {
       timeZone: timeZone,
-      month: "short",
-      day: "numeric",
-      year: "numeric",
       hour: "numeric",
       minute: "2-digit",
-      hour12: true,
-      timeZoneName: "short"
-    }).formatToParts(d);
+      hourCycle: "h23"
+    }).formatToParts(new Date(ms));
     function val(type) {
       for (var i = 0; i < parts.length; i++) {
         if (parts[i].type === type) return parts[i].value;
       }
       return "";
     }
-    var ampm = val("dayPeriod").replace(/\./g, "").replace(/\s/g, "").toLowerCase();
-    if (ampm !== "am" && ampm !== "pm") ampm = /p/i.test(val("dayPeriod")) ? "pm" : "am";
-    var tz = val("timeZoneName");
-    if (!/^[ECMP][DS]T$/i.test(tz) && tz !== "MST") {
-      tz = abbrevForIana(timeZone, ms) || tz;
+    var hour = Number(val("hour"));
+    if (hour === 24) hour = 0;
+    return { hour: hour, minute: val("minute") || "00" };
+  }
+
+  function clockPartsInZone(ms, timeZone) {
+    if (ms == null || isNaN(Number(ms)) || !timeZone) return null;
+    var d = new Date(ms);
+    var locale = state.lang === "es" ? "es-US" : "en-US";
+    var h24 = hour24InZone(ms, timeZone);
+    var ampm = h24.hour >= 12 ? "pm" : "am";
+    var hour12 = h24.hour % 12;
+    if (hour12 === 0) hour12 = 12;
+    var tz = abbrevForIana(timeZone, ms);
+    if (!tz) {
+      var named = new Intl.DateTimeFormat("en-US", {
+        timeZone: timeZone,
+        hour: "numeric",
+        timeZoneName: "short"
+      }).formatToParts(d);
+      for (var i = 0; i < named.length; i++) {
+        if (named[i].type === "timeZoneName") tz = named[i].value;
+      }
     }
     return {
       date: d.toLocaleDateString(locale, {
@@ -483,10 +494,10 @@
         day: "numeric",
         year: "numeric"
       }),
-      hour: val("hour"),
-      minute: val("minute"),
+      hour: String(hour12),
+      minute: h24.minute,
       ampm: ampm,
-      tz: String(tz || "").toUpperCase()
+      tz: String(tz || "CDT").toUpperCase()
     };
   }
 
@@ -719,38 +730,42 @@
 
   /**
    * Filter-bar "Latest report" instant in Chicago time.
-   * Prefer the newest Central Time port (same as the Brownsville home page)
-   * so a late MST/PDT stamp cannot display as 1:00 am CDT.
+   * Uses the most common Central Time CBP hour (e.g. 8:00 pm CDT),
+   * not a late MST/PDT stamp converted to 1:00 am.
    */
   function typicalChicagoMs(items) {
     var list = items || [];
-    var bestCentral = null;
-    var counts = {};
-    var bestMs = {};
+    var centralCounts = {};
+    var centralBest = {};
+    var allCounts = {};
+    var allBest = {};
     for (var i = 0; i < list.length; i++) {
       var stamp = collectPortAsOf(list[i]);
       if (!stamp || stamp.ms == null) continue;
-      if (list[i].timeZone === "America/Chicago") {
-        if (bestCentral == null || stamp.ms > bestCentral) bestCentral = stamp.ms;
-      }
       var parts = clockPartsInZone(stamp.ms, "America/Chicago");
       if (!parts) continue;
       var key = parts.hour + ":" + parts.minute + " " + parts.ampm;
+      var isCentral = list[i].timeZone === "America/Chicago";
+      var counts = isCentral ? centralCounts : allCounts;
+      var best = isCentral ? centralBest : allBest;
       counts[key] = (counts[key] || 0) + 1;
-      if (bestMs[key] == null || stamp.ms > bestMs[key]) bestMs[key] = stamp.ms;
+      if (best[key] == null || stamp.ms > best[key]) best[key] = stamp.ms;
     }
-    if (bestCentral != null) return bestCentral;
-    var modeCount = 0;
-    var modeMs = null;
-    Object.keys(counts).forEach(function (key) {
-      var n = counts[key];
-      var ms = bestMs[key];
-      if (n > modeCount || (n === modeCount && (modeMs == null || ms > modeMs))) {
-        modeCount = n;
-        modeMs = ms;
-      }
-    });
-    return modeMs;
+    function modeMs(counts, best) {
+      var modeCount = 0;
+      var ms = null;
+      Object.keys(counts).forEach(function (key) {
+        var n = counts[key];
+        if (n > modeCount || (n === modeCount && (ms == null || best[key] > ms))) {
+          modeCount = n;
+          ms = best[key];
+        }
+      });
+      return ms;
+    }
+    var central = modeMs(centralCounts, centralBest);
+    if (central != null) return central;
+    return modeMs(allCounts, allBest);
   }
 
   function newestAsOfByTz(items) {
