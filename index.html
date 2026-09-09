@@ -801,7 +801,7 @@
       border-radius: 0 12px 12px 0;
       padding-right: 0.5rem;
     }
-    /* Floating time chips — same width for every column tile (fits Gen/Ready); height grows with content */
+    /* Floating time chips — JS sets one width/height from the largest message */
     .table-wrap.table-cards .wait-table tbody td.wait-col {
       text-align: center;
       vertical-align: middle;
@@ -811,14 +811,13 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      /* Uniform width across Vehicles / SENTRI / Pedestrian / Commercial (incl. dual Gen/Ready) */
-      width: 6.75rem;
+      width: max-content;
       min-width: 6.75rem;
-      max-width: 6.75rem;
-      height: auto; /* JS equalizes to tallest All-filter chip after render */
+      max-width: none;
+      height: auto;
       min-height: 2.75rem;
       margin: 0 auto;
-      padding: 0.4rem 0.4rem 0.35rem;
+      padding: 0.4rem 0.45rem 0.35rem;
       border-radius: 10px;
       background: var(--white);
       border: 1px solid rgba(226, 232, 240, 0.95);
@@ -843,11 +842,9 @@
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-extra {
       margin-top: 0.15rem;
       line-height: 1.2;
-      width: 100%;
-      max-width: 100%;
-      white-space: normal;
-      overflow-wrap: anywhere;
-      word-break: break-word;
+      width: max-content;
+      max-width: none;
+      white-space: nowrap;
       font-size: 0.58rem;
       box-sizing: border-box;
       padding: 0 0.1rem;
@@ -855,23 +852,26 @@
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-cell .num {
       line-height: 1;
     }
-    /* Gen + Ready stacked inside the same uniform chip width */
+    /* Gen + Ready / FAST stacked; chip width grows to the longest pair */
     .table-wrap.table-cards .wait-table tbody td.wait-col .compact-waits {
       display: flex;
       flex-direction: column;
       gap: 0.2rem;
       align-items: stretch;
-      width: 100%;
+      width: max-content;
+      min-width: 100%;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .compact-pair {
       display: flex;
       flex-direction: row;
       align-items: center;
       justify-content: space-between;
-      gap: 0.25rem;
-      width: 100%;
+      gap: 0.35rem;
+      width: max-content;
+      min-width: 100%;
       box-sizing: border-box;
       padding: 0 0.1rem;
+      white-space: nowrap;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .dual-label {
       font-size: 0.58rem;
@@ -1483,16 +1483,16 @@
       width: auto;
       flex: 0 0 auto;
       text-align: center;
-      overflow: hidden;
+      overflow-x: auto;
     }
     .m-wait-block {
-      /* Identical fixed width for every wait chip (Vehicles, Ped, Commercial, SENTRI, FAST) */
-      flex: 0 0 5.5rem;
-      width: 5.5rem;
+      /* Uniform width set after render from the widest message */
+      flex: 0 0 auto;
+      width: max-content;
       min-width: 5.5rem;
-      max-width: 5.5rem;
+      max-width: none;
       box-sizing: border-box;
-      padding: 0.4rem 0.25rem;
+      padding: 0.4rem 0.4rem;
       border-radius: 10px;
       background: var(--paper);
       border: 1px solid var(--line-soft);
@@ -1501,7 +1501,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      overflow: hidden;
+      overflow: visible;
     }
     .m-wait-block .m-lab {
       display: block;
@@ -1521,11 +1521,11 @@
     }
     .m-wait-block .wait-stack {
       gap: 0.12rem;
-      width: 100%;
-      max-width: 100%;
+      width: max-content;
+      max-width: none;
       min-width: 0;
       align-items: center;
-      overflow: hidden;
+      overflow: visible;
       box-sizing: border-box;
       padding: 0 0.1rem;
     }
@@ -1552,25 +1552,23 @@
     }
     .m-wait-block .wait-extra {
       font-size: 0.58rem;
-      max-width: 100%;
-      width: 100%;
+      max-width: none;
+      width: max-content;
       box-sizing: border-box;
       text-align: center;
       line-height: 1.25;
-      overflow-wrap: anywhere;
-      word-break: break-word;
-      white-space: normal;
+      white-space: nowrap;
       padding: 0 0.15rem;
       margin: 0;
     }
     .m-wait-block .wait-extra.open-line {
-      max-width: 100%;
+      max-width: none;
       font-size: 0.56rem;
     }
     .m-wait-block .compact-waits {
-      width: 100%;
-      max-width: 100%;
-      overflow: hidden;
+      width: max-content;
+      max-width: none;
+      overflow: visible;
     }
     .m-wait-block .compact-pair .wait-cell .num {
       font-size: clamp(0.95rem, 4vw, 1.15rem);
@@ -1619,18 +1617,18 @@
         border-radius: 0 10px 10px 0;
         padding-right: 0.35rem;
       }
-      /* Desktop/tablet narrow: keep table chips equal width if table still shows */
+      /* Desktop/tablet narrow: JS still equalizes chip width from content */
       .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
-        width: 5.75rem;
+        width: max-content;
         min-width: 5.75rem;
-        max-width: 5.75rem;
+        max-width: none;
         height: auto;
         min-height: 2.5rem;
-        padding: 0.32rem 0.28rem 0.28rem;
+        padding: 0.32rem 0.32rem 0.28rem;
         border-radius: 8px;
       }
       .table-wrap.table-cards .wait-table tbody td.wait-col .wait-extra {
-        max-width: 100%;
+        max-width: none;
         font-size: 0.52rem;
       }
       .table-wrap.table-cards .wait-na {
@@ -4080,32 +4078,56 @@
         </div>
         ${noticesHtml}`;
 
-      // Match every wait chip to the tallest chip in the All filter
+      // Match every wait chip to the largest message (uniform width + height)
       syncMexicoNameVisibility();
       requestAnimationFrame(function () {
         equalizeAllFilterChipHeights();
       });
     }
 
-    /** All filter: set every wait tile height to the tallest tile (full content visible). */
+    function remPx(n) {
+      const fs = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      return (Number.isFinite(fs) ? fs : 16) * n;
+    }
+
+    function equalizeChipGroup(nodes, minRem) {
+      if (!nodes.length) return;
+      nodes.forEach(function (el) {
+        el.style.width = "max-content";
+        el.style.minWidth = "";
+        el.style.maxWidth = "none";
+        el.style.height = "auto";
+        el.style.minHeight = "";
+      });
+      let maxW = 0;
+      let maxH = 0;
+      nodes.forEach(function (el) {
+        maxW = Math.max(maxW, Math.ceil(el.scrollWidth), Math.ceil(el.offsetWidth));
+        maxH = Math.max(maxH, Math.ceil(el.scrollHeight), Math.ceil(el.offsetHeight));
+      });
+      maxW = Math.max(maxW, Math.round(remPx(minRem)));
+      if (maxH < 1) return;
+      const w = maxW + "px";
+      const h = maxH + "px";
+      nodes.forEach(function (el) {
+        el.style.width = w;
+        el.style.minWidth = w;
+        el.style.maxWidth = w;
+        el.style.height = h;
+        el.style.minHeight = h;
+      });
+    }
+
+    /** All filter: one width/height for every wait tile so messages fit and stay uniform. */
     function equalizeAllFilterChipHeights() {
       const stacks = document.querySelectorAll(
         ".table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack"
       );
-      if (!stacks.length) return;
-      stacks.forEach(function (el) {
-        el.style.height = "auto";
-        el.style.minHeight = "";
-      });
-      let maxH = 0;
-      stacks.forEach(function (el) {
-        maxH = Math.max(maxH, el.offsetHeight);
-      });
-      if (maxH < 1) return;
-      stacks.forEach(function (el) {
-        el.style.height = maxH + "px";
-        el.style.minHeight = maxH + "px";
-      });
+      const minRem = window.matchMedia("(max-width: 720px)").matches ? 5.75 : 6.75;
+      equalizeChipGroup(stacks, minRem);
+
+      const mobile = document.querySelectorAll(".mobile-cards .m-wait-block");
+      equalizeChipGroup(mobile, 5.5);
     }
 
     function render(data, sourceLabel, isLive) {
