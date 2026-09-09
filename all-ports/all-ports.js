@@ -749,43 +749,40 @@
   }
 
   /**
-   * Filter-bar "Latest report" instant in Chicago time.
-   * Uses the most common Central Time CBP hour (e.g. 8:00 pm CDT),
-   * not a late MST/PDT stamp converted to 1:00 am.
+   * Last wait-time pull for the ports on screen: newest CBP lane stamp
+   * in the timezone most of those ports use (so a stale 11:00 pm MST
+   * Nogales row cannot become "1:00 am CDT" while Texas shows 7:00 pm).
    */
-  function typicalChicagoMs(items) {
+  function latestPull(items) {
     var list = items || [];
-    var centralCounts = {};
-    var centralBest = {};
-    var allCounts = {};
-    var allBest = {};
+    var zoneCounts = {};
+    var rows = [];
     for (var i = 0; i < list.length; i++) {
       var stamp = collectPortAsOf(list[i]);
       if (!stamp || stamp.ms == null) continue;
-      var parts = clockPartsInZone(stamp.ms, "America/Chicago");
-      if (!parts) continue;
-      var key = parts.hour + ":" + parts.minute + " " + parts.ampm;
-      var isCentral = list[i].timeZone === "America/Chicago";
-      var counts = isCentral ? centralCounts : allCounts;
-      var best = isCentral ? centralBest : allBest;
-      counts[key] = (counts[key] || 0) + 1;
-      if (best[key] == null || stamp.ms > best[key]) best[key] = stamp.ms;
+      var zone = list[i].timeZone || "";
+      rows.push({ stamp: stamp, zone: zone });
+      if (zone) zoneCounts[zone] = (zoneCounts[zone] || 0) + 1;
     }
-    function modeMs(counts, best) {
-      var modeCount = 0;
-      var ms = null;
-      Object.keys(counts).forEach(function (key) {
-        var n = counts[key];
-        if (n > modeCount || (n === modeCount && (ms == null || best[key] > ms))) {
-          modeCount = n;
-          ms = best[key];
-        }
-      });
-      return ms;
+    if (!rows.length) return null;
+    var zone = "";
+    var bestN = 0;
+    Object.keys(zoneCounts).forEach(function (z) {
+      if (zoneCounts[z] > bestN) {
+        bestN = zoneCounts[z];
+        zone = z;
+      }
+    });
+    var best = null;
+    for (var j = 0; j < rows.length; j++) {
+      if (zone && rows[j].zone !== zone) continue;
+      if (!best || rows[j].stamp.ms >= best.stamp.ms) best = rows[j];
     }
-    var central = modeMs(centralCounts, centralBest);
-    if (central != null) return central;
-    return modeMs(allCounts, allBest);
+    if (!best) best = rows[0];
+    return {
+      stamp: best.stamp,
+      zone: best.zone || zone || userTimeZone()
+    };
   }
 
   function newestAsOfByTz(items) {
@@ -987,7 +984,7 @@
     }
 
     var traffic = state.prefs.traffic;
-    refreshAsOfStamp(list);
+    refreshAsOfStamp(shown.length ? shown : list);
     if (!shown.length) {
       host.innerHTML = '<p class="empty">' + t("empty") + "</p>";
       return;
@@ -1097,20 +1094,15 @@
   }
 
   function refreshAsOfStamp(items) {
-    var stamp = document.getElementById("asofStamp");
-    if (!stamp) return;
+    var el = document.getElementById("asofStamp");
+    if (!el) return;
     var list = items && items.length ? items : state.items;
-    var typicalMs = typicalChicagoMs(list);
-    if (typicalMs != null) {
-      stamp.textContent = formatStampInZone(typicalMs, userTimeZone());
+    var pull = latestPull(list);
+    if (pull && pull.stamp && pull.stamp.ms != null) {
+      el.textContent = formatStampInZone(pull.stamp.ms, pull.zone);
       return;
     }
-    var newest = newestAsOf(list);
-    if (newest && newest.ms != null) {
-      stamp.textContent = formatStampInZone(newest.ms, userTimeZone());
-      return;
-    }
-    stamp.textContent = "—";
+    el.textContent = "—";
   }
 
   function requestGeo() {
