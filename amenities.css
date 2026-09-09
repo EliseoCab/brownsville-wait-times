@@ -16,9 +16,11 @@
   --green: #059669;
   --amber: #d97706;
   --amber-bg: #fffbeb;
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
-  --shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
-  --shadow-lg: 0 20px 50px rgba(11, 31, 58, 0.12);
+  --shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 8px 24px rgba(15, 47, 84, 0.08);
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 10px 30px rgba(15, 47, 84, 0.1);
+  --shadow-lg: 0 1px 0 rgba(255, 255, 255, 0.85) inset, 0 18px 44px rgba(11, 31, 58, 0.12);
+  --glass: linear-gradient(180deg, rgba(255, 255, 255, 0.64), rgba(255, 255, 255, 0.32));
+  --glass-border: rgba(255, 255, 255, 0.74);
   --radius: 16px;
   --radius-sm: 10px;
   --font: "DM Sans", system-ui, -apple-system, sans-serif;
@@ -43,6 +45,8 @@ html[data-theme="dark"] {
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.45);
+  --glass: var(--white);
+  --glass-border: var(--line);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -477,4 +481,41 @@ html[data-theme="dark"] .callout {
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .photo-lightbox { transition: none; }
+}
+
+html:not([data-theme="dark"]) body {
+  background:
+    radial-gradient(1200px 520px at 8% -10%, rgba(125, 211, 252, 0.5), transparent 55%),
+    radial-gradient(900px 480px at 108% 8%, rgba(253, 186, 116, 0.28), transparent 50%),
+    linear-gradient(180deg, #e8f4ff 0%, #f4f8fc 48%, #eef6fb 100%);
+}
+html:not([data-theme="dark"]) .shell,
+html:not([data-theme="dark"]) .poi {
+  background: var(--glass);
+  border-color: var(--glass-border);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px) saturate(1.55);
+  -webkit-backdrop-filter: blur(20px) saturate(1.55);
+}
+html:not([data-theme="dark"]) .seg,
+html:not([data-theme="dark"]) .chip,
+html:not([data-theme="dark"]) .bridge-tabs a,
+html:not([data-theme="dark"]) .icon-btn {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.4));
+  border-color: var(--glass-border);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+}
+html:not([data-theme="dark"]) .chip.active,
+html:not([data-theme="dark"]) .seg button.active {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.58));
+  color: var(--ink);
+  border-color: var(--glass-border);
+  box-shadow: 0 1px 0 #fff inset;
+}
+html:not([data-theme="dark"]) .callout {
+  background: linear-gradient(180deg, rgba(224, 242, 254, 0.7), rgba(255, 255, 255, 0.4));
+  border-color: rgba(186, 230, 253, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }

@@ -27,8 +27,10 @@
       --green: #059669;
       --orange: #d97706;
       --red: #dc2626;
-      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
-      --shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+      --shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 8px 24px rgba(15, 47, 84, 0.08);
+      --shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 10px 30px rgba(15, 47, 84, 0.1);
+      --glass: linear-gradient(180deg, rgba(255, 255, 255, 0.64), rgba(255, 255, 255, 0.32));
+      --glass-border: rgba(255, 255, 255, 0.74);
       --radius: 16px;
       --font: "DM Sans", system-ui, -apple-system, sans-serif;
       --display: "Instrument Serif", Georgia, serif;
@@ -45,6 +47,8 @@
       --sky-deep: #7dd3fc;
       --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
       --shadow: 0 4px 24px rgba(0,0,0,.4);
+      --glass: var(--white);
+      --glass-border: var(--line);
     }
     * { box-sizing: border-box; }
     body {
@@ -314,6 +318,43 @@
     }
     @media (max-width: 720px) {
       .port-grid { grid-template-columns: 1fr; }
+    }
+
+    html:not([data-theme="dark"]) body {
+      background:
+        radial-gradient(1200px 520px at 8% -10%, rgba(125, 211, 252, 0.5), transparent 55%),
+        radial-gradient(900px 480px at 108% 8%, rgba(253, 186, 116, 0.28), transparent 50%),
+        linear-gradient(180deg, #e8f4ff 0%, #f4f8fc 48%, #eef6fb 100%);
+    }
+    html:not([data-theme="dark"]) .topbar {
+      background: linear-gradient(180deg, rgba(11, 31, 58, 0.78), rgba(11, 31, 58, 0.62));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.16) inset;
+      backdrop-filter: blur(18px) saturate(1.4);
+      -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    }
+    html:not([data-theme="dark"]) .panel,
+    html:not([data-theme="dark"]) .port-card {
+      background: var(--glass);
+      border-color: var(--glass-border);
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(18px) saturate(1.55);
+      -webkit-backdrop-filter: blur(18px) saturate(1.55);
+    }
+    html:not([data-theme="dark"]) .seg-lite,
+    html:not([data-theme="dark"]) select,
+    html:not([data-theme="dark"]) .cell,
+    html:not([data-theme="dark"]) .pill,
+    html:not([data-theme="dark"]) #showMoreBtn {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.4));
+      border-color: var(--glass-border);
+      backdrop-filter: blur(12px) saturate(1.4);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    }
+    html:not([data-theme="dark"]) .seg-lite button.active {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.58));
+      color: var(--ink);
+      box-shadow: 0 1px 0 #fff inset;
     }
   </style>
 </head>
