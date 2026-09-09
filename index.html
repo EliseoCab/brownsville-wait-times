@@ -790,8 +790,7 @@
     }
     .table-wrap.table-cards .wait-table {
       border-collapse: separate;
-      /* horizontal 0; vertical = barely-visible gap between bridge tiles */
-      border-spacing: 0 2px;
+      border-spacing: 0;
       background: transparent;
     }
     /* Uniform navy header bar on top */
@@ -1319,10 +1318,10 @@
     }
 
     .notice {
-      padding: 0.7rem 0.85rem;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #eff6ff, #f0f9ff);
-      border: 1px solid #bfdbfe;
+      padding: 0.55rem 0.15rem 0.1rem;
+      border-radius: 0;
+      background: transparent;
+      border: none;
       font-size: 0.8rem;
       color: #1e3a5f;
       line-height: 1.4;
@@ -1335,27 +1334,56 @@
       color: var(--sky-deep);
       margin-bottom: 0.2rem;
     }
+    .table-wrap.table-cards .wait-table tbody tr.has-notice td {
+      border-bottom: none;
+    }
     .table-wrap.table-cards .wait-table tbody tr.has-notice td.bridge {
       border-bottom-left-radius: 0;
     }
     .table-wrap.table-cards .wait-table tbody tr.has-notice td:last-child {
       border-bottom-right-radius: 0;
     }
-    .table-wrap.table-cards .wait-table tbody tr.notice-row td {
+    .table-wrap.table-cards .wait-table tbody tr.notice-row td,
+    .table-wrap.table-cards .wait-table tbody tr.notice-row td:last-child {
       border-top: none;
-      padding: 0 0.7rem 0.55rem;
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 0.15rem 0.7rem 0.55rem;
       border-radius: 0 0 12px 12px;
       vertical-align: top;
     }
     .table-wrap.table-cards .wait-table tbody tr.notice-row td .notice {
       margin: 0;
+      padding: 0.45rem 0.65rem 0.4rem;
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(14, 165, 233, 0.1), rgba(239, 246, 255, 0.28));
+      box-shadow: inset 0 1px 0 rgba(14, 116, 144, 0.14);
+    }
+    .table-wrap.table-cards .wait-table tbody tr.band-gap td {
+      height: 8px;
+      padding: 0 !important;
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border-radius: 0 !important;
+    }
+    .table-wrap.table-cards .wait-table tbody tr.band-gap:last-child {
+      display: none;
     }
     .wait-table tbody tr.notice-row td {
-      padding: 0 0.7rem 0.65rem;
+      padding: 0.15rem 0.7rem 0.55rem;
       vertical-align: top;
     }
     .m-row-notice {
       grid-column: 1 / -1;
+      padding-top: 0.2rem;
+    }
+    .m-row-notice .notice {
+      padding: 0.45rem 0.15rem 0.05rem;
+      box-shadow: inset 0 1px 0 rgba(14, 116, 144, 0.14);
     }
 
     @media print {
@@ -1694,7 +1722,7 @@
 
     @media (max-width: 720px) {
       .table-wrap.table-cards .wait-table {
-        border-spacing: 0 1px; /* barely-visible vertical gap */
+        border-spacing: 0;
         min-width: 0;
       }
       .table-wrap.table-cards .wait-table thead th {
@@ -2414,9 +2442,14 @@
       background: linear-gradient(180deg, #2a0b0b 0%, var(--white) 75%);
     }
     html[data-theme="dark"] .notice {
-      background: linear-gradient(135deg, #13233d, #102030);
-      border-color: #1e3a5f;
       color: #d6e4f5;
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody tr.notice-row td .notice {
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.12), rgba(15, 23, 42, 0.2));
+      box-shadow: inset 0 1px 0 rgba(125, 211, 252, 0.16);
+    }
+    html[data-theme="dark"] .m-row-notice .notice {
+      box-shadow: inset 0 1px 0 rgba(125, 211, 252, 0.16);
     }
     html[data-theme="dark"] .auto-badge {
       background: #0b2a3d;
@@ -2555,7 +2588,7 @@
       -webkit-backdrop-filter: blur(12px) saturate(1.4);
     }
     html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table {
-      border-spacing: 0 6px;
+      border-spacing: 0;
     }
     html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table thead th {
       background: linear-gradient(180deg, rgba(11, 31, 58, 0.82), rgba(18, 48, 86, 0.7));
@@ -2639,11 +2672,23 @@
       backdrop-filter: blur(16px) saturate(1.55);
       -webkit-backdrop-filter: blur(16px) saturate(1.55);
     }
-    html:not([data-theme="dark"]) .notice {
-      background: linear-gradient(180deg, rgba(239, 246, 255, 0.72), rgba(255, 255, 255, 0.4));
-      border-color: rgba(191, 219, 254, 0.8);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+    html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody tr.has-notice td {
+      border-bottom: none;
+    }
+    html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody tr.notice-row td,
+    html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody tr.notice-row td:last-child {
+      border-top: none;
+      border-left: 1px solid rgba(255, 255, 255, 0.72);
+      border-right: 1px solid rgba(255, 255, 255, 0.72);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 0 0 12px 12px;
+    }
+    html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody tr.notice-row td .notice {
+      background: linear-gradient(180deg, rgba(14, 165, 233, 0.1), rgba(255, 255, 255, 0.18));
+      box-shadow: inset 0 1px 0 rgba(14, 116, 144, 0.12);
+      border: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
     html:not([data-theme="dark"]) footer {
       background: transparent;
@@ -2804,7 +2849,7 @@
       border-color: rgba(125, 211, 252, 0.14);
       box-shadow: 0 1px 0 rgba(186, 230, 253, 0.1) inset;
     }
-    html[data-theme="dark"] .table-wrap.table-cards .wait-table { border-spacing: 0 6px; }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table { border-spacing: 0; }
     html[data-theme="dark"] .table-wrap.table-cards .wait-table thead th {
       background: linear-gradient(180deg, rgba(8, 18, 32, 0.88), rgba(14, 28, 48, 0.72));
       border: 1px solid rgba(125, 211, 252, 0.16);
@@ -2841,6 +2886,17 @@
     }
     html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td:last-child {
       border-right: 1px solid rgba(125, 211, 252, 0.16);
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody tr.has-notice td {
+      border-bottom: none;
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody tr.notice-row td,
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody tr.notice-row td:last-child {
+      border-top: none;
+      border-left: 1px solid rgba(125, 211, 252, 0.16);
+      border-right: 1px solid rgba(125, 211, 252, 0.16);
+      border-bottom: 1px solid rgba(125, 211, 252, 0.16);
+      border-radius: 0 0 12px 12px;
     }
     html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody tr:hover td {
       box-shadow: 0 1px 0 rgba(186, 230, 253, 0.12) inset, 0 -1px 0 rgba(0, 0, 0, 0.35) inset;
@@ -4810,9 +4866,11 @@
           ? `<span class="m-row-updated">${escapeHtml(t("bridgeUpdated"))} ${escapeHtml(updatedLabel)}</span>`
           : "";
         const noticeHtml = noticeBannerHtml(port);
+        const colCount = waitCols.length + 1;
         const noticeRow = noticeHtml
-          ? `<tr class="notice-row"><td colspan="${waitCols.length + 1}">${noticeHtml}</td></tr>`
+          ? `<tr class="notice-row"><td colspan="${colCount}">${noticeHtml}</td></tr>`
           : "";
+        const gapRow = `<tr class="band-gap" aria-hidden="true"><td colspan="${colCount}"></td></tr>`;
         tableRows.push(`
           <tr class="${noticeHtml ? "has-notice" : ""}">
             <td class="bridge">
@@ -4823,7 +4881,8 @@
             </td>
             ${tdHtml}
           </tr>
-          ${noticeRow}`);
+          ${noticeRow}
+          ${gapRow}`);
 
         // Compact phone cards (used for Pedestrian / few-column filters)
         const waitBlocks = waitCols.map((c) => {
