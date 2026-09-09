@@ -188,8 +188,26 @@
     }
     .topbar-live {
       display: inline-flex;
+      flex-wrap: wrap;
       align-items: center;
+      gap: 0.3rem 0.55rem;
+    }
+    .topbar-sep {
+      opacity: 0.35;
+      font-weight: 400;
+    }
+    .topbar-next {
+      display: inline-flex;
+      align-items: baseline;
       gap: 0.35rem;
+      color: rgba(255, 255, 255, 0.72);
+      font-weight: 500;
+    }
+    .topbar-next strong {
+      color: #fff;
+      font-weight: 650;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.01em;
     }
     .pulse {
       width: 8px;
@@ -2566,6 +2584,11 @@
       <div class="topbar-live">
         <span class="pulse" id="livePulse" aria-hidden="true"></span>
         <span id="liveLabel" data-i18n="checkingFeed">Checking CBP feed…</span>
+        <span class="topbar-sep" aria-hidden="true">·</span>
+        <span class="topbar-next">
+          <span data-i18n="nextCheckIn">Next check in</span>
+          <strong id="nextRefresh">—</strong>
+        </span>
       </div>
       <div class="topbar-controls">
         <span><span data-i18n="officialData">Official CBP data</span> ·
@@ -2591,16 +2614,6 @@
     <div class="hero-inner">
       <div class="eyebrow" data-i18n="eyebrow">U.S. – Mexico Land Border · Texas</div>
       <h1 data-i18n="heroTitle">Brownsville Port of Entry</h1>
-      <div class="hero-meta">
-        <div class="meta-chip">
-          <div class="label" data-i18n="lastChecked">Last checked</div>
-          <div class="value" id="loadedAt">—</div>
-        </div>
-        <div class="meta-chip">
-          <div class="label" data-i18n="nextAutoRefresh">Next auto-refresh</div>
-          <div class="value" id="nextRefresh">—</div>
-        </div>
-      </div>
     </div>
   </header>
 
@@ -3098,6 +3111,59 @@
       return (STR[currentLang] && STR[currentLang][key]) || STR.en[key] || key;
     }
 
+    const NOTICE_ES = {
+      "the pedestrian dedicated lane is now operational at gateway bridge and may be used with a valid u.s. passport or sentri card.":
+        "El carril peatonal dedicado ya está en operación en el Puente Gateway y puede usarse con un pasaporte de EE. UU. válido o una tarjeta SENTRI.",
+      "pedestrian access closes at 10:00 pm and reopens at 6:00 am, seven days a week. the closest pedestrian crossing is gateway bridge.":
+        "El acceso peatonal cierra a las 10:00 p.m. y reabre a las 6:00 a.m., los siete días de la semana. El cruce peatonal más cercano es el Puente Gateway."
+    };
+
+    function noticeKey(text) {
+      return String(text || "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase();
+    }
+
+    function translateNotice(text) {
+      const cleaned = String(text || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      if (!cleaned) return "";
+      if (currentLang !== "es") return cleaned;
+      const exact = NOTICE_ES[noticeKey(cleaned)];
+      if (exact) return exact;
+      let s = cleaned;
+      const pairs = [
+        [/Pedestrian Dedicated Lane/gi, "carril peatonal dedicado"],
+        [/Ready Lanes?/gi, "carril Ready"],
+        [/SENTRI card/gi, "tarjeta SENTRI"],
+        [/valid U\.S\. passport/gi, "pasaporte de EE. UU. válido"],
+        [/Gateway Bridge/gi, "Puente Gateway"],
+        [/seven days a week/gi, "los siete días de la semana"],
+        [/Monday through Thursday/gi, "de lunes a jueves"],
+        [/Monday through Friday/gi, "de lunes a viernes"],
+        [/Saturday\/Sunday Closed/gi, "sábado y domingo cerrado"],
+        [/is now operational/gi, "ya está en operación"],
+        [/may be used with/gi, "puede usarse con"],
+        [/is available from/gi, "está disponible de"],
+        [/is open from/gi, "está abierto de"],
+        [/until MIDNIGHT/gi, "hasta medianoche"],
+        [/until midnight/gi, "hasta medianoche"],
+        [/for more information/gi, "para más información"],
+        [/Tune in to/gi, "Sintonice"],
+        [/for border crossing information/gi, "para información de cruce fronterizo"],
+        [/The closest pedestrian crossing is/gi, "El cruce peatonal más cercano es"],
+        [/Pedestrian access closes at/gi, "El acceso peatonal cierra a las"],
+        [/and reopens at/gi, "y reabre a las"],
+        [/More at:/gi, "Más en:"],
+        [/Go to/gi, "Visite"],
+        [/construction that may cause some delays/gi, "obras que pueden causar demoras"],
+        [/southbound lanes/gi, "carriles hacia el sur"]
+      ];
+      for (let i = 0; i < pairs.length; i++) s = s.replace(pairs[i][0], pairs[i][1]);
+      return s;
+    }
+
 
 
     const PORT_META = {
@@ -3196,9 +3262,8 @@
         return;
       }
       const countdown = formatCountdown(msLeft);
-      const clock = formatClockTime(nextRefreshAt);
-      if (a) a.textContent = clock + " (" + countdown + ")";
-      if (b) b.textContent = countdown + " · " + clock;
+      if (a) a.textContent = countdown;
+      if (b) b.textContent = countdown;
     }
 
     function scheduleAutoRefresh() {
@@ -3419,7 +3484,7 @@
 
       let notice = null;
       const n = plain.match(/Border Notice:\s*(.+)/i);
-      if (n) notice = n[1].replace(/\s+/g, " ").trim();
+      if (n) notice = n[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
       return {
         hours: hoursMatch ? hoursMatch[1].trim() : "—",
@@ -4299,7 +4364,7 @@
 
       const noticesHtml = notices.length
         ? `<div class="notices-block">${notices.map((n) =>
-            `<div class="notice"><div class="notice-label">${escapeHtml(t("borderNotice"))}</div><span class="bridge-tag">${escapeHtml(n.bridge)}:</span> ${escapeHtml(n.text)}</div>`
+            `<div class="notice"><div class="notice-label">${escapeHtml(t("borderNotice"))}</div><span class="bridge-tag">${escapeHtml(n.bridge)}:</span> ${escapeHtml(translateNotice(n.text))}</div>`
           ).join("")}</div>`
         : "";
 
@@ -4412,10 +4477,6 @@
 
     function render(data, sourceLabel, isLive) {
       lastData = data;
-      document.getElementById("loadedAt").textContent = new Date().toLocaleString(undefined, {
-        dateStyle: "medium",
-        timeStyle: "short"
-      });
       document.getElementById("liveLabel").textContent = sourceLabel;
       const pulse = document.getElementById("livePulse");
       pulse.classList.toggle("cached", !isLive);
