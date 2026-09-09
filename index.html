@@ -807,7 +807,7 @@
       border-bottom: 1px solid var(--line);
       border-left: none;
       border-right: none;
-      box-shadow: 0 1px 6px rgba(15, 23, 42, 0.05);
+      box-shadow: none;
       padding: 0.35rem 0.35rem;
       vertical-align: middle;
       border-radius: 0;
@@ -829,6 +829,7 @@
       vertical-align: middle;
       padding-left: 1px;
       padding-right: 1px;
+      border-left: none;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col:last-child {
       padding-right: 1px;
@@ -2331,10 +2332,10 @@
     html:not([data-theme="dark"]) body {
       padding-top: 0.7rem;
       background:
-        radial-gradient(1200px 520px at 8% -10%, rgba(125, 211, 252, 0.55), transparent 55%),
-        radial-gradient(900px 480px at 108% 8%, rgba(253, 186, 116, 0.38), transparent 50%),
+        radial-gradient(1100px 480px at 0% -8%, rgba(125, 211, 252, 0.92), transparent 58%),
+        radial-gradient(900px 420px at 100% -4%, rgba(253, 186, 116, 0.72), transparent 54%),
         radial-gradient(700px 420px at 50% 110%, rgba(45, 212, 191, 0.22), transparent 55%),
-        linear-gradient(180deg, #e8f4ff 0%, #f4f8fc 42%, #eef6fb 100%);
+        linear-gradient(105deg, #cfe8ff 0%, #e7f3ff 38%, #f6efe6 72%, #f8eee4 100%);
     }
     html:not([data-theme="dark"]) body::before {
       content: "";
@@ -2473,22 +2474,25 @@
       box-shadow: 0 1px 0 rgba(255, 255, 255, 0.16) inset;
     }
     html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody td,
-    html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody td.bridge {
+    html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody td.bridge,
+    html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody td.wait-col,
+    html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody td:last-child {
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.34));
       border-top: 1px solid rgba(255, 255, 255, 0.72);
       border-bottom: 1px solid rgba(255, 255, 255, 0.72);
       border-left: none;
       border-right: none;
-      box-shadow: none;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 -1px 0 rgba(14, 116, 144, 0.06) inset;
       backdrop-filter: blur(22px) saturate(1.7);
       -webkit-backdrop-filter: blur(22px) saturate(1.7);
     }
     html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody td.bridge {
       border-left: 1px solid rgba(255, 255, 255, 0.72);
-      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 -1px 0 rgba(14, 116, 144, 0.06) inset;
     }
     html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody td:last-child {
       border-right: 1px solid rgba(255, 255, 255, 0.72);
+    }
+    html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody tr:hover td {
       box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 -1px 0 rgba(14, 116, 144, 0.06) inset;
     }
     html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
