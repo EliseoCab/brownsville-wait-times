@@ -1,3 +1,9 @@
+food/whataburger.jpg
+  Subject: Whataburger restaurant exterior (Austin, Texas)
+  Source: Wikimedia Commons, File:Whataburger.jpg by Kurt Kaiser
+  License: CC0 1.0 Universal
+  https://commons.wikimedia.org/wiki/File:Whataburger.jpg
+
 starbase-boca-chica.jpg
   Subject: SpaceX Starship / launch tower (card crop — nose, chopsticks, illuminated stack)
   Source: User-supplied night photo for Brownsville Border Wait Times

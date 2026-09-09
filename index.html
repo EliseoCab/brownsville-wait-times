@@ -605,6 +605,19 @@
       line-height: 1.3;
       max-width: 16ch;
     }
+    .stat-card.leave-card {
+      min-width: min(100%, 12.5rem);
+      cursor: default;
+    }
+    .stat-card.leave-card.is-action {
+      cursor: pointer;
+    }
+    .stat-card.leave-card .kicker {
+      white-space: normal;
+    }
+    .stat-card.leave-card .hint {
+      max-width: none;
+    }
     @media (max-width: 560px) {
       .stat-card {
         flex: 1 1 calc(50% - 0.35rem);
@@ -842,6 +855,9 @@
     .table-wrap.table-cards .wait-table tbody td.wait-col:last-child {
       padding-right: 1px;
     }
+    .table-wrap.table-cards .wait-table tbody td.wait-col .wait-col-inner {
+      width: 100%;
+    }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
       display: inline-flex;
       flex-direction: column;
@@ -876,7 +892,7 @@
       text-transform: uppercase;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-extra {
-      margin-top: 0.15rem;
+      margin-top: 0;
       line-height: 1.2;
       width: max-content;
       max-width: none;
@@ -1129,6 +1145,24 @@
     .wait-table td.bridge .updated-line {
       margin-top: 0.15rem;
     }
+    .wait-col-inner {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.18rem;
+      width: max-content;
+      min-width: 100%;
+      box-sizing: border-box;
+    }
+    .wait-extra.open-line {
+      display: block;
+      min-height: 1.05em;
+      white-space: nowrap;
+    }
+    .wait-extra.open-line.open-line-empty {
+      visibility: hidden;
+    }
     .wait-table td.wait-col {
       text-align: center;
       vertical-align: middle;
@@ -1284,31 +1318,44 @@
       word-break: break-word;
     }
 
-    .notices-block {
-      margin-top: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.65rem;
-    }
     .notice {
-      padding: 0.85rem 1rem;
-      border-radius: 12px;
+      padding: 0.7rem 0.85rem;
+      border-radius: 10px;
       background: linear-gradient(135deg, #eff6ff, #f0f9ff);
       border: 1px solid #bfdbfe;
-      font-size: 0.875rem;
+      font-size: 0.8rem;
       color: #1e3a5f;
+      line-height: 1.4;
     }
     .notice-label {
-      font-size: 0.68rem;
+      font-size: 0.62rem;
       font-weight: 800;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--sky-deep);
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.2rem;
     }
-    .notice .bridge-tag {
-      font-weight: 700;
-      color: var(--ink);
+    .table-wrap.table-cards .wait-table tbody tr.has-notice td.bridge {
+      border-bottom-left-radius: 0;
+    }
+    .table-wrap.table-cards .wait-table tbody tr.has-notice td:last-child {
+      border-bottom-right-radius: 0;
+    }
+    .table-wrap.table-cards .wait-table tbody tr.notice-row td {
+      border-top: none;
+      padding: 0 0.7rem 0.55rem;
+      border-radius: 0 0 12px 12px;
+      vertical-align: top;
+    }
+    .table-wrap.table-cards .wait-table tbody tr.notice-row td .notice {
+      margin: 0;
+    }
+    .wait-table tbody tr.notice-row td {
+      padding: 0 0.7rem 0.65rem;
+      vertical-align: top;
+    }
+    .m-row-notice {
+      grid-column: 1 / -1;
     }
 
     @media print {
@@ -1554,6 +1601,10 @@
       justify-content: center;
       text-align: center;
       overflow: visible;
+    }
+    .m-wait-block .wait-extra.open-line {
+      margin-top: 0.12rem;
+      font-size: 0.58rem;
     }
     .m-wait-block .m-lab {
       display: block;
@@ -2016,6 +2067,42 @@
       display: block;
       background: #07101c;
     }
+    .live-cam-still {
+      position: absolute;
+      inset: 0;
+      border: 0;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+      background: #07101c;
+      display: block;
+    }
+    .live-cam-still img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .live-cam-play {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(7, 16, 28, 0.72);
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      padding: 0.42rem 0.8rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .live-cam-card.is-live .live-cam-still { display: none; }
+    .live-cam-frame iframe[hidden] { display: none; }
     .live-cam-meta {
       display: flex;
       flex-wrap: wrap;
@@ -2881,10 +2968,10 @@
         <div class="stat" id="statTrusted">—</div>
         <div class="hint" id="statTrustedHint" data-i18n="statTrustedHint">SENTRI lanes only</div>
       </div>
-      <div class="stat-card">
-        <div class="kicker" data-i18n="statNotices">Active notices</div>
-        <div class="stat" id="statNotices">—</div>
-        <div class="hint" data-i18n="statNoticesHint">Border advisories from CBP</div>
+      <div class="stat-card leave-card" id="leaveCard">
+        <div class="kicker" data-i18n="statLeave">Leave now</div>
+        <div class="stat" id="statLeave">—</div>
+        <div class="hint" id="statLeaveHint" data-i18n="statLeaveHint">Nearest vehicle bridge</div>
       </div>
     </section>
 
@@ -2943,32 +3030,42 @@
       <div class="live-cams-grid" id="liveCamsGrid">
         <article class="live-cam-card" data-cam-alias="5df59f3827371" hidden>
           <div class="live-cam-frame">
+            <button type="button" class="live-cam-still" data-i18n-aria="liveCamTapAria" aria-label="Tap for live camera">
+              <img class="live-cam-shot" alt="" />
+              <span class="live-cam-play" data-i18n="liveCamTap">Tap for live</span>
+            </button>
             <iframe
               data-src="https://g3.ipcamlive.com/player/player.php?alias=5df59f3827371"
               title="Live camera · Old Bridge (B&amp;M Express)"
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
               allowfullscreen
+              hidden
             ></iframe>
           </div>
           <div class="live-cam-meta">
             <span class="live-cam-name" data-i18n="liveCamOld">Old Bridge (B&amp;M Express)</span>
-            <span class="live-cam-tag" data-i18n="liveCamLive">Live</span>
+            <span class="live-cam-tag" data-i18n="liveCamStill">Still</span>
           </div>
         </article>
         <article class="live-cam-card" data-cam-alias="61af904e45b24" hidden>
           <div class="live-cam-frame">
+            <button type="button" class="live-cam-still" data-i18n-aria="liveCamTapAria" aria-label="Tap for live camera">
+              <img class="live-cam-shot" alt="" />
+              <span class="live-cam-play" data-i18n="liveCamTap">Tap for live</span>
+            </button>
             <iframe
               data-src="https://g3.ipcamlive.com/player/player.php?alias=61af904e45b24"
               title="Live camera · New Bridge (Gateway)"
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
               allowfullscreen
+              hidden
             ></iframe>
           </div>
           <div class="live-cam-meta">
             <span class="live-cam-name" data-i18n="liveCamNew">New Bridge (Gateway)</span>
-            <span class="live-cam-tag" data-i18n="liveCamLive">Live</span>
+            <span class="live-cam-tag" data-i18n="liveCamStill">Still</span>
           </div>
         </article>
       </div>
@@ -3102,13 +3199,18 @@
         statTrusted: "Best SENTRI",
         statTrustedReady: "Best Ready",
         statTrustedFast: "Best FAST",
-        statNotices: "Active notices",
+        statLeave: "Leave now",
+        statLeaveHint: "Nearest vehicle bridge",
+        statLeaveNeedLoc: "Allow location for nearest-bridge leave time",
+        statLeaveDenied: "Location off — enable it for a leave time",
+        statLeaveNoWait: "No vehicle wait at the nearest bridge",
+        leaveAtBooth: "Leave at {leave} for a {booth} booth.",
+        leaveDriveWait: "{bridge} · {drive} min drive + {wait} min wait + {buffer} min buffer",
         statShortHint: "Across open general lanes",
         statLongHint: "Plan extra time if needed",
         statTrustedHint: "SENTRI lanes only",
         statTrustedHintReady: "Pedestrian Ready lanes only",
         statTrustedHintFast: "Commercial FAST lanes only",
-        statNoticesHint: "Border advisories from CBP",
         autoRefresh: "Auto-refresh · every ~5 min",
         autoRefreshTitle: "While this tab is open, re-checks live CBP about every 5 minutes (not GitHub)",
         nextCheckIn: "Next check in",
@@ -3149,6 +3251,9 @@
         liveCamOld: "Old Bridge (B&M Express)",
         liveCamNew: "New Bridge (Gateway)",
         liveCamLive: "Live",
+        liveCamStill: "Still",
+        liveCamTap: "Tap for live",
+        liveCamTapAria: "Tap for live camera",
         liveCamsCredit: "Free community cameras by",
         liveCamsChecking: "Checking cameras…",
         liveCamsOffline: "Live cameras are temporarily unavailable. You can still open them on COMTODO.",
@@ -3234,13 +3339,18 @@
         statTrusted: "Mejor SENTRI",
         statTrustedReady: "Mejor carril Ready",
         statTrustedFast: "Mejor FAST",
-        statNotices: "Avisos activos",
+        statLeave: "Salga ahora",
+        statLeaveHint: "Puente vehicular más cercano",
+        statLeaveNeedLoc: "Permita la ubicación para la hora de salida",
+        statLeaveDenied: "Ubicación desactivada — actívela para una hora de salida",
+        statLeaveNoWait: "No hay espera vehicular en el puente más cercano",
+        leaveAtBooth: "Salga a las {leave} para caseta a las {booth}.",
+        leaveDriveWait: "{bridge} · {drive} min de manejo + {wait} min de espera + {buffer} min de margen",
         statShortHint: "En carriles generales abiertos",
         statLongHint: "Planea tiempo extra si hace falta",
         statTrustedHint: "Solo carriles SENTRI",
         statTrustedHintReady: "Solo carriles Ready peatonales",
         statTrustedHintFast: "Solo carriles FAST comerciales",
-        statNoticesHint: "Avisos fronterizos de CBP",
         autoRefresh: "Auto-actualización · cada ~5 min",
         autoRefreshTitle: "Con esta pestaña abierta, vuelve a consultar CBP cada 5 minutos",
         nextCheckIn: "Próxima revisión en",
@@ -3281,6 +3391,9 @@
         liveCamOld: "Puente Viejo (B&M Express)",
         liveCamNew: "Puente Nuevo (Gateway)",
         liveCamLive: "En vivo",
+        liveCamStill: "Foto",
+        liveCamTap: "Toque para en vivo",
+        liveCamTapAria: "Toque para cámara en vivo",
         liveCamsCredit: "Cámaras comunitarias gratis de",
         liveCamsChecking: "Revisando cámaras…",
         liveCamsOffline: "Las cámaras en vivo no están disponibles por ahora. Aún puede abrirlas en COMTODO.",
@@ -3421,28 +3534,36 @@
         aka: "Brownsville & Matamoros Bridge; Puente Internacional B&M; Puente Internacional Brownsville-Matamoros; Puente Viejo",
         mx: "Puente Viejo",
         mapsQuery: "Brownsville and Matamoros Bridge 1300 Mexico Blvd Brownsville TX",
-        blurb: "Downtown pedestrian-friendly crossing linking Brownsville and Matamoros."
+        blurb: "Downtown pedestrian-friendly crossing linking Brownsville and Matamoros.",
+        lat: 25.899,
+        lng: -97.497
       },
       "Brownsville - Gateway": {
         short: "Gateway",
         aka: "International Gateway Bridge; Puente Internacional Gateway; Puente Nuevo",
         mx: "Puente Nuevo",
         mapsQuery: "International Gateway Bridge 510 E 14th St Brownsville TX",
-        blurb: "Primary downtown vehicle & pedestrian bridge—often the busiest corridor."
+        blurb: "Primary downtown vehicle & pedestrian bridge—often the busiest corridor.",
+        lat: 25.9017,
+        lng: -97.4975
       },
       "Brownsville - Los Indios": {
         short: "Los Indios",
         aka: "Free Trade Bridge; Puente Internacional Lucio Blanco–Los Indios; Puente Lucio Blanco; Puente Internacional Libre Comercio; Puente Los Indios",
         mx: "Puente Los Indios",
         mapsQuery: "Free Trade Bridge 100 S Los Indios Blvd TX",
-        blurb: "West-side free trade bridge with commercial focus and typically lighter passenger traffic."
+        blurb: "West-side free trade bridge with commercial focus and typically lighter passenger traffic.",
+        lat: 26.048,
+        lng: -97.738
       },
       "Brownsville - Veterans International": {
         short: "Veterans",
         aka: "Veterans Bridge at Los Tomates; Puente Los Tomates; Puente Internacional de Veteranos en Los Tomates; Puente Ignacio Zaragoza; Puerta Matamoros III",
         mx: "Puente Los Tomates",
         mapsQuery: "Veterans Bridge at Los Tomates 3300 S Expressway 77 83 Brownsville TX",
-        blurb: "Major expressway connection (US‑77/83) with commercial, passenger, and SENTRI options."
+        blurb: "Major expressway connection (US‑77/83) with commercial, passenger, and SENTRI options.",
+        lat: 25.882,
+        lng: -97.478
       }
     };
 
@@ -3452,6 +3573,8 @@
     let lastData = null;
     let lastXmlText = null;
     let lastSourceId = null;
+    let userGeo = null; // { lat, lng } | "denied" | null
+    const LEAVE_BUFFER_MIN = 5;
     let lastIsLive = false;
     let lastFromAuto = false;
     let refreshTimer = null;
@@ -3860,17 +3983,128 @@
       }
     }
 
+    function haversineMiles(a, b) {
+      const R = 3958.8;
+      const toRad = function (d) { return d * Math.PI / 180; };
+      const dLat = toRad(b.lat - a.lat);
+      const dLng = toRad(b.lng - a.lng);
+      const s =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      return 2 * R * Math.asin(Math.min(1, Math.sqrt(s)));
+    }
+
+    function estimateDriveMinutes(miles) {
+      if (miles < 2.5) return Math.max(4, Math.round(miles * 4.2));
+      if (miles < 10) return Math.round(miles * 2.5);
+      return Math.max(12, Math.round(miles * 1.65));
+    }
+
+    function formatLeaveClock(date) {
+      let h = date.getHours();
+      const m = date.getMinutes();
+      h = h % 12 || 12;
+      return h + ":" + String(m).padStart(2, "0");
+    }
+
+    function passengerVehicleWait(port) {
+      const summary = summarizeMode(port.sections || [], "passenger");
+      if (!summary || !summary.primary || !isActiveWait(summary.primary)) return null;
+      return summary.primary.minutes;
+    }
+
+    function nearestVehicleLeave(data, geo) {
+      if (!data || !data.items || !geo) return null;
+      let best = null;
+      for (let i = 0; i < data.items.length; i++) {
+        const port = data.items[i];
+        const meta = port.meta || {};
+        if (meta.lat == null || meta.lng == null) continue;
+        const wait = passengerVehicleWait(port);
+        if (wait == null) continue;
+        const miles = haversineMiles(geo, { lat: meta.lat, lng: meta.lng });
+        if (!best || miles < best.miles) {
+          best = {
+            short: meta.short || port.title,
+            miles: miles,
+            wait: wait,
+            drive: estimateDriveMinutes(miles)
+          };
+        }
+      }
+      return best;
+    }
+
+    function updateLeaveCard(data) {
+      const card = document.getElementById("leaveCard");
+      const stat = document.getElementById("statLeave");
+      const hint = document.getElementById("statLeaveHint");
+      const kicker = card ? card.querySelector(".kicker") : null;
+      if (!card || !stat || !hint) return;
+
+      function setLeave(statText, hintText, actionable, kickerText) {
+        stat.textContent = statText;
+        stat.className = "stat";
+        hint.textContent = hintText;
+        if (kicker) kicker.textContent = kickerText || t("statLeave");
+        card.classList.toggle("is-action", !!actionable);
+      }
+
+      if (userGeo === "denied") {
+        setLeave("—", t("statLeaveDenied"), true);
+        return;
+      }
+      if (!userGeo) {
+        setLeave("—", t("statLeaveNeedLoc"), true);
+        return;
+      }
+      const pick = nearestVehicleLeave(data, userGeo);
+      if (!pick) {
+        setLeave("—", t("statLeaveNoWait"), false);
+        return;
+      }
+      const now = new Date();
+      now.setSeconds(0, 0);
+      const total = pick.drive + pick.wait + LEAVE_BUFFER_MIN;
+      const booth = new Date(now.getTime() + total * 60000);
+      const leaveStr = formatLeaveClock(now);
+      const boothStr = formatLeaveClock(booth);
+      stat.textContent = boothStr;
+      stat.className = "stat " + (pick.wait <= 15 ? "good" : pick.wait <= 45 ? "warn" : "bad");
+      if (kicker) kicker.textContent = t("statLeave") + " · " + pick.short;
+      hint.textContent = t("leaveAtBooth").replace("{leave}", leaveStr).replace("{booth}", boothStr);
+      card.classList.remove("is-action");
+    }
+
+    function requestUserGeo(forcePrompt) {
+      if (!navigator.geolocation) {
+        userGeo = "denied";
+        if (lastData) updateLeaveCard(lastData);
+        return;
+      }
+      if (userGeo && userGeo !== "denied" && !forcePrompt) return;
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          userGeo = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          if (lastData) updateLeaveCard(lastData);
+        },
+        function () {
+          userGeo = "denied";
+          if (lastData) updateLeaveCard(lastData);
+        },
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 5 * 60 * 1000 }
+      );
+    }
+
     function updateSummary(data) {
       applyStatCardLabels();
       const keys = statLabelKeys();
       const mode = filterGeneralMode();
       const generalWaits = [];
       const trustedWaits = [];
-      let notices = 0;
 
       const items = data && data.items ? data.items : [];
       for (const port of items) {
-        if (port.notice && portHasActiveForFilter(port)) notices++;
         for (const sec of port.sections) {
           for (const lane of sec.lanes) {
             if (lane.wait.minutes == null) continue;
@@ -3895,7 +4129,6 @@
       const shortEl = document.getElementById("statShort");
       const longEl = document.getElementById("statLong");
       const trustedEl = document.getElementById("statTrusted");
-      const noticesEl = document.getElementById("statNotices");
       const shortHint = document.getElementById("statShortHint");
       const longHint = document.getElementById("statLongHint");
       const trustedHint = document.getElementById("statTrustedHint");
@@ -3931,8 +4164,7 @@
         trustedHint.textContent = t(keys.noTrusted);
       }
 
-      noticesEl.textContent = String(notices);
-      noticesEl.className = "stat" + (notices ? " warn" : " good");
+      updateLeaveCard(data);
     }
 
     /** Pull general wait for a traffic mode; Ready shown as an extra under that mode. */
@@ -4127,12 +4359,10 @@
       }
 
       const openLine = formatOpenLine(summary, modeKey, port);
-      const openHtml = openLine
-        ? `<span class="wait-extra open-line">${escapeHtml(openLine)}</span>`
-        : "";
 
       return {
-        html: `<div class="wait-stack">${mainHtml}${openHtml}</div>`,
+        html: `<div class="wait-stack">${mainHtml}</div>`,
+        openLine: openLine || "",
         cls: (dual ? "has-dual " : "") + "has-" + w.cls
       };
     }
@@ -4330,13 +4560,14 @@
         const main = wait && (isActiveWait(wait) || wait.pending)
           ? waitCellHtml(wait)
           : `<span class="wait-empty">—</span>`;
-        let sub = `<span class="tag">${escapeHtml(t("ready"))}</span>`;
-        if (n != null && n > 0) sub += ` ${n} ${t("open")}`;
-        else if (wait && wait.closed) sub += ` ${t("closed").toLowerCase()}`;
-        else if (n === 0) sub += ` ${t("closed").toLowerCase()}`;
-        else if (wait && wait.pending) sub += ` ${t("pending")}`;
+        let openLine = "";
+        if (n != null && n > 0) openLine = n + " " + t("open");
+        else if (wait && wait.closed) openLine = t("closed").toLowerCase();
+        else if (n === 0) openLine = t("closed").toLowerCase();
+        else if (wait && wait.pending) openLine = t("pending");
         return {
-          html: `${main}<span class="wait-extra">${sub}</span>`,
+          html: main,
+          openLine: openLine,
           cls: wait && isActiveWait(wait) ? "has-" + wait.cls : (wait && wait.pending ? "has-pending" : "")
         };
       }
@@ -4353,12 +4584,13 @@
           : wait && wait.pending
             ? waitCellHtml(wait)
             : `<span class="wait-empty">—</span>`;
-        let sub = `<span class="tag">${escapeHtml(t("sentri"))}</span>`;
-        if (n != null && n > 0) sub += ` ${n} ${t("open")}`;
-        else if (wait && wait.closed) sub += ` ${t("closed").toLowerCase()}`;
-        else if (n === 0) sub += ` ${t("closed").toLowerCase()}`;
+        let openLine = "";
+        if (n != null && n > 0) openLine = n + " " + t("open");
+        else if (wait && wait.closed) openLine = t("closed").toLowerCase();
+        else if (n === 0) openLine = t("closed").toLowerCase();
         return {
-          html: `${main}<span class="wait-extra">${sub}</span>`,
+          html: main,
+          openLine: openLine,
           cls: wait && isActiveWait(wait) ? "has-" + wait.cls : (wait && wait.pending ? "has-pending" : "")
         };
       }
@@ -4371,34 +4603,27 @@
       if (commercialOnly) {
         const n = pick.lane.wait.lanesOpenCount;
         const closed = !!pick.lane.wait.closed;
-        let sub;
-        if (n != null && n > 0) {
-          sub = `<span class="tag">${escapeHtml(t("fast"))}</span> ${n} ${t("open")}`;
-        } else if (closed || n === 0) {
-          sub = `<span class="tag">${escapeHtml(t("fast"))}</span> ${t("closed").toLowerCase()}`;
-        } else if (pick.lane.wait.pending) {
-          sub = `<span class="tag">${escapeHtml(t("fast"))}</span> ${t("pending")}`;
-        } else {
-          sub = `<span class="tag">${escapeHtml(t("fast"))}</span>`;
-        }
+        let openLine = "";
+        if (n != null && n > 0) openLine = n + " " + t("open");
+        else if (closed || n === 0) openLine = t("closed").toLowerCase();
+        else if (pick.lane.wait.pending) openLine = t("pending");
         const main = isActiveWait(pick.lane.wait)
           ? waitCellHtml(pick.lane.wait)
           : `<span class="wait-empty">—</span>`;
         return {
-          html: `${main}<span class="wait-extra">${sub}</span>`,
+          html: main,
+          openLine: openLine,
           cls: isActiveWait(pick.lane.wait) ? "has-" + pick.lane.wait.cls : ""
         };
       }
 
-      const short = pick.lane.name.replace(/\s*Lane$/i, "");
-      const context = /fast/i.test(pick.lane.name)
-        ? t("filterCommercial")
-        : /sentri/i.test(pick.lane.name)
-          ? t("filterVehicles")
-          : pick.sectionTitle;
-      const extra = `<span class="tag">${escapeHtml(short)}</span> · ${escapeHtml(context)}`;
+      const n = pick.lane.wait && pick.lane.wait.lanesOpenCount;
+      let openLine = "";
+      if (n != null && n > 0) openLine = n + " " + t("open");
+      else if (pick.lane.wait && pick.lane.wait.closed) openLine = t("closed").toLowerCase();
       return {
-        html: `${waitCellHtml(pick.lane.wait)}<span class="wait-extra">${extra}</span>`,
+        html: waitCellHtml(pick.lane.wait),
+        openLine: openLine,
         cls: "has-" + pick.lane.wait.cls
       };
     }
@@ -4419,6 +4644,7 @@
       if (cellHasPublishedWait(cell)) {
         return {
           html: html.includes("wait-stack") ? html : `<div class="wait-stack">${html}</div>`,
+          openLine: (cell && cell.openLine) || "",
           cls: cls || "has-low"
         };
       }
@@ -4427,8 +4653,26 @@
           `<div class="wait-stack wait-stack-na">` +
           `<span class="wait-na">${escapeHtml(t("na"))}</span>` +
           `</div>`,
+        openLine: "",
         cls: "has-na"
       };
+    }
+
+    function openLineMarkup(text) {
+      if (text) {
+        return `<span class="wait-extra open-line">${escapeHtml(text)}</span>`;
+      }
+      return `<span class="wait-extra open-line open-line-empty" aria-hidden="true">&nbsp;</span>`;
+    }
+
+    function noticeBannerHtml(port) {
+      if (!port || !port.notice) return "";
+      return (
+        `<div class="notice">` +
+        `<div class="notice-label">${escapeHtml(t("borderNotice"))}</div>` +
+        escapeHtml(translateNotice(port.notice)) +
+        `</div>`
+      );
     }
 
     function showMexicoNames() {
@@ -4481,7 +4725,6 @@
 
     function renderPorts(data) {
       const grid = document.getElementById("portGrid");
-      const notices = [];
       const tableRows = [];
 
       const newestAsOf = collectAsOf(data);
@@ -4538,11 +4781,6 @@
       const mobileCards = [];
 
       for (const port of portsVisible) {
-
-        if (port.notice) {
-          notices.push({ bridge: port.meta.short, text: port.notice });
-        }
-
         let cells = {
           passenger: waitCellBlock(summarizeMode(port.sections, "passenger"), "passenger", port),
           pedestrian: waitCellBlock(summarizeMode(port.sections, "pedestrian"), "pedestrian", port),
@@ -4556,10 +4794,10 @@
 
         const tdHtml = waitCols.map((c) => {
           const cell = cells[c.key];
-          const inner = cell.html.includes("wait-stack")
+          const stack = cell.html.includes("wait-stack")
             ? cell.html
             : `<div class="wait-stack">${cell.html}</div>`;
-          return `<td class="wait-col ${cell.cls}">${inner}</td>`;
+          return `<td class="wait-col ${cell.cls}"><div class="wait-col-inner">${stack}${openLineMarkup(cell.openLine)}</div></td>`;
         }).join("");
 
         const hoursLabel = formatHoursOfOperation(port.hours);
@@ -4571,8 +4809,12 @@
         const updatedMobile = updatedLabel
           ? `<span class="m-row-updated">${escapeHtml(t("bridgeUpdated"))} ${escapeHtml(updatedLabel)}</span>`
           : "";
+        const noticeHtml = noticeBannerHtml(port);
+        const noticeRow = noticeHtml
+          ? `<tr class="notice-row"><td colspan="${waitCols.length + 1}">${noticeHtml}</td></tr>`
+          : "";
         tableRows.push(`
-          <tr>
+          <tr class="${noticeHtml ? "has-notice" : ""}">
             <td class="bridge">
               ${bridgeTitleHtml(port)}
               ${mexicoLineHtml(port, "mx-line")}
@@ -4580,17 +4822,19 @@
               ${updatedHtml}
             </td>
             ${tdHtml}
-          </tr>`);
+          </tr>
+          ${noticeRow}`);
 
         // Compact phone cards (used for Pedestrian / few-column filters)
         const waitBlocks = waitCols.map((c) => {
           const cell = cells[c.key];
-          const inner = cell.html.includes("wait-stack")
+          const stack = cell.html.includes("wait-stack")
             ? cell.html
             : `<div class="wait-stack">${cell.html}</div>`;
           return `<div class="m-wait-block ${cell.cls}">
             <span class="m-lab">${escapeHtml(c.label)}</span>
-            ${inner}
+            ${stack}
+            ${openLineMarkup(cell.openLine)}
           </div>`;
         }).join("");
 
@@ -4603,6 +4847,7 @@
               ${updatedMobile}
             </div>
             <div class="m-row-waits">${waitBlocks}</div>
+            ${noticeHtml ? `<div class="m-row-notice">${noticeHtml}</div>` : ""}
           </article>`);
       }
 
@@ -4610,12 +4855,6 @@
         grid.innerHTML = `<p class="empty">${escapeHtml(t("emptyFilter"))}</p>`;
         return;
       }
-
-      const noticesHtml = notices.length
-        ? `<div class="notices-block">${notices.map((n) =>
-            `<div class="notice"><div class="notice-label">${escapeHtml(t("borderNotice"))}</div><span class="bridge-tag">${escapeHtml(n.bridge)}:</span> ${escapeHtml(translateNotice(n.text))}</div>`
-          ).join("")}</div>`
-        : "";
 
       // Vehicles / Pedestrian / Commercial: same tight uniform layout; All is full card table
       const waitN = Math.max(waitCols.length, 1);
@@ -4659,8 +4898,7 @@
           <div class="mobile-cards">
             ${mobileCards.join("")}
           </div>
-        </div>
-        ${noticesHtml}`;
+        </div>`;
 
       // Match every wait chip to the largest message (uniform width + height)
       syncMexicoNameVisibility();
@@ -5041,6 +5279,11 @@
       }
       updateCountdown();
       refreshLiveCamsStatusCopy();
+      document.querySelectorAll(".live-cam-card").forEach(function (card) {
+        const tag = card.querySelector(".live-cam-tag");
+        if (!tag) return;
+        tag.textContent = card.classList.contains("is-live") ? t("liveCamLive") : t("liveCamStill");
+      });
     }
 
     function currentTheme() {
@@ -5092,6 +5335,37 @@
       });
     }
 
+    function cameraSnapshotUrl(alias) {
+      return (
+        "https://g3.ipcamlive.com/player/snapshot.php?alias=" +
+        encodeURIComponent(alias) +
+        "&_=" +
+        Date.now()
+      );
+    }
+
+    function activateLiveCam(card) {
+      if (!card || card.classList.contains("is-live")) return;
+      const frame = card.querySelector("iframe");
+      const src = frame && frame.getAttribute("data-src");
+      if (frame && src) {
+        frame.removeAttribute("hidden");
+        if (frame.getAttribute("src") !== src) frame.setAttribute("src", src);
+      }
+      card.classList.add("is-live");
+      const tag = card.querySelector(".live-cam-tag");
+      if (tag) tag.textContent = t("liveCamLive");
+    }
+
+    function bindLiveCamStill(card) {
+      const btn = card.querySelector(".live-cam-still");
+      if (!btn || btn.getAttribute("data-bound") === "1") return;
+      btn.setAttribute("data-bound", "1");
+      btn.addEventListener("click", function () {
+        activateLiveCam(card);
+      });
+    }
+
     async function setupLiveCams() {
       const section = document.getElementById("liveCams");
       const grid = document.getElementById("liveCamsGrid");
@@ -5106,10 +5380,12 @@
       liveCamsOnlineCount = 0;
       section.setAttribute("data-state", "checking");
       cards.forEach(function (card) {
+        if (card.classList.contains("is-live")) return;
         card.hidden = true;
         const frame = card.querySelector("iframe");
         if (frame) {
           frame.removeAttribute("src");
+          frame.setAttribute("hidden", "");
         }
       });
       grid.classList.remove("live-cams-grid-one");
@@ -5126,17 +5402,19 @@
 
       let online = 0;
       results.forEach(function (r) {
-        if (!r.ok) {
+        if (!r.ok && !r.card.classList.contains("is-live")) {
           r.card.hidden = true;
           return;
         }
         online += 1;
         r.card.hidden = false;
-        const frame = r.card.querySelector("iframe");
-        if (frame) {
-          const src = frame.getAttribute("data-src");
-          if (src && frame.getAttribute("src") !== src) frame.setAttribute("src", src);
-        }
+        bindLiveCamStill(r.card);
+        if (r.card.classList.contains("is-live")) return;
+        const alias = r.card.getAttribute("data-cam-alias");
+        const shot = r.card.querySelector(".live-cam-shot");
+        if (shot) shot.src = cameraSnapshotUrl(alias);
+        const tag = r.card.querySelector(".live-cam-tag");
+        if (tag) tag.textContent = t("liveCamStill");
       });
 
       liveCamsOnlineCount = online;
@@ -5156,7 +5434,6 @@
       refreshLiveCamsStatusCopy();
 
       if (liveCamsTimer) clearTimeout(liveCamsTimer);
-      // Recheck later: sooner when offline, slower when online
       liveCamsTimer = setTimeout(
         setupLiveCams,
         online === 0 ? 2 * 60 * 1000 : 10 * 60 * 1000
@@ -5633,6 +5910,13 @@
     setupLiveCams();
     loadDfoTimeline();
     loadData(true);
+    requestUserGeo(false);
+    const leaveCard = document.getElementById("leaveCard");
+    if (leaveCard) {
+      leaveCard.addEventListener("click", function () {
+        if (leaveCard.classList.contains("is-action")) requestUserGeo(true);
+      });
+    }
   </script>
 </body>
 </html>

@@ -33,7 +33,7 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1f3a" />
-  <meta name="description" content="Curated gas, food, hotels, Superchargers, and Starbase pointers near B&amp;M (Brownsville &amp; Matamoros Bridge) in downtown Brownsville — México: Puente Internacional B&amp;M / Brownsville-Matamoros, commonly Puente Viejo." />
+  <meta name="description" content="Curated gas, food, hotels, and Starbase pointers near B&amp;M (Brownsville &amp; Matamoros Bridge) in downtown Brownsville — México: Puente Internacional B&amp;M / Brownsville-Matamoros, commonly Puente Viejo." />
   <title data-i18n-en="Nearby amenities · Brownsville &amp; Matamoros Bridge · Puente Viejo" data-i18n-es="Servicios cercanos · Puente Internacional B&amp;M · Puente Viejo">Nearby amenities · Brownsville &amp; Matamoros Bridge · Puente Viejo</title>
   <script type="application/ld+json">
   {
@@ -52,7 +52,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&amp;family=Instrument+Serif:ital@0;1&amp;display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../amenities.css?v=7" />
+  <link rel="stylesheet" href="../amenities.css?v=8" />
 </head>
 <body>
   <div class="topbar">
@@ -93,11 +93,10 @@
         <button type="button" class="chip" data-filter="gas" aria-pressed="false" onclick="filterAmenities('gas', this)"><span class="lang-en">Gas</span><span class="lang-es">Gasolina</span></button>
         <button type="button" class="chip" data-filter="food" aria-pressed="false" onclick="filterAmenities('food', this)"><span class="lang-en">Food</span><span class="lang-es">Comida</span></button>
         <button type="button" class="chip" data-filter="hotels" aria-pressed="false" onclick="filterAmenities('hotels', this)"><span class="lang-en">Hotels</span><span class="lang-es">Hoteles</span></button>
-        <button type="button" class="chip" data-filter="superchargers" aria-pressed="false" onclick="filterAmenities('superchargers', this)"><span class="lang-en">Superchargers</span><span class="lang-es">Superchargers</span></button>
     </div>
 
     <div class="grid" id="amenityGrid">
-        <article class="poi poi-has-photo" data-cats="spacex">
+        <article class="poi poi-has-photo poi-hero" data-cats="spacex">
           <figure class="poi-photo">
             <img src="../images/starbase-boca-chica.jpg?v=4" data-full-src="../images/starbase-boca-chica-full.jpg?v=4" width="1200" height="497" loading="lazy" decoding="async" alt="Starship stacked on the launch tower at SpaceX Starbase in Boca Chica at night" />
             <figcaption>
@@ -118,17 +117,16 @@
           <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=City+Stop+1204+Mexico+Blvd+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~0.2 mi · Maps</span><span class="lang-es">~0.2 mi · Mapas</span></a>
           <p class="note"><span class="lang-en">Closest listed c-store/fuel on Mexico Blvd, on the B&amp;M approach.</span><span class="lang-es">La tienda/gasolinera más cercana en Mexico Blvd, en la llegada al B&amp;M.</span></p>
         </article>
-        <article class="poi" data-cats="gas">
-          <div class="tags"><span class="tag">Gas</span></div>
-          <h2>Stripes</h2>
-          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Stripes+845+International+Blvd+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~0.5 mi · Maps</span><span class="lang-es">~0.5 mi · Mapas</span></a>
-          <p class="note"><span class="lang-en">24-hour fuel on International Blvd between the two downtown bridges.</span><span class="lang-es">Gasolina 24 horas en International Blvd, entre los dos puentes del centro.</span></p>
-        </article>
-        <article class="poi" data-cats="food">
+        <article class="poi poi-has-photo poi-has-thumb" data-cats="food">
+          <figure class="poi-photo">
+            <img src="../images/food/whataburger.jpg" width="900" height="609" loading="lazy" decoding="async" alt="Whataburger restaurant exterior" />
+          </figure>
+          <div class="poi-body">
           <div class="tags"><span class="tag">Food</span></div>
           <h2>Whataburger</h2>
           <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Whataburger+2021+International+Blvd+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~1.3 mi · Maps</span><span class="lang-es">~1.3 mi · Mapas</span></a>
           <p class="note"><span class="lang-en">Quick meal and a lot up International Blvd — useful before or after a downtown crossing.</span><span class="lang-es">Comida rápida y estacionamiento en International Blvd, útil antes o después del cruce.</span></p>
+          </div>
         </article>
         <article class="poi" data-cats="food">
           <div class="tags"><span class="tag">Food</span></div>
@@ -156,19 +154,6 @@
           <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Home2+Suites+by+Hilton+747+Springmart+Blvd+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~4–5 mi north · Maps</span><span class="lang-es">~4–5 mi al norte · Mapas</span></a>
           <p class="note"><span class="lang-en">Highly rated all-suite stay near shopping and restaurants on the north side. Better guest scores than downtown budget inns near the bridges.</span><span class="lang-es">Hospedaje all-suite muy bien valorado cerca de tiendas y restaurantes al norte. Mejores reseñas que las posadas económicas del centro junto a los puentes.</span></p>
         </article>
-        <article class="poi" data-cats="superchargers">
-          <div class="tags"><span class="tag">Superchargers</span></div>
-          <h2>Tesla Supercharger · H-E-B Plus!</h2>
-          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Tesla+Supercharger+H-E-B+Plus+2155+Paredes+Line+Road+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~4 mi · Maps</span><span class="lang-es">~4 mi · Mapas</span></a>
-          <p class="note"><span class="lang-en">Same city Supercharger that serves downtown crossings. Verify stalls on Tesla’s map.</span><span class="lang-es">El mismo Supercharger de la ciudad que sirve a los cruces del centro. Verifique puestos en el mapa de Tesla.</span></p>
-          <p class="note"><a href="https://www.tesla.com/findus" target="_blank" rel="noopener"><span class="lang-en">Tesla Find Us</span><span class="lang-es">Tesla Find Us</span></a></p>
-        </article>
-        <article class="poi" data-cats="superchargers">
-          <div class="tags"><span class="tag">Superchargers</span></div>
-          <h2>Tesla Supercharger · Boca Chica Boulevard</h2>
-          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Tesla+Supercharger+5850+Ruben+M+Torres+Blvd+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~5 mi · Maps</span><span class="lang-es">~5 mi · Mapas</span></a>
-          <p class="note"><span class="lang-en">16-stall Brownsville Supercharger on the east side of town — not next to B&amp;M.</span><span class="lang-es">Supercharger de Brownsville en el lado este de la ciudad — no está junto al B&amp;M.</span></p>
-        </article>
       <p class="filter-empty" id="filterEmpty" hidden><span class="lang-en">No places in this category on this page.</span><span class="lang-es">No hay lugares de esta categoría en esta página.</span></p>
     </div>
 
@@ -183,6 +168,6 @@
     <span class="lang-en">Brownsville Border Wait Times · not official CBP</span>
     <span class="lang-es">Tiempos de espera en Brownsville · no es CBP oficial</span>
   </p>
-  <script src="../amenities.js?v=5"></script>
+  <script src="../amenities.js?v=6"></script>
 </body>
 </html>

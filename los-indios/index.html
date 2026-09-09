@@ -52,7 +52,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&amp;family=Instrument+Serif:ital@0;1&amp;display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../amenities.css?v=7" />
+  <link rel="stylesheet" href="../amenities.css?v=8" />
 </head>
 <body>
   <div class="topbar">
@@ -93,12 +93,11 @@
         <button type="button" class="chip" data-filter="gas" aria-pressed="false" onclick="filterAmenities('gas', this)"><span class="lang-en">Gas</span><span class="lang-es">Gasolina</span></button>
         <button type="button" class="chip" data-filter="food" aria-pressed="false" onclick="filterAmenities('food', this)"><span class="lang-en">Food</span><span class="lang-es">Comida</span></button>
         <button type="button" class="chip" data-filter="hotels" aria-pressed="false" onclick="filterAmenities('hotels', this)"><span class="lang-en">Hotels</span><span class="lang-es">Hoteles</span></button>
-        <button type="button" class="chip" data-filter="superchargers" aria-pressed="false" onclick="filterAmenities('superchargers', this)"><span class="lang-en">Superchargers</span><span class="lang-es">Superchargers</span></button>
     </div>
       <p class="sparse" id="sparseNote"><span class="lang-en">Los Indios is a rural crossing. Expect one travel-center cluster on US 281 and a drive to San Benito or Harlingen for hotels and sit-down food. Distances below are honest, not plaza-adjacent.</span><span class="lang-es">Los Indios es un cruce rural. Hay un centro de viaje en la US 281, y hay que manejar a San Benito o Harlingen para hoteles y restaurantes. Las distancias son reales, no “junto a la plaza”.</span></p>
 
     <div class="grid" id="amenityGrid">
-        <article class="poi poi-has-photo" data-cats="spacex">
+        <article class="poi poi-has-photo poi-hero" data-cats="spacex">
           <figure class="poi-photo">
             <img src="../images/starbase-boca-chica.jpg?v=4" data-full-src="../images/starbase-boca-chica-full.jpg?v=4" width="1200" height="497" loading="lazy" decoding="async" alt="Starship stacked on the launch tower at SpaceX Starbase in Boca Chica at night" />
             <figcaption>
@@ -138,13 +137,6 @@
           <p class="note"><span class="lang-en">Newer Marriott with excellent guest ratings on Expressway 83. Solid pick for Free Trade Bridge travelers overnighting in Harlingen.</span><span class="lang-es">Marriott más nuevo con excelentes reseñas en Expressway 83. Buena opción si pernocta en Harlingen para el Free Trade Bridge.</span></p>
         </article>
 
-        <article class="poi" data-cats="superchargers">
-          <div class="tags"><span class="tag">Superchargers</span></div>
-          <h2>Tesla Superchargers in Brownsville</h2>
-          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Tesla+Supercharger+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~20+ mi east · Maps</span><span class="lang-es">~20+ mi al este · Mapas</span></a>
-          <p class="note"><span class="lang-en">No Supercharger is listed in Los Indios. The public Brownsville sites are at H-E-B Plus! (Paredes Line Rd) and Ruben M. Torres / Boca Chica Blvd.</span><span class="lang-es">No hay Supercharger listado en Los Indios. Los sitios públicos de Brownsville están en H-E-B Plus! (Paredes Line Rd) y Ruben M. Torres / Boca Chica Blvd.</span></p>
-          <p class="note"><a href="https://www.tesla.com/findus" target="_blank" rel="noopener"><span class="lang-en">Tesla Find Us</span><span class="lang-es">Tesla Find Us</span></a></p>
-        </article>
       <p class="filter-empty" id="filterEmpty" hidden><span class="lang-en">No places in this category on this page.</span><span class="lang-es">No hay lugares de esta categoría en esta página.</span></p>
     </div>
 
@@ -159,6 +151,6 @@
     <span class="lang-en">Brownsville Border Wait Times · not official CBP</span>
     <span class="lang-es">Tiempos de espera en Brownsville · no es CBP oficial</span>
   </p>
-  <script src="../amenities.js?v=5"></script>
+  <script src="../amenities.js?v=6"></script>
 </body>
 </html>

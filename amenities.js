@@ -122,10 +122,10 @@
       photo.setAttribute("role", "button");
       photo.setAttribute(
         "aria-label",
-        document.documentElement.lang === "es" ? "Ampliar foto de Starbase" : "Expand Starbase photo"
+        document.documentElement.lang === "es" ? "Ampliar foto" : "Expand photo"
       );
 
-      if (finePointer) {
+      if (finePointer && img.getAttribute("data-full-src")) {
         photo.addEventListener("mouseenter", function () {
           clearTimeout(hoverTimer);
           hoverTimer = setTimeout(function () {

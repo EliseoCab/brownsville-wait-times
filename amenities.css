@@ -271,27 +271,32 @@ html[data-theme="dark"] .sparse {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  grid-column: 1 / -1; /* first tile: full-width hero */
+}
+.poi-hero {
+  grid-column: 1 / -1;
+}
+.poi-has-thumb .poi-photo img {
+  height: 140px;
 }
 
 @media (min-width: 861px) {
-  .poi-has-photo {
+  .poi-hero {
     flex-direction: row;
     align-items: stretch;
   }
-  .poi-has-photo .poi-photo {
+  .poi-hero .poi-photo {
     flex: 1.15 1 0;
     min-width: 0;
     display: flex;
     flex-direction: column;
     border-radius: 14px 0 0 14px;
   }
-  .poi-has-photo .poi-photo img {
+  .poi-hero .poi-photo img {
     flex: 1 1 auto;
     height: auto;
     min-height: 220px;
   }
-  .poi-has-photo .poi-body {
+  .poi-hero .poi-body {
     flex: 1 1 0;
     display: flex;
     flex-direction: column;

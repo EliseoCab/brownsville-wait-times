@@ -33,7 +33,7 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1f3a" />
-  <meta name="description" content="Curated gas, food, hotels, Superchargers, and Starbase pointers near Veterans International (Veterans Bridge at Los Tomates / Puente Los Tomates) in Brownsville." />
+  <meta name="description" content="Curated gas, food, hotels, and Starbase pointers near Veterans International (Veterans Bridge at Los Tomates / Puente Los Tomates) in Brownsville." />
   <title data-i18n-en="Nearby amenities · Veterans International · Puente Los Tomates" data-i18n-es="Servicios cercanos · Puente Los Tomates">Nearby amenities · Veterans International · Puente Los Tomates</title>
   <script type="application/ld+json">
   {
@@ -52,7 +52,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&amp;family=Instrument+Serif:ital@0;1&amp;display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../amenities.css?v=7" />
+  <link rel="stylesheet" href="../amenities.css?v=8" />
 </head>
 <body>
   <div class="topbar">
@@ -93,11 +93,10 @@
         <button type="button" class="chip" data-filter="gas" aria-pressed="false" onclick="filterAmenities('gas', this)"><span class="lang-en">Gas</span><span class="lang-es">Gasolina</span></button>
         <button type="button" class="chip" data-filter="food" aria-pressed="false" onclick="filterAmenities('food', this)"><span class="lang-en">Food</span><span class="lang-es">Comida</span></button>
         <button type="button" class="chip" data-filter="hotels" aria-pressed="false" onclick="filterAmenities('hotels', this)"><span class="lang-en">Hotels</span><span class="lang-es">Hoteles</span></button>
-        <button type="button" class="chip" data-filter="superchargers" aria-pressed="false" onclick="filterAmenities('superchargers', this)"><span class="lang-en">Superchargers</span><span class="lang-es">Superchargers</span></button>
     </div>
 
     <div class="grid" id="amenityGrid">
-        <article class="poi poi-has-photo" data-cats="spacex">
+        <article class="poi poi-has-photo poi-hero" data-cats="spacex">
           <figure class="poi-photo">
             <img src="../images/starbase-boca-chica.jpg?v=4" data-full-src="../images/starbase-boca-chica-full.jpg?v=4" width="1200" height="497" loading="lazy" decoding="async" alt="Starship stacked on the launch tower at SpaceX Starbase in Boca Chica at night" />
             <figcaption>
@@ -118,23 +117,22 @@
           <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Stripes+3755+Boca+Chica+Blvd+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~2–3 mi · Maps</span><span class="lang-es">~2–3 mi · Mapas</span></a>
           <p class="note"><span class="lang-en">24-hour fuel on Boca Chica Blvd (SH-4), the road that continues east toward Starbase.</span><span class="lang-es">Gasolina 24 horas en Boca Chica Blvd (SH-4), la vía que sigue al este hacia Starbase.</span></p>
         </article>
-        <article class="poi" data-cats="gas">
-          <div class="tags"><span class="tag">Gas</span></div>
-          <h2>Exxon Breaktime</h2>
-          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Exxon+2275+N+Expressway+77+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~5 mi north · Maps</span><span class="lang-es">~5 mi al norte · Mapas</span></a>
-          <p class="note"><span class="lang-en">24-hour pay-at-pump on the north Expressway 77/83 cluster — not at the south-end plaza.</span><span class="lang-es">Pago en bomba 24 horas en el corredor norte de la Expresada 77/83 — no está en la plaza sur.</span></p>
-        </article>
         <article class="poi" data-cats="food">
           <div class="tags"><span class="tag">Food</span></div>
           <h2>Taco Palenque</h2>
           <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Taco+Palenque+1803+Boca+Chica+Boulevard+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~2 mi · Maps</span><span class="lang-es">~2 mi · Mapas</span></a>
           <p class="note"><span class="lang-en">Valley taco chain on Boca Chica Blvd, closer to Veterans than the north-expressway restaurants.</span><span class="lang-es">Cadena de tacos del Valle en Boca Chica Blvd, más cerca de Veterans que los restaurantes de la expresada norte.</span></p>
         </article>
-        <article class="poi" data-cats="food">
+        <article class="poi poi-has-photo poi-has-thumb" data-cats="food">
+          <figure class="poi-photo">
+            <img src="../images/food/whataburger.jpg" width="900" height="609" loading="lazy" decoding="async" alt="Whataburger restaurant exterior" />
+          </figure>
+          <div class="poi-body">
           <div class="tags"><span class="tag">Food</span></div>
           <h2>Whataburger</h2>
           <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Whataburger+2290+N+Expressway+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~5 mi north · Maps</span><span class="lang-es">~5 mi al norte · Mapas</span></a>
           <p class="note"><span class="lang-en">24-hour Whataburger at Hwy 77 &amp; Ruben M. Torres — a north-side stop, not plaza-adjacent.</span><span class="lang-es">Whataburger 24 horas en la 77 y Ruben M. Torres — parada del norte, no junto a la plaza.</span></p>
+          </div>
         </article>
         <article class="poi" data-cats="food">
           <div class="tags"><span class="tag">Food</span></div>
@@ -156,19 +154,6 @@
           <p class="note"><span class="lang-en">Highly rated extended-stay suites on N Expressway, among the closer well-reviewed options to Veterans (still not at the plaza).</span><span class="lang-es">Suites de estadía prolongada muy bien valoradas en N Expressway, de las opciones mejor reseñadas más cercanas a Veterans (tampoco está en la plaza).</span></p>
         </article>
 
-        <article class="poi" data-cats="superchargers">
-          <div class="tags"><span class="tag">Superchargers</span></div>
-          <h2>Tesla Supercharger · Boca Chica Boulevard</h2>
-          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Tesla+Supercharger+5850+Ruben+M+Torres+Blvd+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~4 mi · Maps</span><span class="lang-es">~4 mi · Mapas</span></a>
-          <p class="note"><span class="lang-en">Closest listed Supercharger to Veterans / SH-4 (16 stalls, 24/7 on public listings). Still a few miles from the plaza.</span><span class="lang-es">Supercharger más cercano a Veterans / SH-4 (16 puestos, 24/7 en listados públicos). Aún a varias millas de la plaza.</span></p>
-          <p class="note"><a href="https://www.tesla.com/findus" target="_blank" rel="noopener"><span class="lang-en">Tesla Find Us</span><span class="lang-es">Tesla Find Us</span></a></p>
-        </article>
-        <article class="poi" data-cats="superchargers">
-          <div class="tags"><span class="tag">Superchargers</span></div>
-          <h2>Tesla Supercharger · H-E-B Plus!</h2>
-          <a class="maps" href="https://www.google.com/maps/search/?api=1&amp;query=Tesla+Supercharger+H-E-B+Plus+2155+Paredes+Line+Road+Brownsville+TX" target="_blank" rel="noopener"><span class="lang-en">~5 mi · Maps</span><span class="lang-es">~5 mi · Mapas</span></a>
-          <p class="note"><span class="lang-en">Second Brownsville Supercharger at H-E-B Plus! on Paredes Line Rd.</span><span class="lang-es">Segundo Supercharger de Brownsville en H-E-B Plus! sobre Paredes Line Rd.</span></p>
-        </article>
       <p class="filter-empty" id="filterEmpty" hidden><span class="lang-en">No places in this category on this page.</span><span class="lang-es">No hay lugares de esta categoría en esta página.</span></p>
     </div>
 
@@ -183,6 +168,6 @@
     <span class="lang-en">Brownsville Border Wait Times · not official CBP</span>
     <span class="lang-es">Tiempos de espera en Brownsville · no es CBP oficial</span>
   </p>
-  <script src="../amenities.js?v=5"></script>
+  <script src="../amenities.js?v=6"></script>
 </body>
 </html>
