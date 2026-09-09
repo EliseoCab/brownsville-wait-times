@@ -136,8 +136,8 @@
       --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
       --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
       --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.45);
-      --glass: var(--white);
-      --glass-border: var(--line);
+      --glass: linear-gradient(180deg, rgba(28, 46, 72, 0.55), rgba(12, 22, 38, 0.42));
+      --glass-border: rgba(125, 211, 252, 0.16);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -655,8 +655,16 @@
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.5rem 0.65rem;
+      gap: 0.3rem;
       width: 100%;
+    }
+    .filter-asof {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.3rem;
+      width: fit-content;
+      max-width: 100%;
     }
     .filters {
       display: flex;
@@ -1368,9 +1376,12 @@
       }
       .section-title { font-size: 1.2rem; }
       .toolbar-controls {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.3rem;
       }
+      .filter-asof { width: fit-content; max-width: 100%; }
       .toolbar-controls .filters { width: fit-content; max-width: 100%; }
       .toolbar-controls .asof-bar { width: fit-content; max-width: 100%; }
       .filters {
@@ -2580,6 +2591,232 @@
         background: rgba(255, 255, 255, 0.92);
       }
     }
+
+    /* ——— Dark theme: night liquid glass ——— */
+    html[data-theme="dark"] body {
+      padding-top: 0.7rem;
+      background:
+        radial-gradient(1100px 520px at 0% -10%, rgba(56, 189, 248, 0.28), transparent 58%),
+        radial-gradient(900px 460px at 100% -8%, rgba(99, 102, 241, 0.22), transparent 55%),
+        radial-gradient(700px 420px at 50% 115%, rgba(13, 148, 136, 0.12), transparent 55%),
+        linear-gradient(180deg, #071018 0%, #050b14 42%, #08111c 100%);
+    }
+    html[data-theme="dark"] body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        radial-gradient(circle at 18% 22%, rgba(125, 211, 252, 0.18) 0 1px, transparent 1.6px),
+        radial-gradient(circle at 82% 68%, rgba(165, 180, 252, 0.12) 0 1px, transparent 1.6px);
+      background-size: 150px 150px, 190px 190px;
+      opacity: 0.45;
+    }
+    html[data-theme="dark"] .topbar,
+    html[data-theme="dark"] .hero,
+    html[data-theme="dark"] .main,
+    html[data-theme="dark"] footer {
+      position: relative;
+      z-index: 1;
+    }
+    html[data-theme="dark"] .topbar {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0 1.25rem;
+    }
+    html[data-theme="dark"] .topbar-inner {
+      max-width: none;
+      margin: 0;
+      padding: 0.45rem 0.85rem;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(8, 18, 32, 0.82), rgba(10, 22, 38, 0.68));
+      border: 1px solid rgba(125, 211, 252, 0.16);
+      box-shadow: 0 1px 0 rgba(186, 230, 253, 0.12) inset, 0 10px 28px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(18px) saturate(1.35);
+      -webkit-backdrop-filter: blur(18px) saturate(1.35);
+    }
+    html[data-theme="dark"] .hero {
+      overflow: visible;
+      background: transparent;
+      color: var(--ink);
+      padding: 0.85rem 1.25rem 0;
+    }
+    html[data-theme="dark"] .hero::after { display: none; }
+    html[data-theme="dark"] .hero-inner {
+      background: linear-gradient(180deg, rgba(28, 46, 72, 0.55), rgba(12, 22, 38, 0.42));
+      border: 1px solid rgba(125, 211, 252, 0.16);
+      border-radius: 22px;
+      padding: 1.05rem 1.15rem 1.15rem;
+      box-shadow:
+        0 1px 0 rgba(186, 230, 253, 0.18) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.35) inset,
+        0 12px 36px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(22px) saturate(1.45);
+      -webkit-backdrop-filter: blur(22px) saturate(1.45);
+    }
+    html[data-theme="dark"] .eyebrow { color: #7dd3fc; }
+    html[data-theme="dark"] .hero h1 { color: #f8fbff; }
+    html[data-theme="dark"] .hero-lead { color: #9db0c6; }
+    html[data-theme="dark"] .summary { margin-top: 0.85rem; }
+    html[data-theme="dark"] .stat-card,
+    html[data-theme="dark"] .install-help,
+    html[data-theme="dark"] .refresh-meta,
+    html[data-theme="dark"] .nearby-section,
+    html[data-theme="dark"] .live-cams,
+    html[data-theme="dark"] .disclaimer,
+    html[data-theme="dark"] .table-wrap:not(.table-cards) {
+      background: linear-gradient(180deg, rgba(28, 46, 72, 0.55), rgba(12, 22, 38, 0.42));
+      border: 1px solid rgba(125, 211, 252, 0.16);
+      box-shadow:
+        0 1px 0 rgba(186, 230, 253, 0.18) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.35) inset,
+        0 12px 36px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(22px) saturate(1.45);
+      -webkit-backdrop-filter: blur(22px) saturate(1.45);
+    }
+    html[data-theme="dark"] .filters,
+    html[data-theme="dark"] .asof-bar {
+      background: linear-gradient(180deg, rgba(28, 46, 72, 0.55), rgba(12, 22, 38, 0.42));
+      border: 1px solid rgba(125, 211, 252, 0.16);
+      box-shadow: 0 1px 0 rgba(186, 230, 253, 0.12) inset, 0 8px 18px rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(18px) saturate(1.4);
+      -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    }
+    html[data-theme="dark"] .filter-btn { color: #9db0c6; }
+    html[data-theme="dark"] .filter-btn:hover { background: rgba(125, 211, 252, 0.1); color: #e0f2fe; }
+    html[data-theme="dark"] .filter-btn.active {
+      background: linear-gradient(180deg, rgba(125, 211, 252, 0.95), rgba(56, 189, 248, 0.78));
+      color: #041018;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset, 0 6px 16px rgba(56, 189, 248, 0.22);
+    }
+    html[data-theme="dark"] .asof-bar { color: #9db0c6; }
+    html[data-theme="dark"] .asof-bar strong { color: #f4f7fb; }
+    html[data-theme="dark"] .btn-light {
+      background: linear-gradient(180deg, rgba(36, 56, 84, 0.7), rgba(16, 28, 46, 0.55));
+      border-color: rgba(125, 211, 252, 0.2);
+      color: #f4f7fb;
+      box-shadow: 0 1px 0 rgba(186, 230, 253, 0.1) inset;
+    }
+    html[data-theme="dark"] .btn-primary {
+      background: linear-gradient(180deg, rgba(125, 211, 252, 0.95), rgba(56, 189, 248, 0.82));
+      color: #041018;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 8px 18px rgba(56, 189, 248, 0.22);
+    }
+    html[data-theme="dark"] .nearby-chip {
+      background: linear-gradient(180deg, rgba(36, 56, 84, 0.62), rgba(16, 28, 46, 0.48));
+      border-color: rgba(125, 211, 252, 0.14);
+      box-shadow: 0 1px 0 rgba(186, 230, 253, 0.1) inset;
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table { border-spacing: 0 6px; }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table thead th {
+      background: linear-gradient(180deg, rgba(8, 18, 32, 0.88), rgba(14, 28, 48, 0.72));
+      border: 1px solid rgba(125, 211, 252, 0.16);
+      border-left: none;
+      border-right: none;
+      box-shadow: 0 1px 0 rgba(186, 230, 253, 0.12) inset;
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table thead th.th-bridge {
+      border-left: 1px solid rgba(125, 211, 252, 0.16);
+      border-radius: 16px 0 0 16px;
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table thead th:last-child {
+      border-right: 1px solid rgba(125, 211, 252, 0.16);
+      border-radius: 0 16px 16px 0;
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table thead th + th {
+      box-shadow: 0 1px 0 rgba(186, 230, 253, 0.12) inset;
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td,
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.bridge,
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col,
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td:last-child {
+      background: linear-gradient(180deg, rgba(28, 46, 72, 0.55), rgba(12, 22, 38, 0.42));
+      border-top: 1px solid rgba(125, 211, 252, 0.16);
+      border-bottom: 1px solid rgba(125, 211, 252, 0.16);
+      border-left: none;
+      border-right: none;
+      box-shadow: 0 1px 0 rgba(186, 230, 253, 0.12) inset, 0 -1px 0 rgba(0, 0, 0, 0.35) inset;
+      backdrop-filter: blur(22px) saturate(1.4);
+      -webkit-backdrop-filter: blur(22px) saturate(1.4);
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.bridge {
+      border-left: 1px solid rgba(125, 211, 252, 0.16);
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td:last-child {
+      border-right: 1px solid rgba(125, 211, 252, 0.16);
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody tr:hover td {
+      box-shadow: 0 1px 0 rgba(186, 230, 253, 0.12) inset, 0 -1px 0 rgba(0, 0, 0, 0.35) inset;
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
+      background: linear-gradient(180deg, rgba(36, 56, 84, 0.62), rgba(16, 28, 46, 0.48));
+      border: 1px solid rgba(125, 211, 252, 0.14);
+      box-shadow: 0 1px 0 rgba(186, 230, 253, 0.12) inset, 0 8px 18px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(16px) saturate(1.4);
+      -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-low .wait-stack {
+      background: linear-gradient(180deg, rgba(6, 78, 59, 0.55), rgba(16, 28, 46, 0.42));
+      border-color: rgba(52, 211, 153, 0.28);
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-med .wait-stack {
+      background: linear-gradient(180deg, rgba(120, 53, 15, 0.5), rgba(16, 28, 46, 0.42));
+      border-color: rgba(251, 191, 36, 0.28);
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-high .wait-stack {
+      background: linear-gradient(180deg, rgba(154, 52, 18, 0.48), rgba(16, 28, 46, 0.42));
+      border-color: rgba(251, 146, 60, 0.28);
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-severe .wait-stack {
+      background: linear-gradient(180deg, rgba(127, 29, 29, 0.48), rgba(16, 28, 46, 0.42));
+      border-color: rgba(248, 113, 113, 0.28);
+    }
+    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-na .wait-stack,
+    html[data-theme="dark"] .table-wrap.table-cards .wait-stack.wait-stack-na,
+    html[data-theme="dark"] .table-wrap.table-tight .wait-stack.wait-stack-na {
+      background: linear-gradient(180deg, rgba(51, 65, 85, 0.5), rgba(16, 28, 46, 0.4)) !important;
+      border: 1px solid rgba(100, 116, 139, 0.4) !important;
+      box-shadow: none !important;
+    }
+    html[data-theme="dark"] .m-row {
+      background: linear-gradient(180deg, rgba(28, 46, 72, 0.55), rgba(12, 22, 38, 0.42));
+      border: 1px solid rgba(125, 211, 252, 0.16);
+    }
+    html[data-theme="dark"] .m-wait-block {
+      background: linear-gradient(180deg, rgba(36, 56, 84, 0.62), rgba(16, 28, 46, 0.48));
+      border: 1px solid rgba(125, 211, 252, 0.14);
+    }
+    html[data-theme="dark"] .m-wait-block.has-low {
+      background: linear-gradient(180deg, rgba(6, 78, 59, 0.55), rgba(16, 28, 46, 0.42));
+    }
+    html[data-theme="dark"] .m-wait-block.has-med {
+      background: linear-gradient(180deg, rgba(120, 53, 15, 0.5), rgba(16, 28, 46, 0.42));
+    }
+    html[data-theme="dark"] .m-wait-block.has-high {
+      background: linear-gradient(180deg, rgba(154, 52, 18, 0.48), rgba(16, 28, 46, 0.42));
+    }
+    html[data-theme="dark"] .m-wait-block.has-severe {
+      background: linear-gradient(180deg, rgba(127, 29, 29, 0.48), rgba(16, 28, 46, 0.42));
+    }
+    html[data-theme="dark"] footer {
+      background: transparent;
+      margin: 0 auto 1.1rem;
+      max-width: 1160px;
+      padding: 0 1.25rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
+    }
+    html[data-theme="dark"] .footer-inner {
+      background: linear-gradient(180deg, rgba(8, 18, 32, 0.88), rgba(14, 28, 48, 0.72));
+      border: 1px solid rgba(125, 211, 252, 0.16);
+      border-radius: 22px;
+      padding: 1.35rem 1.25rem;
+      box-shadow: 0 1px 0 rgba(186, 230, 253, 0.12) inset, 0 12px 36px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(18px) saturate(1.3);
+      -webkit-backdrop-filter: blur(18px) saturate(1.3);
+    }
   </style>
 </head>
 <body>
@@ -2742,15 +2979,17 @@
         <a class="all-ports-link" href="all-ports/" data-i18n="allPortsLink">All U.S. ports →</a>
       </h2>
       <div class="toolbar-controls">
-        <div class="filters" role="tablist" aria-label="Filter by traffic type" data-i18n-aria="filterAria">
-          <button type="button" class="filter-btn active" data-filter="all" data-i18n="filterAll" onclick="setFilter('all', this)">All</button>
-          <button type="button" class="filter-btn" data-filter="passenger" data-i18n="filterVehicles" onclick="setFilter('passenger', this)">Vehicles</button>
-          <button type="button" class="filter-btn" data-filter="pedestrian" data-i18n="filterPedestrian" onclick="setFilter('pedestrian', this)">Pedestrian</button>
-          <button type="button" class="filter-btn" data-filter="commercial" data-i18n="filterCommercial" onclick="setFilter('commercial', this)">Commercial</button>
-        </div>
-        <div class="asof-bar" id="asofBar" aria-live="polite">
-          <span data-i18n="latestReport">Latest report:</span>
-          <strong id="asofStamp">—</strong>
+        <div class="filter-asof">
+          <div class="filters" role="tablist" aria-label="Filter by traffic type" data-i18n-aria="filterAria">
+            <button type="button" class="filter-btn active" data-filter="all" data-i18n="filterAll" onclick="setFilter('all', this)">All</button>
+            <button type="button" class="filter-btn" data-filter="passenger" data-i18n="filterVehicles" onclick="setFilter('passenger', this)">Vehicles</button>
+            <button type="button" class="filter-btn" data-filter="pedestrian" data-i18n="filterPedestrian" onclick="setFilter('pedestrian', this)">Pedestrian</button>
+            <button type="button" class="filter-btn" data-filter="commercial" data-i18n="filterCommercial" onclick="setFilter('commercial', this)">Commercial</button>
+          </div>
+          <div class="asof-bar" id="asofBar" aria-live="polite">
+            <span data-i18n="latestReport">Latest report:</span>
+            <strong id="asofStamp">—</strong>
+          </div>
         </div>
       </div>
     </div>
