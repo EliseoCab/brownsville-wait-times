@@ -1,4 +1,4 @@
-const CACHE = "bwt-shell-v4";
+const CACHE = "bwt-shell-v5";
 const PRECACHE = [
   "./",
   "./index.html",
@@ -26,7 +26,11 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.endsWith("/data/bwt.xml") || url.searchParams.has("t")) {
+  if (
+    url.pathname.endsWith("/data/bwt.xml") ||
+    url.pathname.endsWith("/data/bwt-all.xml") ||
+    url.searchParams.has("t")
+  ) {
     event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
     return;
   }

@@ -5,8 +5,8 @@ Part of the **hybrid** data path:
 | Priority | Source | Role |
 |----------|--------|------|
 | 1 | **This Worker** | Live CBP XML with CORS + ~2 min cache; last-good feed if CBP blips |
-| 2 | GitHub Pages `data/bwt.xml` | Actions mirror (fast backup) |
-| 3 | Free CORS proxies | Last resort if Worker and mirror both fail |
+| 2 | GitHub Pages `data/bwt.xml` + `data/bwt-all.xml` | Actions mirrors (fast backup) |
+| 3 | Free CORS proxies | Last resort if Worker and mirror both fail (homepage only) |
 
 ## Deploy (one-time, ~5 minutes)
 
@@ -32,7 +32,7 @@ https://brownsville-bwt.<your-subdomain>.workers.dev
 const FEED_PROXY_URL = "https://brownsville-bwt.<your-subdomain>.workers.dev";
 ```
 
-5. Commit and push `index.html` so GitHub Pages picks it up.
+5. Commit and push `index.html` (and `all-ports/all-ports.js`, which uses the same Worker + `/all`) so GitHub Pages picks it up.
 
 ## Check it works
 
@@ -53,7 +53,7 @@ On the live page, after hard-refresh, **Refresh times** should show **Live · CB
 
 - `GET /` — CBP Brownsville RSS (cached ~2 minutes at the edge)
 - `GET /?fresh=1` — skip edge cache, hit CBP now
-- `GET /all` — national land-border XML (`bwt.cbp.gov/xml/bwt.xml`, cached ~3 minutes)
+- `GET /all` — national land-border XML (`bwt.cbp.gov/xml/bwt.xml`, cached ~3 minutes; used by `all-ports/`)
 - `GET /all?fresh=1` — skip edge cache for the national feed
 - `GET /health` — small JSON status (includes rate-limit config)
 - `OPTIONS` — CORS preflight
@@ -73,6 +73,8 @@ On the live page, after hard-refresh, **Refresh times** should show **Live · CB
 | `GET /x/dfolaredo` | 45 / minute |
 | `GET /?fresh=1` | 20 / minute |
 | `GET /` (cached feed) | 90 / minute |
+| `GET /all?fresh=1` | 12 / minute |
+| `GET /all` (cached national feed) | 60 / minute |
 | `GET /health` | 60 / minute |
 
 Over-limit requests return **429** with `Retry-After` and `X-RateLimit-*` headers.

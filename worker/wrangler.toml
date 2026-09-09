@@ -7,6 +7,7 @@
 #   3. npx wrangler login
 #   4. npx wrangler deploy
 #   5. Copy the workers.dev URL into index.html → FEED_PROXY_URL
+#      (all-ports/ uses the same host + GET /all)
 
 name = "brownsville-bwt"
 main = "src/index.js"

@@ -39,6 +39,10 @@ jobs:
           grep -q "<item>" data/bwt.xml
           echo "Deploying feed:"
           grep -o '<pubDate>[^<]*' data/bwt.xml | head -1
+          curl -fsSL "https://bwt.cbp.gov/xml/bwt.xml" -o data/bwt-all.xml
+          grep -q "<port>" data/bwt-all.xml
+          echo "National feed:"
+          grep -oE '<last_updated_date>[^<]+|<last_updated_time>[^<]+' data/bwt-all.xml | head -2
 
       - name: Stage site files
         run: bash scripts/stage-site.sh

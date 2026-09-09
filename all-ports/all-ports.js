@@ -2,6 +2,9 @@
   "use strict";
 
   var FEED_PROXY = "https://brownsville-bwt.borderwait.workers.dev";
+  var LOCAL_ALL_FEED = "../data/bwt-all.xml";
+  var GITHUB_ALL_FEED =
+    "https://raw.githubusercontent.com/EliseoCab/brownsville-wait-times/main/data/bwt-all.xml";
   var PREFS_KEY = "bwt-all-ports-prefs";
   var LANG_KEY = "bwt-lang";
   var THEME_KEY = "bwt-theme";
@@ -1050,13 +1053,41 @@
       .replace(/"/g, "&quot;");
   }
 
+  function allFeedSources() {
+    var sources = [FEED_PROXY.replace(/\/$/, "") + "/all"];
+    try {
+      sources.push(new URL(LOCAL_ALL_FEED, location.href).href);
+    } catch (_) { /* ignore */ }
+    sources.push(GITHUB_ALL_FEED);
+    return sources;
+  }
+
+  async function fetchAllXml(url) {
+    var res = await fetch(url, { credentials: "omit", cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    var xml = await res.text();
+    if (!xml || xml.indexOf("<port>") === -1) throw new Error("Invalid all-ports feed");
+    return xml;
+  }
+
   async function loadFeed() {
     var status = document.getElementById("statusLine");
     if (status) status.textContent = t("checking");
-    var url = FEED_PROXY.replace(/\/$/, "") + "/all";
-    var res = await fetch(url, { credentials: "omit" });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    var xml = await res.text();
+    var sources = allFeedSources();
+    var lastErr = null;
+    var xml = null;
+    for (var i = 0; i < sources.length; i++) {
+      try {
+        xml = await fetchAllXml(sources[i]);
+        lastErr = null;
+        break;
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+    if (!xml) {
+      throw lastErr || new Error("Could not load all-ports feed");
+    }
     var parsed = parsePortXml(xml);
     state.items = parsed.items;
     state.feedDate = parsed.feedDate || "";

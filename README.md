@@ -11,6 +11,8 @@ A clean viewer for CBP border wait times at Brownsville, Texas bridges:
 
 **https://eliseocab.github.io/brownsville-wait-times/**
 
+[All U.S. land ports](https://eliseocab.github.io/brownsville-wait-times/all-ports/) — live CBP times for every land crossing, nearest first, with Mexico / Northern filters.
+
 Nearby amenities (static community guides, not CBP) for B&M, Gateway, Veterans International, and Los Indios:
 
 - [B&amp;M](https://eliseocab.github.io/brownsville-wait-times/bm/)
@@ -25,13 +27,14 @@ Browsers cannot call `bwt.cbp.gov` directly (**CORS**). This project uses two la
 | Priority | Source | Role |
 |----------|--------|------|
 | **1** | **Cloudflare Worker** ([`worker/`](worker/)) | Live CBP XML with CORS + ~2 min cache; last-good feed if CBP blips |
-| **2** | **GitHub Actions** → [`data/bwt.xml`](data/bwt.xml) | Same-origin mirror on Pages (fast backup) |
-| **3** | Public CORS proxies | Last resort only |
+| **2** | **GitHub Actions** → [`data/bwt.xml`](data/bwt.xml) + [`data/bwt-all.xml`](data/bwt-all.xml) | Same-origin mirrors on Pages (fast backup) |
+| **3** | Public CORS proxies | Last resort only (Brownsville homepage) |
 
 ```text
-Browser  →  Cloudflare Worker  →  bwt.cbp.gov RSS
+Browser  →  Cloudflare Worker  →  bwt.cbp.gov RSS  (homepage)
+         →  Cloudflare Worker /all → bwt.cbp.gov/xml/bwt.xml  (all-ports)
    │
-   └────→  GitHub Pages data/bwt.xml  (Actions backup)
+   └────→  GitHub Pages data/bwt.xml + data/bwt-all.xml  (Actions backup)
 ```
 
 ### One-time: deploy the Worker (recommended)
@@ -57,12 +60,12 @@ Commit & push. After deploy, **Refresh times** should show **Live · CBP proxy**
 
 Workflow **Update CBP wait times**:
 
-- Fetches the same CBP RSS about every **10 minutes**
+- Fetches Brownsville RSS and the national all-ports XML about every **10 minutes**
 - Commits and redeploys Pages **only when wait times actually change**
 - Manual: **Actions → Update CBP wait times → Run workflow**
 - GitHub sometimes **skips or delays** schedules; the lag check self-heals when that happens
 
-This keeps `data/bwt.xml` usable if the Worker is down or not configured yet.
+This keeps `data/bwt.xml` (homepage) and `data/bwt-all.xml` (all-ports) usable if the Worker is down or not configured yet. The lag alarm compares the Brownsville RSS mirror only.
 
 ## Lag check (email alarm)
 
@@ -104,5 +107,8 @@ Official data: [bwt.cbp.gov](https://bwt.cbp.gov)
 
 Raw RSS (Brownsville ports):  
 https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43
+
+National land-border XML (all-ports):  
+https://bwt.cbp.gov/xml/bwt.xml
 
 This project is an independent public-data viewer and is **not** affiliated with CBP or DHS.

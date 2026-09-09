@@ -8,6 +8,9 @@ cp index.html README.md manifest.webmanifest sw.js amenities.css amenities.js si
 cp -R gateway bm veterans los-indios all-ports _site/
 cp icons/icon-192.png icons/icon-512.png icons/apple-touch-icon.png _site/icons/
 cp data/bwt.xml _site/data/bwt.xml
+if [[ -f data/bwt-all.xml ]]; then
+  cp data/bwt-all.xml _site/data/bwt-all.xml
+fi
 if [[ -f data/last-fetch.txt ]]; then
   cp data/last-fetch.txt _site/data/last-fetch.txt
 fi

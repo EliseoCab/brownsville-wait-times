@@ -33,7 +33,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Fetch CBP Brownsville feed
+      - name: Fetch CBP Brownsville + national feeds
         id: fetch
         run: |
           set -euo pipefail
@@ -61,9 +61,31 @@ jobs:
           echo "Sample times:"
           grep -oE 'At [0-9:]+ [ap]m C[DS]T|[0-9]+ min delay|Update Pending' data/bwt.xml | head -20
 
+          # National land-border XML for all-ports/ (Worker /all backup on Pages)
+          all_ok=0
+          for i in 1 2 3 4 5; do
+            if curl -fsSL --retry 2 --retry-delay 2 \
+              "https://bwt.cbp.gov/xml/bwt.xml" \
+              -o /tmp/bwt-all.xml; then
+              if grep -q "<port>" /tmp/bwt-all.xml; then
+                cp /tmp/bwt-all.xml data/bwt-all.xml
+                all_ok=1
+                break
+              fi
+            fi
+            echo "National feed attempt $i failed; retrying…"
+            sleep 3
+          done
+          if [ "$all_ok" != "1" ]; then
+            echo "National all-ports feed fetch failed; keeping previous data/bwt-all.xml if present."
+          else
+            echo "National feed size: $(wc -c < data/bwt-all.xml) bytes"
+            echo "National last_updated: $(grep -oE '<last_updated_date>[^<]+' data/bwt-all.xml | head -1) $(grep -oE '<last_updated_time>[^<]+' data/bwt-all.xml | head -1)"
+          fi
+
           # last-fetch.txt used to change every run and force a commit even when
           # wait times were identical — that produced hundreds of empty history entries.
-          if git diff --quiet -- data/bwt.xml; then
+          if git diff --quiet -- data/bwt.xml data/bwt-all.xml; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "Feed unchanged; skip commit and Pages deploy."
           else
@@ -77,7 +99,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/bwt.xml data/last-fetch.txt
+          git add data/bwt.xml data/bwt-all.xml data/last-fetch.txt
           git commit -m "chore: refresh Brownsville CBP wait times"
           git push
           echo "Committed and pushed new data/bwt.xml"
