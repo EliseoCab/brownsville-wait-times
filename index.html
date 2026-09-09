@@ -917,6 +917,9 @@
       color: var(--muted);
       flex: 0 0 auto;
     }
+    .table-wrap.table-cards .wait-table tbody td.wait-col .dual-label.dual-gen {
+      text-transform: none;
+    }
     .table-wrap.table-cards .wait-table tbody td.wait-col .compact-pair .wait-cell {
       flex: 0 0 auto;
       justify-content: flex-start;
@@ -1228,6 +1231,9 @@
       text-transform: uppercase;
       color: var(--muted);
       text-align: center;
+    }
+    .dual-label.dual-gen {
+      text-transform: none;
     }
     .wait-extra.open-line {
       margin-top: 0.15rem;
@@ -3196,10 +3202,10 @@
         asOf: "As of",
         lanesOpen: "lane(s) open",
         open: "open",
-        gen: "Gen",
+        gen: "gen",
         ready: "Ready",
         fastOpen: "FAST open",
-        genClosed: "Gen closed",
+        genClosed: "gen closed",
         readyClosed: "Ready closed",
         noTrusted: "No open SENTRI lanes reported",
         noReady: "No open Ready lanes reported",
@@ -3328,10 +3334,10 @@
         asOf: "A las",
         lanesOpen: "carril(es) abierto(s)",
         open: "abiertos",
-        gen: "Gen",
+        gen: "gen",
         ready: "Carril Ready",
         fastOpen: "FAST abiertos",
-        genClosed: "Gen cerrado",
+        genClosed: "gen cerrado",
         readyClosed: "Carril Ready cerrado",
         noTrusted: "No hay carriles SENTRI abiertos",
         noReady: "No hay carriles Ready abiertos",
@@ -4113,7 +4119,7 @@
       let mainHtml;
       if (dual) {
         mainHtml = `<div class="compact-waits">
-          <span class="compact-pair"><span class="dual-label">${escapeHtml(t("gen"))}</span> ${waitCellHtml(w)}</span>
+          <span class="compact-pair"><span class="dual-label dual-gen">${escapeHtml(t("gen"))}</span> ${waitCellHtml(w)}</span>
           <span class="compact-pair"><span class="dual-label">${escapeHtml(dual.label)}</span> ${waitCellHtml(dual.wait)}</span>
         </div>`;
       } else {
@@ -5315,9 +5321,9 @@
       if (!summary) return "";
       const bits = [];
       if (summary.primary && !summary.primary.pending && summary.primary.lanesOpenCount != null) {
-        bits.push(summary.primary.lanesOpenCount + " Gen");
+        bits.push(summary.primary.lanesOpenCount + " " + t("gen"));
       } else if (summary.primary && summary.primary.closed) {
-        bits.push("Gen closed");
+        bits.push(t("genClosed"));
       }
       for (const l of summary.extras || []) {
         if (!/ready/i.test(l.name)) continue;
@@ -5347,7 +5353,7 @@
       if (dualReady) {
         head =
           label +
-          " Gen " +
+          " " + t("gen") + " " +
           summary.primary.minutes +
           " min / Ready " +
           readyActive.wait.minutes +

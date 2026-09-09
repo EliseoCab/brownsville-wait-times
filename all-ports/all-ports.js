@@ -20,7 +20,7 @@
       showMore: "Show more",
       showLess: "Show fewer",
       mi: "mi",
-      gen: "Gen",
+      gen: "gen",
       ready: "Ready",
       sentri: "SENTRI",
       nexus: "NEXUS",
@@ -60,7 +60,7 @@
       showMore: "Mostrar más",
       showLess: "Mostrar menos",
       mi: "mi",
-      gen: "Gen",
+      gen: "gen",
       ready: "Ready",
       sentri: "SENTRI",
       nexus: "NEXUS",
@@ -853,7 +853,7 @@
     var open = openBits(section, border);
     if (special && special !== general && isActiveWait(special.wait) && primary && isActiveWait(primary) && special.wait.minutes !== primary.minutes) {
       var lab = /ready/i.test(special.name) ? t("ready") : /fast/i.test(special.name) ? t("fast") : /nexus/i.test(special.name) ? t("nexus") : t("sentri");
-      html = '<div class="compact-waits"><span class="compact-pair"><span class="dual-label">' + t("gen") + "</span> " + waitHtml(primary) +
+      html = '<div class="compact-waits"><span class="compact-pair"><span class="dual-label dual-gen">' + t("gen") + "</span> " + waitHtml(primary) +
         '</span><span class="compact-pair"><span class="dual-label">' + lab + "</span> " + waitHtml(special.wait) + "</span></div>";
     }
     var clock = displayStampClock(collectSectionAsOf(section, date), timeZone);
