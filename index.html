@@ -805,6 +805,11 @@
     .table-wrap.table-cards .wait-table tbody td.wait-col {
       text-align: center;
       vertical-align: middle;
+      padding-left: 1px;
+      padding-right: 1px;
+    }
+    .table-wrap.table-cards .wait-table tbody td.wait-col:last-child {
+      padding-right: 0.45rem;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
       display: inline-flex;
@@ -816,7 +821,7 @@
       max-width: none;
       height: auto;
       min-height: 2.75rem;
-      margin: 0 auto;
+      margin: 0;
       padding: 0.4rem 0.45rem 0.35rem;
       border-radius: 10px;
       background: var(--white);
@@ -1612,6 +1617,10 @@
       .table-wrap.table-cards .wait-table tbody td.bridge {
         border-radius: 10px 0 0 10px;
         padding: 0.28rem 0.45rem;
+      }
+      .table-wrap.table-cards .wait-table tbody td.wait-col {
+        padding-left: 1px;
+        padding-right: 1px;
       }
       .table-wrap.table-cards .wait-table tbody td:last-child {
         border-radius: 0 10px 10px 0;
@@ -4101,11 +4110,21 @@
       });
       let maxW = 0;
       let maxH = 0;
+      let availW = Infinity;
       nodes.forEach(function (el) {
         maxW = Math.max(maxW, Math.ceil(el.scrollWidth), Math.ceil(el.offsetWidth));
         maxH = Math.max(maxH, Math.ceil(el.scrollHeight), Math.ceil(el.offsetHeight));
+        const host = el.closest("td.wait-col") || el.parentElement;
+        if (!host) return;
+        const cs = getComputedStyle(host);
+        const inner =
+          host.clientWidth -
+          (parseFloat(cs.paddingLeft) || 0) -
+          (parseFloat(cs.paddingRight) || 0);
+        if (inner > 4) availW = Math.min(availW, Math.floor(inner));
       });
       maxW = Math.max(maxW, Math.round(remPx(minRem)));
+      if (availW !== Infinity) maxW = Math.min(maxW, availW);
       if (maxH < 1) return;
       const w = maxW + "px";
       const h = maxH + "px";
