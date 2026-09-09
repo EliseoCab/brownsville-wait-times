@@ -278,6 +278,15 @@ html[data-theme="dark"] .sparse {
 .poi-has-thumb .poi-photo img {
   height: 140px;
 }
+.poi-has-thumb.poi-contain .poi-photo {
+  background: #f8fafc;
+}
+.poi-has-thumb.poi-contain .poi-photo img {
+  object-fit: contain;
+}
+html[data-theme="dark"] .poi-has-thumb.poi-contain .poi-photo {
+  background: #162033;
+}
 
 @media (min-width: 861px) {
   .poi-hero {

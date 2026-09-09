@@ -4,6 +4,14 @@ food/whataburger.jpg
   License: CC0 1.0 Universal
   https://commons.wikimedia.org/wiki/File:Whataburger.jpg
 
+food/jolie-petite.jpg
+  Subject: Dining room interior, Jolie Petite French Cuisine, Brownsville
+  Source: User-supplied photo for Brownsville Border Wait Times
+
+food/taco-palenque.jpg
+  Subject: Taco Palenque roadside sign (fajitas / breakfast / drive thru)
+  Source: User-supplied image for Brownsville Border Wait Times
+
 starbase-boca-chica.jpg
   Subject: SpaceX Starship / launch tower (card crop — nose, chopsticks, illuminated stack)
   Source: User-supplied night photo for Brownsville Border Wait Times
