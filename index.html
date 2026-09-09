@@ -869,9 +869,9 @@
     .table-wrap.table-cards .wait-table tbody td.wait-col .compact-pair {
       display: flex;
       flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.35rem;
+      align-items: baseline;
+      justify-content: flex-start;
+      gap: 0.18rem;
       width: max-content;
       min-width: 100%;
       box-sizing: border-box;
@@ -887,8 +887,10 @@
       flex: 0 0 auto;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .compact-pair .wait-cell {
-      flex: 1 1 auto;
-      justify-content: flex-end;
+      flex: 0 0 auto;
+      justify-content: flex-start;
+      gap: 0.06rem;
+      margin: 0;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col.has-low .wait-stack {
       background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 75%);
@@ -1114,7 +1116,7 @@
       display: inline-flex;
       align-items: baseline;
       justify-content: center;
-      gap: 0.15rem;
+      gap: 0.06rem;
       font-variant-numeric: tabular-nums;
       line-height: 1;
       margin: 0 auto;
