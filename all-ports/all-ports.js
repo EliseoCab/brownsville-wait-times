@@ -28,7 +28,8 @@
       open: "open",
       closed: "Closed",
       pending: "Pending",
-      na: "—",
+      na: "N/A",
+      maps: "Map",
       borderAll: "All borders",
       borderMx: "Mexico",
       borderCa: "Northern",
@@ -67,7 +68,8 @@
       open: "abiertos",
       closed: "Cerrado",
       pending: "Pendiente",
-      na: "—",
+      na: "N/A",
+      maps: "Mapa",
       borderAll: "Todos los bordes",
       borderMx: "México",
       borderCa: "Norte",
@@ -169,7 +171,7 @@
 
   function parseLane(node, name, trustedLabel) {
     if (!node) {
-      return { name: name, wait: { pending: true, closed: false, minutes: null, lanesOpenCount: null } };
+      return { name: name, wait: { pending: false, na: true, closed: false, minutes: null, lanesOpenCount: null } };
     }
     var status = textOf(node, "operational_status");
     var minsRaw = textOf(node, "delay_minutes");
@@ -181,12 +183,13 @@
     var minutes = minsRaw !== "" && !isNaN(Number(minsRaw)) ? Number(minsRaw) : null;
     var lanesOpenCount = openRaw !== "" && !isNaN(Number(openRaw)) ? Number(openRaw) : null;
     if (na) {
-      return { name: name, wait: { pending: true, closed: false, minutes: null, lanesOpenCount: null, when: when, rawStatus: status } };
+      return { name: name, wait: { pending: false, na: true, closed: false, minutes: null, lanesOpenCount: null, when: when, rawStatus: status } };
     }
     return {
       name: name,
       wait: {
         pending: pending && !closed,
+        na: false,
         closed: closed,
         minutes: minutes,
         lanesOpenCount: lanesOpenCount,
@@ -604,7 +607,7 @@
       var lanes = sections[i].lanes || [];
       for (var j = 0; j < lanes.length; j++) {
         var w = lanes[j].wait;
-        if (!w) continue;
+        if (!w || w.na) continue;
         if (w.closed) return true;
         if (!w.pending && w.minutes != null) return true;
         if (!w.pending && w.lanesOpenCount != null) return true;
@@ -705,7 +708,7 @@
     var list = lanes || [];
     for (var i = 0; i < list.length; i++) {
       var w = list[i] && list[i].wait;
-      if (!w || !w.when) continue;
+      if (!w || w.na || !w.when) continue;
       var ms = asOfUtcMs(w.when, date);
       var time = stripAtPrefix(w.when);
       if (!time) continue;
@@ -798,11 +801,11 @@
   }
 
   function isShowableWait(w) {
-    return w && (isActiveWait(w) || w.pending || w.closed);
+    return w && !w.na && (isActiveWait(w) || w.pending || w.closed);
   }
 
   function waitHtml(w) {
-    if (!w || (!isShowableWait(w) && w.minutes == null && !w.pending && !w.closed)) {
+    if (!w || w.na || (!isShowableWait(w) && w.minutes == null && !w.pending && !w.closed)) {
       return '<span class="wait-empty">' + t("na") + "</span>";
     }
     if (w.closed) return '<span class="wait closed">' + t("closed") + "</span>";
@@ -818,7 +821,7 @@
     if (!section) return "";
     var bits = [];
     section.lanes.forEach(function (lane) {
-      if (!lane.wait || lane.wait.pending) return;
+      if (!lane.wait || lane.wait.pending || lane.wait.na) return;
       if (lane.wait.closed) return;
       if (lane.wait.lanesOpenCount == null) return;
       var label = /ready/i.test(lane.name)
@@ -841,7 +844,11 @@
     var special = section.lanes.find(function (l) {
       return /sentri|nexus|fast|ready/i.test(l.name) && isShowableWait(l.wait);
     });
-    var primary = general && isShowableWait(general.wait) ? general.wait : (section.lanes[0] && section.lanes[0].wait);
+    var primary = general && isShowableWait(general.wait) ? general.wait : null;
+    if (!primary) {
+      var anyShowable = section.lanes.find(function (l) { return isShowableWait(l.wait); });
+      primary = anyShowable ? anyShowable.wait : (general && general.wait);
+    }
     var html = waitHtml(primary);
     var open = openBits(section, border);
     if (special && special !== general && isActiveWait(special.wait) && primary && isActiveWait(primary) && special.wait.minutes !== primary.minutes) {
@@ -1027,7 +1034,12 @@
               '<span class="pill">' + escapeHtml(it.state) + "</span>" +
               '<span class="pill">' + (it.border === "mexican" ? "MX" : "CA") + "</span>" +
               (dist ? '<span class="pill dist">' + dist + "</span>" : "") +
-              '<a class="maps" href="' + mapsHref + '" target="_blank" rel="noopener">Maps</a>' +
+              '<a class="maps" href="' + mapsHref + '" target="_blank" rel="noopener" aria-label="' +
+                escapeHtml(t("maps")) + '" title="' + escapeHtml(t("maps")) + '">' +
+                '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+                '<path d="M12 21s-6.5-5.8-6.5-10.2a6.5 6.5 0 1 1 13 0C18.5 15.2 12 21 12 21z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' +
+                '<circle cx="12" cy="10.6" r="2.2" fill="currentColor"/>' +
+                "</svg></a>" +
             "</div>" +
             hoursHtml +
             updatedHtml +

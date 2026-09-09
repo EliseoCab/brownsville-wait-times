@@ -236,11 +236,27 @@
     }
     .port-updated { margin-top: 0.12rem; }
     .maps {
-      font-size: 0.72rem;
-      font-weight: 750;
-      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.35rem;
+      height: 1.35rem;
+      margin-left: 0.1rem;
       color: var(--sky-deep);
-      margin-left: 0.15rem;
+      border-radius: 6px;
+      text-decoration: none;
+      line-height: 0;
+    }
+    .maps:hover,
+    .maps:focus-visible {
+      background: var(--line-soft);
+      color: var(--ink);
+      outline: none;
+    }
+    .maps svg {
+      width: 0.95rem;
+      height: 0.95rem;
+      display: block;
     }
     .port-grid {
       display: grid;
@@ -357,6 +373,6 @@
   </main>
 
   <script src="port-meta.js"></script>
-  <script src="all-ports.js?v=16"></script>
+  <script src="all-ports.js?v=17"></script>
 </body>
 </html>

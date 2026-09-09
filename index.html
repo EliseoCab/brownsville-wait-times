@@ -3373,11 +3373,12 @@
 
       // Ready Lanes belong with their traffic type (e.g. Gateway pedestrian Ready), not SENTRI/Fast
       const readyExtras = showable.filter((l) => /ready/i.test(l.name) && l !== primary);
+      const fastExtras = showable.filter((l) => /fast/i.test(l.name) && l !== primary);
 
       return {
         primary: primary.wait,
         primaryName: primary.name,
-        extras: readyExtras,
+        extras: readyExtras.concat(fastExtras),
         open: primary.wait.lanesOpen,
         max: sec.maxLanes
       };
@@ -3495,6 +3496,7 @@
      * Concise wait cell:
      *  - Same wait: "60 min" + open line
      *  - All filter, Gateway Pedestrian only when Gen ≠ Ready: "Gen 15 · Ready 30" + open line
+     *  - All filter, Commercial when Gen ≠ FAST: "Gen 15 · FAST 5" + open line
      */
     function waitCellBlock(summary, modeKey, port) {
       if (!summary) {
@@ -3503,6 +3505,9 @@
       const w = summary.primary;
       const readyActive = (summary.extras || []).find(
         (l) => /ready/i.test(l.name) && isShowableWait(l.wait)
+      );
+      const fastActive = (summary.extras || []).find(
+        (l) => /fast/i.test(l.name) && isShowableWait(l.wait)
       );
 
       const gatewayPedDual =
@@ -3515,14 +3520,26 @@
         isActiveWait(readyActive.wait) &&
         w.minutes !== readyActive.wait.minutes;
 
+      const commercialFastDual =
+        currentFilter === "all" &&
+        modeKey === "commercial" &&
+        fastActive &&
+        isActiveWait(w) &&
+        isActiveWait(fastActive.wait) &&
+        w.minutes !== fastActive.wait.minutes;
+
+      const dual = gatewayPedDual
+        ? { label: t("ready"), wait: readyActive.wait }
+        : commercialFastDual
+          ? { label: t("fast"), wait: fastActive.wait }
+          : null;
+
       let mainHtml;
-      if (gatewayPedDual) {
+      if (dual) {
         mainHtml = `<div class="compact-waits">
           <span class="compact-pair"><span class="dual-label">${escapeHtml(t("gen"))}</span> ${waitCellHtml(w)}</span>
-          <span class="compact-pair"><span class="dual-label">${escapeHtml(t("ready"))}</span> ${waitCellHtml(readyActive.wait)}</span>
+          <span class="compact-pair"><span class="dual-label">${escapeHtml(dual.label)}</span> ${waitCellHtml(dual.wait)}</span>
         </div>`;
-      } else if (w.pending) {
-        mainHtml = waitCellHtml(w);
       } else {
         mainHtml = waitCellHtml(w);
       }
@@ -3534,7 +3551,7 @@
 
       return {
         html: `<div class="wait-stack">${mainHtml}${openHtml}</div>`,
-        cls: (gatewayPedDual ? "has-dual " : "") + "has-" + w.cls
+        cls: (dual ? "has-dual " : "") + "has-" + w.cls
       };
     }
 
