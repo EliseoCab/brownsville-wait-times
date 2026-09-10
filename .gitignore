@@ -5,6 +5,7 @@ _site/
 .vscode/
 .env
 .env.*
+.bwt-stale-alert-state.json
 worker/.wrangler/
 __pycache__/
 *.pyc
