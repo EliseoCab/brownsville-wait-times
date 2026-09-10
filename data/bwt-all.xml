@@ -1,6 +1,6 @@
 <border_wait_time>
   <last_updated_date>2026-9-10</last_updated_date>
-  <last_updated_time>19:06:00</last_updated_time>
+  <last_updated_time>19:31:37</last_updated_time>
   <number_of_ports>85</number_of_ports>
   <port>
     <port_number>070801</port_number>
@@ -80,8 +80,8 @@
       <maximum_lanes>3</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm PDT</update_time>
-        <delay_minutes>5</delay_minutes>
+        <update_time>At 4:00 pm PDT</update_time>
+        <delay_minutes>0</delay_minutes>
         <lanes_open>2</lanes_open>
       </standard_lanes>
       <FAST_lanes>
@@ -95,13 +95,13 @@
       <maximum_lanes>7</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm PDT</update_time>
-        <delay_minutes>5</delay_minutes>
+        <update_time>At 4:00 pm PDT</update_time>
+        <delay_minutes>0</delay_minutes>
         <lanes_open>2</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm PDT</update_time>
+        <update_time>At 4:00 pm PDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </NEXUS_SENTRI_lanes>
@@ -158,15 +158,15 @@
       <maximum_lanes>10</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm PDT</update_time>
+        <update_time>At 4:00 pm PDT</update_time>
         <delay_minutes>5</delay_minutes>
         <lanes_open>3</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm PDT</update_time>
+        <update_time>At 4:00 pm PDT</update_time>
         <delay_minutes>0</delay_minutes>
-        <lanes_open>2</lanes_open>
+        <lanes_open>1</lanes_open>
       </NEXUS_SENTRI_lanes>
       <ready_lanes>
         <operational_status>Lanes Closed</operational_status>
@@ -269,8 +269,8 @@
       <maximum_lanes>4</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 6:57 pm EDT</update_time>
-        <delay_minutes>0</delay_minutes>
+        <update_time>At 7:27 pm EDT</update_time>
+        <delay_minutes>1</delay_minutes>
         <lanes_open>2</lanes_open>
       </standard_lanes>
       <FAST_lanes>
@@ -284,9 +284,9 @@
       <maximum_lanes>8</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 6:57 pm EDT</update_time>
+        <update_time>At 7:27 pm EDT</update_time>
         <delay_minutes>0</delay_minutes>
-        <lanes_open>5</lanes_open>
+        <lanes_open>3</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
         <operational_status>Lanes Closed</operational_status>
@@ -332,8 +332,8 @@
       <maximum_lanes>8</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 6:57 pm EDT</update_time>
-        <delay_minutes>5</delay_minutes>
+        <update_time>At 7:27 pm EDT</update_time>
+        <delay_minutes>2</delay_minutes>
         <lanes_open>4</lanes_open>
       </standard_lanes>
       <FAST_lanes>
@@ -347,13 +347,13 @@
       <maximum_lanes>17</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 6:57 pm EDT</update_time>
-        <delay_minutes>0</delay_minutes>
+        <update_time>At 7:27 pm EDT</update_time>
+        <delay_minutes>1</delay_minutes>
         <lanes_open>5</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 6:57 pm EDT</update_time>
+        <update_time>At 7:27 pm EDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>2</lanes_open>
       </NEXUS_SENTRI_lanes>
@@ -411,9 +411,9 @@
       <maximum_lanes>16</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 6:57 pm EDT</update_time>
-        <delay_minutes>3</delay_minutes>
-        <lanes_open>5</lanes_open>
+        <update_time>At 7:27 pm EDT</update_time>
+        <delay_minutes>1</delay_minutes>
+        <lanes_open>4</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
         <operational_status>N/A</operational_status>
@@ -1155,7 +1155,7 @@
       <maximum_lanes>1</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 7:00 pm CDT</update_time>
+        <update_time>At 8:00 pm CDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
@@ -1170,7 +1170,7 @@
       <maximum_lanes>3</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 7:00 pm CDT</update_time>
+        <update_time>At 8:00 pm CDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
@@ -1281,7 +1281,7 @@
       <maximum_lanes>1</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm PDT</update_time>
+        <update_time>At 4:00 pm PDT</update_time>
         <delay_minutes>5</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
@@ -1296,13 +1296,13 @@
       <maximum_lanes>4</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm PDT</update_time>
+        <update_time>At 4:00 pm PDT</update_time>
         <delay_minutes>5</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm PDT</update_time>
+        <update_time>At 4:00 pm PDT</update_time>
         <delay_minutes>5</delay_minutes>
         <lanes_open>1</lanes_open>
       </NEXUS_SENTRI_lanes>
@@ -1533,7 +1533,7 @@
       <maximum_lanes>2</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 8:00 pm EDT</update_time>
+        <update_time>At 9:00 pm EDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
@@ -1548,7 +1548,7 @@
       <maximum_lanes>5</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 8:00 pm EDT</update_time>
+        <update_time>At 9:00 pm EDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
@@ -1785,7 +1785,7 @@
       <maximum_lanes>2</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 7:00 am PDT</update_time>
+        <update_time>At 4:00 pm PDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
@@ -1800,15 +1800,15 @@
       <maximum_lanes>5</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 7:00 am PDT</update_time>
-        <delay_minutes>0</delay_minutes>
-        <lanes_open>1</lanes_open>
+        <update_time>At 4:00 pm PDT</update_time>
+        <delay_minutes>5</delay_minutes>
+        <lanes_open>2</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
-        <operational_status>Lanes Closed</operational_status>
-        <update_time />
-        <delay_minutes />
-        <lanes_open />
+        <operational_status>no delay</operational_status>
+        <update_time>At 4:00 pm PDT</update_time>
+        <delay_minutes>0</delay_minutes>
+        <lanes_open>1</lanes_open>
       </NEXUS_SENTRI_lanes>
       <ready_lanes>
         <operational_status>Lanes Closed</operational_status>
@@ -1848,8 +1848,8 @@
       <maximum_lanes>2</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 9:00 am MDT</update_time>
-        <delay_minutes>5</delay_minutes>
+        <update_time>At 5:00 pm MDT</update_time>
+        <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
       <FAST_lanes>
@@ -1863,8 +1863,8 @@
       <maximum_lanes>4</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 9:00 am MDT</update_time>
-        <delay_minutes>5</delay_minutes>
+        <update_time>At 5:00 pm MDT</update_time>
+        <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
@@ -2542,10 +2542,10 @@
     <commercial_vehicle_lanes>
       <maximum_lanes>1</maximum_lanes>
       <standard_lanes>
-        <operational_status>no delay</operational_status>
-        <update_time>At 4:00 pm MDT</update_time>
-        <delay_minutes>5</delay_minutes>
-        <lanes_open>1</lanes_open>
+        <operational_status>Lanes Closed</operational_status>
+        <update_time />
+        <delay_minutes />
+        <lanes_open />
       </standard_lanes>
       <FAST_lanes>
         <operational_status>N/A</operational_status>
@@ -2558,9 +2558,9 @@
       <maximum_lanes>3</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 4:00 pm MDT</update_time>
+        <update_time>At 5:00 pm MDT</update_time>
         <delay_minutes>5</delay_minutes>
-        <lanes_open>1</lanes_open>
+        <lanes_open>2</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
         <operational_status>N/A</operational_status>
@@ -2569,17 +2569,17 @@
         <lanes_open />
       </NEXUS_SENTRI_lanes>
       <ready_lanes>
-        <operational_status>no delay</operational_status>
-        <update_time>At 4:00 pm MDT</update_time>
-        <delay_minutes>5</delay_minutes>
-        <lanes_open>1</lanes_open>
+        <operational_status>Lanes Closed</operational_status>
+        <update_time />
+        <delay_minutes />
+        <lanes_open />
       </ready_lanes>
     </passenger_vehicle_lanes>
     <pedestrian_lanes>
       <maximum_lanes>4</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 4:00 pm MDT</update_time>
+        <update_time>At 5:00 pm MDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
@@ -2606,7 +2606,7 @@
       <maximum_lanes>2</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
+        <update_time>At 6:00 pm CDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
@@ -2621,19 +2621,19 @@
       <maximum_lanes>6</maximum_lanes>
       <standard_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
+        <update_time>At 6:00 pm CDT</update_time>
         <delay_minutes>30</delay_minutes>
-        <lanes_open>1</lanes_open>
+        <lanes_open>2</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
+        <update_time>At 6:00 pm CDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </NEXUS_SENTRI_lanes>
       <ready_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
+        <update_time>At 6:00 pm CDT</update_time>
         <delay_minutes>30</delay_minutes>
         <lanes_open>1</lanes_open>
       </ready_lanes>
@@ -2687,14 +2687,14 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>7</maximum_lanes>
       <standard_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 3:00 pm PST</update_time>
+        <update_time>At 4:00 pm PST</update_time>
         <delay_minutes>30</delay_minutes>
         <lanes_open>3</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
-        <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm PST</update_time>
-        <delay_minutes>3</delay_minutes>
+        <operational_status>delay</operational_status>
+        <update_time>At 4:00 pm PST</update_time>
+        <delay_minutes>10</delay_minutes>
         <lanes_open>1</lanes_open>
       </NEXUS_SENTRI_lanes>
       <ready_lanes>
@@ -2708,7 +2708,7 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>3</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm PST</update_time>
+        <update_time>At 4:00 pm PST</update_time>
         <delay_minutes>3</delay_minutes>
         <lanes_open>2</lanes_open>
       </standard_lanes>
@@ -2940,8 +2940,8 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>14</maximum_lanes>
       <standard_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 4:00 pm MDT</update_time>
-        <delay_minutes>50</delay_minutes>
+        <update_time>At 6:00 pm MDT</update_time>
+        <delay_minutes>60</delay_minutes>
         <lanes_open>3</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
@@ -2952,17 +2952,17 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       </NEXUS_SENTRI_lanes>
       <ready_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 4:00 pm MDT</update_time>
-        <delay_minutes>50</delay_minutes>
-        <lanes_open>8</lanes_open>
+        <update_time>At 6:00 pm MDT</update_time>
+        <delay_minutes>55</delay_minutes>
+        <lanes_open>4</lanes_open>
       </ready_lanes>
     </passenger_vehicle_lanes>
     <pedestrian_lanes>
       <maximum_lanes>4</maximum_lanes>
       <standard_lanes>
-        <operational_status>delay</operational_status>
-        <update_time>At 4:00 pm MDT</update_time>
-        <delay_minutes>25</delay_minutes>
+        <operational_status>no delay</operational_status>
+        <update_time>At 6:00 pm MDT</update_time>
+        <delay_minutes>4</delay_minutes>
         <lanes_open>2</lanes_open>
       </standard_lanes>
       <ready_lanes>
@@ -3004,36 +3004,36 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>12</maximum_lanes>
       <standard_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 4:00 pm MDT</update_time>
-        <delay_minutes>30</delay_minutes>
+        <update_time>At 5:00 pm MDT</update_time>
+        <delay_minutes>35</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 4:00 pm MDT</update_time>
-        <delay_minutes>0</delay_minutes>
-        <lanes_open>2</lanes_open>
+        <update_time>At 5:00 pm MDT</update_time>
+        <delay_minutes>1</delay_minutes>
+        <lanes_open>1</lanes_open>
       </NEXUS_SENTRI_lanes>
       <ready_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 4:00 pm MDT</update_time>
-        <delay_minutes>25</delay_minutes>
-        <lanes_open>6</lanes_open>
+        <update_time>At 5:00 pm MDT</update_time>
+        <delay_minutes>33</delay_minutes>
+        <lanes_open>5</lanes_open>
       </ready_lanes>
     </passenger_vehicle_lanes>
     <pedestrian_lanes>
       <maximum_lanes>14</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 4:00 pm MDT</update_time>
-        <delay_minutes>2</delay_minutes>
+        <update_time>At 5:00 pm MDT</update_time>
+        <delay_minutes>1</delay_minutes>
         <lanes_open>3</lanes_open>
       </standard_lanes>
       <ready_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 4:00 pm MDT</update_time>
-        <delay_minutes>2</delay_minutes>
-        <lanes_open>4</lanes_open>
+        <update_time>At 5:00 pm MDT</update_time>
+        <delay_minutes>1</delay_minutes>
+        <lanes_open>3</lanes_open>
       </ready_lanes>
     </pedestrian_lanes>
     <construction_notice>&lt;![CDATA[Ready Lanes are open at PDN.  See www.getyouhome.gov for more information. Tune in to AM 1620 for border crossing information.]]&gt;</construction_notice>
@@ -3074,9 +3074,9 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 4:00 pm MDT</update_time>
-        <delay_minutes>2</delay_minutes>
-        <lanes_open>2</lanes_open>
+        <update_time>At 5:00 pm MDT</update_time>
+        <delay_minutes>7</delay_minutes>
+        <lanes_open>3</lanes_open>
       </NEXUS_SENTRI_lanes>
       <ready_lanes>
         <operational_status>N/A</operational_status>
@@ -3520,7 +3520,7 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
+        <update_time>At 6:00 pm CDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>4</lanes_open>
       </NEXUS_SENTRI_lanes>
@@ -3535,13 +3535,13 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>12</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
+        <update_time>At 6:00 pm CDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
       <ready_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
+        <update_time>At 6:00 pm CDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>2</lanes_open>
       </ready_lanes>
@@ -3576,9 +3576,9 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
     <passenger_vehicle_lanes>
       <maximum_lanes>15</maximum_lanes>
       <standard_lanes>
-        <operational_status>no delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
-        <delay_minutes>0</delay_minutes>
+        <operational_status>delay</operational_status>
+        <update_time>At 6:00 pm CDT</update_time>
+        <delay_minutes>20</delay_minutes>
         <lanes_open>7</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
@@ -3588,9 +3588,9 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
         <lanes_open />
       </NEXUS_SENTRI_lanes>
       <ready_lanes>
-        <operational_status>no delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
-        <delay_minutes>0</delay_minutes>
+        <operational_status>delay</operational_status>
+        <update_time>At 6:00 pm CDT</update_time>
+        <delay_minutes>15</delay_minutes>
         <lanes_open>7</lanes_open>
       </ready_lanes>
     </passenger_vehicle_lanes>
@@ -3628,13 +3628,13 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>8</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
+        <update_time>At 6:00 pm CDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>3</lanes_open>
       </standard_lanes>
       <FAST_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
+        <update_time>At 6:00 pm CDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>2</lanes_open>
       </FAST_lanes>
@@ -3643,19 +3643,19 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>4</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
+        <update_time>At 6:00 pm CDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
+        <update_time>At 6:00 pm CDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </NEXUS_SENTRI_lanes>
       <ready_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
+        <update_time>At 6:00 pm CDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </ready_lanes>
@@ -3691,13 +3691,13 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>19</maximum_lanes>
       <standard_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
+        <update_time>At 6:00 pm CDT</update_time>
         <delay_minutes>55</delay_minutes>
         <lanes_open>13</lanes_open>
       </standard_lanes>
       <FAST_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
+        <update_time>At 6:00 pm CDT</update_time>
         <delay_minutes>35</delay_minutes>
         <lanes_open>3</lanes_open>
       </FAST_lanes>
@@ -3944,7 +3944,7 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>1</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm PST</update_time>
+        <update_time>At 4:00 pm PST</update_time>
         <delay_minutes>1</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
@@ -3959,8 +3959,8 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>2</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm PST</update_time>
-        <delay_minutes>5</delay_minutes>
+        <update_time>At 4:00 pm PST</update_time>
+        <delay_minutes>1</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
@@ -3980,7 +3980,7 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>2</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm PST</update_time>
+        <update_time>At 4:00 pm PST</update_time>
         <delay_minutes>1</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
@@ -4072,13 +4072,13 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>8</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm MST</update_time>
+        <update_time>At 4:00 pm MST</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>3</lanes_open>
       </standard_lanes>
       <FAST_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm MST</update_time>
+        <update_time>At 4:00 pm MST</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>2</lanes_open>
       </FAST_lanes>
@@ -4087,8 +4087,8 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>13</maximum_lanes>
       <standard_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 3:00 pm MST</update_time>
-        <delay_minutes>30</delay_minutes>
+        <update_time>At 4:00 pm MST</update_time>
+        <delay_minutes>25</delay_minutes>
         <lanes_open>6</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
@@ -4108,7 +4108,7 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>6</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm MST</update_time>
+        <update_time>At 4:00 pm MST</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>2</lanes_open>
       </standard_lanes>
@@ -4171,8 +4171,8 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>4</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm MST</update_time>
-        <delay_minutes>0</delay_minutes>
+        <update_time>At 4:00 pm MST</update_time>
+        <delay_minutes>5</delay_minutes>
         <lanes_open>2</lanes_open>
       </standard_lanes>
       <ready_lanes>
@@ -4530,9 +4530,9 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
     <passenger_vehicle_lanes>
       <maximum_lanes>4</maximum_lanes>
       <standard_lanes>
-        <operational_status>delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
-        <delay_minutes>10</delay_minutes>
+        <operational_status>no delay</operational_status>
+        <update_time>At 6:00 pm CDT</update_time>
+        <delay_minutes>5</delay_minutes>
         <lanes_open>2</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
@@ -4552,7 +4552,7 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>1</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 5:00 pm CDT</update_time>
+        <update_time>At 6:00 pm CDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
@@ -4960,7 +4960,7 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>2</maximum_lanes>
       <standard_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 4:00 pm MST</update_time>
+        <update_time>At 5:00 pm MST</update_time>
         <delay_minutes>10</delay_minutes>
         <lanes_open>2</lanes_open>
       </standard_lanes>
@@ -5212,13 +5212,13 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>3</maximum_lanes>
       <standard_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 3:00 pm MDT</update_time>
+        <update_time>At 5:00 pm MDT</update_time>
         <delay_minutes>25</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
       <FAST_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 3:00 pm MDT</update_time>
+        <update_time>At 5:00 pm MDT</update_time>
         <delay_minutes>20</delay_minutes>
         <lanes_open>1</lanes_open>
       </FAST_lanes>
@@ -5227,8 +5227,8 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>4</maximum_lanes>
       <standard_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 3:00 pm MDT</update_time>
-        <delay_minutes>20</delay_minutes>
+        <update_time>At 5:00 pm MDT</update_time>
+        <delay_minutes>25</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
@@ -5239,8 +5239,8 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       </NEXUS_SENTRI_lanes>
       <ready_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 3:00 pm MDT</update_time>
-        <delay_minutes>15</delay_minutes>
+        <update_time>At 5:00 pm MDT</update_time>
+        <delay_minutes>20</delay_minutes>
         <lanes_open>1</lanes_open>
       </ready_lanes>
     </passenger_vehicle_lanes>
@@ -5248,7 +5248,7 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>2</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 pm MDT</update_time>
+        <update_time>At 5:00 pm MDT</update_time>
         <delay_minutes>1</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
