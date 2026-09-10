@@ -72,9 +72,12 @@ This keeps `data/bwt.xml` (homepage) and `data/bwt-all.xml` (all-ports) usable i
 Workflow: **Check data freshness (lag alarm)**
 
 - Runs about every **15 minutes**
-- Compares **live CBP** vs **GitHub Pages** `data/bwt.xml` (the Actions mirror)
-- Also logs the **Cloudflare Worker** report time (page primary path)
-- If the mirror is **~75+ minutes** behind:
+- Compares **live CBP** vs **GitHub Pages** `data/bwt.xml` **per Brownsville bridge** (B&M, Gateway, Veterans, Los Indios)
+- Uses each item’s CBP `Hours:` line in **America/Chicago**; Veterans / Los Indios are skipped when closed, plus a **45-minute post-close grace** so a frozen last-open stamp does not alert
+- **Update Pending** on an in-hours bridge is **stale** (not treated as OK)
+- Also flags CBP itself if an open bridge is pending, missing a stamp, or stuck beyond 75 minutes (limited-hours bridges get 75 minutes after open for the first hourly post)
+- Also logs the **Cloudflare Worker** per-bridge times (informational; not pass/fail)
+- If any in-hours bridge is **~75+ minutes** behind (or pending/stuck):
   1. Automatically runs **Update CBP wait times**
   2. Waits for deploy and re-checks
   3. **Emails only if still lagging** after that (job fails)
@@ -92,6 +95,19 @@ Workflow: **Check data freshness (lag alarm)**
 ### Manual lag check
 
 **Actions → Check data freshness (lag alarm) → Run workflow**
+
+## Veterans SENTRI staffing alarm
+
+Workflow: **Veterans SENTRI lane staffing** (`.github/workflows/check-veterans-sentri.yml`)
+
+- Runs at **:15 past every hour** (`15 * * * *`) plus manual dispatch
+- Reads the **same live CBP Brownsville RSS** as the lag alarm (`Brownsville - Veterans International`)
+- Looks at **Passenger Vehicles → Sentri Lanes** only (not commercial Fast Lanes)
+- **Fails** (GitHub email) when Veterans is in hours and SENTRI **delay ≥ 30 min** and **open lanes < 4**
+- Uses the item’s `Hours:` line (typically `6 am-Midnight` America/Chicago). Outside hours: no alert
+- **Update Pending** with no delay number: log WARN, do not invent lane counts, do not fail. If delay ≥ 30 and lanes < 4 are still parseable, fail.
+
+**Actions → Veterans SENTRI lane staffing → Run workflow**
 
 ## Local use
 
