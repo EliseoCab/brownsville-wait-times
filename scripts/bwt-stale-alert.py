@@ -12,7 +12,7 @@ import os
 import re
 import subprocess
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -141,19 +141,76 @@ def save_state(state: dict) -> None:
     tmp.replace(STATE_PATH)
 
 
+def seconds_until(target: datetime, now: datetime) -> int:
+    return max(30, int((target - now).total_seconds()))
+
+
+def next_hour_grace(hour_start: datetime) -> datetime:
+    """15 minutes after the start of the next hour."""
+    return hour_start + timedelta(hours=1, minutes=GRACE_MIN)
+
+
+def next_slot_time(now: datetime) -> datetime:
+    m = now.minute
+    if m < 15:
+        nxt = 15
+    elif m < 30:
+        nxt = 30
+    elif m < 45:
+        nxt = 45
+    else:
+        return (now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1, minutes=GRACE_MIN))
+    return now.replace(minute=nxt, second=0, microsecond=0)
+
+
 def skip(reason: str, **extra) -> None:
     payload = {"action": "skip", "reason": reason}
     payload.update(extra)
     print(json.dumps(payload, indent=2))
 
 
+def idle_payload(now: datetime, until: datetime, reason: str, **extra) -> None:
+    extra = dict(extra)
+    extra["sleepSec"] = seconds_until(until, now)
+    extra["nextCheckAt"] = fmt_clock(until)
+    skip(reason, **extra)
+
+
+def mark_idle_until(state: dict, until: datetime, now: datetime) -> None:
+    state["idleUntil"] = until.isoformat()
+    if state.get("missingHourKey"):
+        state["resolvedAt"] = now.isoformat()
+    save_state(state)
+
+
 def main() -> int:
     now = datetime.now(TZ)
     hour_start = now.replace(minute=0, second=0, microsecond=0)
+    state = load_state()
+
+    idle_raw = state.get("idleUntil")
+    if idle_raw:
+        try:
+            idle_until = datetime.fromisoformat(idle_raw)
+            if idle_until.tzinfo is None:
+                idle_until = idle_until.replace(tzinfo=TZ)
+            else:
+                idle_until = idle_until.astimezone(TZ)
+            if now < idle_until:
+                idle_payload(
+                    now,
+                    idle_until,
+                    "current hour already updated; waiting until 15 minutes after the next hour",
+                    idleUntil=fmt_clock(idle_until),
+                )
+                return 0
+        except ValueError:
+            pass
+
     xml, source = fetch_xml()
     blocks = brownsville_blocks(xml)
     if not blocks:
-        skip("no Brownsville items in feed", source=source)
+        skip("no Brownsville items in feed", source=source, sleepSec=900)
         return 0
     stamp = parse_stamp(" ".join(blocks))
     pending_only = stamp is None and re.search(r"Update Pending", " ".join(blocks), re.I)
@@ -165,33 +222,41 @@ def main() -> int:
         "currentHour": fmt_hour(hour_start),
     }
 
-    if now.minute < GRACE_MIN:
-        skip(
-            f"within {GRACE_MIN}-minute grace of {fmt_hour(hour_start)}",
+    current = stamp is not None and stamp >= hour_start
+
+    if current:
+        until = next_hour_grace(hour_start)
+        mark_idle_until(state, until, now)
+        idle_payload(
+            now,
+            until,
+            "CBP stamp is for the current hour; next check 15 minutes after the next hour",
             **extra,
         )
         return 0
 
-    current = True
-    if stamp is not None:
-        current = stamp >= hour_start
-    else:
-        # No clock in the feed (all pending / N/A) → treat as not updated this hour.
-        current = False
-
-    if current:
-        state = load_state()
-        if state.get("missingHourKey") == hour_start.isoformat():
-            state["resolvedAt"] = now.isoformat()
-            save_state(state)
-        skip("CBP stamp is for the current hour", **extra)
+    if now.minute < GRACE_MIN:
+        until = hour_start + timedelta(minutes=GRACE_MIN)
+        idle_payload(
+            now,
+            until,
+            f"within {GRACE_MIN}-minute grace of {fmt_hour(hour_start)}",
+            **extra,
+        )
         return 0
 
     slot = slot_minute(now.minute)
     alert_key = f"{hour_start.strftime('%Y-%m-%dT%H')}:{slot:02d}"
     state = load_state()
     if state.get("lastAlertKey") == alert_key:
-        skip("already emailed this 15-minute slot", **extra, alertKey=alert_key)
+        until = next_slot_time(now)
+        idle_payload(
+            now,
+            until,
+            "already emailed this 15-minute slot",
+            **extra,
+            alertKey=alert_key,
+        )
         return 0
 
     follow_up = state.get("missingHourKey") == hour_start.isoformat()
@@ -229,6 +294,7 @@ Brownsville Border Wait Times monitor
 {SITE}
 """
 
+    follow_until = now + timedelta(minutes=GRACE_MIN)
     state.update(
         {
             "lastAlertKey": alert_key,
@@ -236,6 +302,7 @@ Brownsville Border Wait Times monitor
             "missingHour": missing,
             "lastSentAt": now.isoformat(),
             "followUp": follow_up,
+            "idleUntil": None,
         }
     )
     save_state(state)
@@ -250,6 +317,8 @@ Brownsville Border Wait Times monitor
                 "reason": "stale hour after grace",
                 "followUp": follow_up,
                 "alertKey": alert_key,
+                "sleepSec": GRACE_MIN * 60,
+                "nextCheckAt": fmt_clock(follow_until),
                 **extra,
             },
             indent=2,
