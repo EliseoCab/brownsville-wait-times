@@ -6,8 +6,11 @@ on:
     - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
 
-# Compares live CBP vs GitHub Pages mirror (backup). The live page prefers the
-# Cloudflare Worker; this alarm keeps the Actions mirror honest.
+# Compares live CBP vs GitHub Pages mirror (backup) PER Brownsville bridge.
+# Uses each RSS item's Hours: line (America/Chicago); skips closed crossings
+# plus a short post-close grace. Update Pending while open is stale.
+# The live page prefers the Cloudflare Worker; this alarm keeps the Actions
+# mirror honest. Worker feed is logged only (not pass/fail).
 # On lag: auto-run Update workflow, wait, re-check. Email only if still lagging.
 
 permissions:
@@ -31,8 +34,10 @@ jobs:
           CBP_URL: "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43"
           SITE_URL: "https://eliseocab.github.io/brownsville-wait-times/data/bwt.xml"
           WORKER_URL: "https://brownsville-bwt.borderwait.workers.dev/?fresh=1"
-          # Alert if site lags CBP by this many minutes (one CBP hour + small buffer)
+          # Alert if an in-hours bridge lags CBP by this many minutes (one CBP hour + buffer)
           MAX_LAG_MINUTES: "75"
+          # Skip freshness this long after official close (frozen last-open stamp)
+          POST_CLOSE_GRACE_MINUTES: "45"
         run: |
           set -euo pipefail
 
@@ -46,7 +51,8 @@ jobs:
             --cbp /tmp/cbp.xml \
             --site /tmp/site.xml \
             --worker /tmp/worker.xml \
-            --max-lag "$MAX_LAG_MINUTES"
+            --max-lag "$MAX_LAG_MINUTES" \
+            --grace "$POST_CLOSE_GRACE_MINUTES"
 
       - name: Auto-refresh when mirror is lagging
         if: steps.compare.outputs.lagging == 'true'
@@ -128,6 +134,7 @@ jobs:
           CBP_URL: "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43"
           SITE_URL: "https://eliseocab.github.io/brownsville-wait-times/data/bwt.xml"
           MAX_LAG_MINUTES: "75"
+          POST_CLOSE_GRACE_MINUTES: "45"
         run: |
           set -euo pipefail
           curl -fsSL "$CBP_URL" -o /tmp/cbp2.xml
@@ -138,22 +145,24 @@ jobs:
             --mode recheck \
             --cbp /tmp/cbp2.xml \
             --site /tmp/site2.xml \
-            --max-lag "$MAX_LAG_MINUTES"
+            --max-lag "$MAX_LAG_MINUTES" \
+            --grace "$POST_CLOSE_GRACE_MINUTES"
 
       - name: Pass if mirror was fine or recovered
         if: steps.compare.outputs.lagging != 'true' || steps.recheck.outputs.still_lagging == 'false'
         run: |
           if [ "${{ steps.compare.outputs.lagging }}" = "true" ]; then
-            echo "Self-healed: mirror was lagging (~${{ steps.compare.outputs.lag_minutes }} min) but Update CBP wait times fixed it."
-            echo "::notice::Mirror was behind CBP; auto-refresh recovered. No action needed."
+            echo "Self-healed: ${{ steps.compare.outputs.lagging_bridges }} were lagging (~${{ steps.compare.outputs.lag_minutes }} min) but Update CBP wait times fixed it."
+            echo "::notice::In-hours bridge(s) were behind CBP; auto-refresh recovered. No action needed."
           else
-            echo "Mirror is fresh (lag ~${{ steps.compare.outputs.lag_minutes }} min)."
+            echo "All in-hours bridges are fresh enough (worst lag ~${{ steps.compare.outputs.lag_minutes }} min)."
           fi
 
       - name: Fail only if still lagging after auto-refresh
         if: steps.compare.outputs.lagging == 'true' && steps.recheck.outputs.still_lagging == 'true'
         run: |
-          echo "::error::GitHub Pages data/bwt.xml is still ~${{ steps.recheck.outputs.lag_minutes || steps.compare.outputs.lag_minutes }} minutes behind CBP after auto-refresh."
+          echo "::error::Still lagging after auto-refresh: ${{ steps.recheck.outputs.lagging_bridges || steps.compare.outputs.lagging_bridges }} (${{ steps.recheck.outputs.reason || steps.compare.outputs.reason }}, ~${{ steps.recheck.outputs.lag_minutes || steps.compare.outputs.lag_minutes }} min)."
           echo "Manual fix: Actions → Update CBP wait times → Run workflow"
           echo "Note: the live page may still be OK via Cloudflare Worker (Live · CBP proxy)."
+          echo "Closed bridges (Veterans after midnight, Los Indios after 10 pm, plus post-close grace) are skipped."
           exit 1

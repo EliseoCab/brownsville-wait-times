@@ -72,9 +72,12 @@ This keeps `data/bwt.xml` (homepage) and `data/bwt-all.xml` (all-ports) usable i
 Workflow: **Check data freshness (lag alarm)**
 
 - Runs about every **15 minutes**
-- Compares **live CBP** vs **GitHub Pages** `data/bwt.xml` (the Actions mirror)
-- Also logs the **Cloudflare Worker** report time (page primary path)
-- If the mirror is **~75+ minutes** behind:
+- Compares **live CBP** vs **GitHub Pages** `data/bwt.xml` **per Brownsville bridge** (B&M, Gateway, Veterans, Los Indios)
+- Uses each item’s CBP `Hours:` line in **America/Chicago**; Veterans / Los Indios are skipped when closed, plus a **45-minute post-close grace** so a frozen last-open stamp does not alert
+- **Update Pending** on an in-hours bridge is **stale** (not treated as OK)
+- Also flags CBP itself if an open bridge is pending, missing a stamp, or stuck beyond 75 minutes
+- Also logs the **Cloudflare Worker** per-bridge times (informational; not pass/fail)
+- If any in-hours bridge is **~75+ minutes** behind (or pending/stuck):
   1. Automatically runs **Update CBP wait times**
   2. Waits for deploy and re-checks
   3. **Emails only if still lagging** after that (job fails)
