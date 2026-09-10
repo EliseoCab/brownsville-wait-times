@@ -96,6 +96,19 @@ Workflow: **Check data freshness (lag alarm)**
 
 **Actions → Check data freshness (lag alarm) → Run workflow**
 
+## Veterans SENTRI staffing alarm
+
+Workflow: **Veterans SENTRI lane staffing** (`.github/workflows/check-veterans-sentri.yml`)
+
+- Runs at **:15 past every hour** (`15 * * * *`) plus manual dispatch
+- Reads the **same live CBP Brownsville RSS** as the lag alarm (`Brownsville - Veterans International`)
+- Looks at **Passenger Vehicles → Sentri Lanes** only (not commercial Fast Lanes)
+- **Fails** (GitHub email) when Veterans is in hours and SENTRI **delay ≥ 30 min** and **open lanes < 4**
+- Uses the item’s `Hours:` line (typically `6 am-Midnight` America/Chicago). Outside hours: no alert
+- **Update Pending** with no delay number: log WARN, do not invent lane counts, do not fail. If delay ≥ 30 and lanes < 4 are still parseable, fail.
+
+**Actions → Veterans SENTRI lane staffing → Run workflow**
+
 ## Local use
 
 ```bash

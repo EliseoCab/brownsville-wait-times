@@ -1,0 +1,62 @@
+name: Veterans SENTRI lane staffing
+
+on:
+  schedule:
+    # 15 minutes after each hour — after CBP’s typical top-of-hour update
+    - cron: "15 * * * *"
+  workflow_dispatch:
+
+# Live CBP Brownsville RSS (same URL as the lag alarm). Fails the job when
+# Veterans passenger SENTRI delay is ≥ 30 min with fewer than 4 lanes open
+# during operating hours, so GitHub failure notifications fire.
+
+permissions:
+  contents: read
+
+concurrency:
+  group: veterans-sentri-staffing
+  cancel-in-progress: true
+
+jobs:
+  check-veterans-sentri:
+    name: Veterans SENTRI lane staffing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch CBP feed and check passenger SENTRI
+        id: sentri
+        env:
+          CBP_URL: "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43"
+          WORKER_URL: "https://brownsville-bwt.borderwait.workers.dev/?fresh=1"
+          SENTRI_DELAY_MINUTES: "30"
+          SENTRI_MIN_OPEN_LANES: "4"
+        run: |
+          set -euo pipefail
+
+          if ! curl -fsSL --retry 2 --retry-delay 2 "$CBP_URL" -o /tmp/cbp.xml; then
+            echo "CBP fetch failed; trying Worker fallback…"
+            curl -fsSL --max-time 20 "$WORKER_URL" -o /tmp/cbp.xml
+          fi
+          if ! grep -q "Veterans" /tmp/cbp.xml; then
+            echo "WARN: feed has no Veterans item after fetch; checker will not invent counts."
+          fi
+
+          python3 scripts/check_veterans_sentri.py \
+            --cbp /tmp/cbp.xml \
+            --delay-min "$SENTRI_DELAY_MINUTES" \
+            --min-open-lanes "$SENTRI_MIN_OPEN_LANES"
+
+      - name: Pass when SENTRI staffing is OK or skipped
+        if: steps.sentri.outputs.alert != 'true'
+        run: |
+          echo "Veterans passenger SENTRI: ${{ steps.sentri.outputs.reason }} (delay=${{ steps.sentri.outputs.delay_minutes }} min, lanes=${{ steps.sentri.outputs.lanes_open }}, hours=${{ steps.sentri.outputs.hours_status }})."
+
+      - name: Fail if SENTRI wait is high and understaffed
+        if: steps.sentri.outputs.alert == 'true'
+        run: |
+          echo "::error::Veterans passenger SENTRI is ${{ steps.sentri.outputs.delay_minutes }} min delay with ${{ steps.sentri.outputs.lanes_open }} lane(s) open (need delay < 30 or at least 4 open lanes)."
+          echo "Source: live CBP Brownsville RSS, item Brownsville - Veterans International → Passenger Vehicles → Sentri Lanes."
+          echo "Outside 6 am–Midnight America/Chicago this job does not alert."
+          exit 1
