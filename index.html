@@ -3380,7 +3380,7 @@
         lanesClosed: "Lanes closed",
         asOf: "As of",
         lanesOpen: "lane(s) open",
-        lanesOf: "{open} of {total}",
+        lanesOf: "{open} of {total} open",
         open: "open",
         gen: "Gen",
         ready: "Ready",
@@ -3521,7 +3521,7 @@
         lanesClosed: "Carriles cerrados",
         asOf: "A las",
         lanesOpen: "carril(es) abierto(s)",
-        lanesOf: "{open} de {total}",
+        lanesOf: "{open} de {total} abiertos",
         open: "abiertos",
         gen: "Gen",
         ready: "Ready",
@@ -4342,37 +4342,69 @@
       return null;
     }
 
-    /** Port-wide open booths vs CBP maximum (closed lanes stay in the denominator). */
-    function portLaneTotals(port) {
-      if (!port) return "";
+    function sectionByKey(port, key) {
+      return (port && port.sections || []).find((s) => s.key === key) || null;
+    }
+
+    /** Open booths vs CBP Maximum Lanes for one traffic type. Closed stay in the denominator. */
+    function sectionOfLine(section) {
+      if (!section) return "";
       let open = 0;
       let total = 0;
       let sawMax = false;
-      for (const sec of port.sections || []) {
-        const max = sec.maxLanes != null && sec.maxLanes !== "" ? Number(sec.maxLanes) : NaN;
-        if (!isNaN(max) && max > 0) {
-          total += max;
-          sawMax = true;
+      const max = section.maxLanes != null && section.maxLanes !== "" ? Number(section.maxLanes) : NaN;
+      if (!isNaN(max) && max > 0) {
+        total = max;
+        sawMax = true;
+      }
+      for (const lane of section.lanes || []) {
+        const w = lane.wait;
+        if (!w || w.na || w.pending) continue;
+        if (w.closed) {
+          if (!sawMax) total += 1;
+          continue;
         }
-        for (const lane of sec.lanes || []) {
-          const w = lane.wait;
-          if (!w || w.na || w.pending) continue;
-          if (w.closed) {
-            if (!sawMax) total += 1;
-            continue;
-          }
-          if (w.lanesOpenCount != null) {
-            const n = Number(w.lanesOpenCount);
-            if (!isNaN(n)) open += n;
-          }
+        if (w.lanesOpenCount != null) {
+          const n = Number(w.lanesOpenCount);
+          if (!isNaN(n)) open += n;
         }
       }
       if (total < 1) return "";
       return t("lanesOf").replace("{open}", String(open)).replace("{total}", String(total));
     }
 
+    /** "2 Gen, 2 Ready" from a section (SENTRI/FAST omitted from this split). */
+    function genReadySplit(section) {
+      if (!section) return "";
+      const parts = [];
+      const lanes = sortLanes(section.lanes || []);
+      for (const lane of lanes) {
+        const w = lane.wait;
+        if (!w || w.na || w.pending) continue;
+        const n = w.closed ? 0 : (w.lanesOpenCount != null ? Number(w.lanesOpenCount) : NaN);
+        if (isNaN(n)) continue;
+        if (/general/i.test(lane.name) && !/ready|sentri|fast|nexus/i.test(lane.name)) {
+          parts.push(n + " " + t("gen"));
+        } else if (/ready/i.test(lane.name)) {
+          parts.push(n + " " + t("ready"));
+        }
+      }
+      return parts.join(", ");
+    }
+
+    function tileOpenText(section, withSplit) {
+      const lines = [];
+      if (withSplit) {
+        const split = genReadySplit(section);
+        if (split) lines.push(split);
+      }
+      const ofLine = sectionOfLine(section);
+      if (ofLine) lines.push(ofLine);
+      return lines.join("\n");
+    }
+
     function formatOpenLine(summary, modeKey, port) {
-      return portLaneTotals(port);
+      return sectionOfLine(sectionByKey(port, modeKey === "trusted" ? "passenger" : modeKey));
     }
 
     /**
@@ -4427,9 +4459,11 @@
         mainHtml = waitCellHtml(w);
       }
 
+      const sec = sectionByKey(port, modeKey);
+      const withSplit = modeKey === "passenger" || modeKey === "pedestrian" || modeKey === "commercial";
       return {
         html: `<div class="wait-stack">${mainHtml}</div>`,
-        openLine: "",
+        openLine: tileOpenText(sec, withSplit),
         cls: (dual ? "has-dual " : "") + "has-" + w.cls
       };
     }
@@ -4620,44 +4654,33 @@
       }
       const pick = trusted || pending;
 
+      const vehicleOf = sectionOfLine(sectionByKey(port, "passenger"));
+
       if (pedestrianOnly) {
         const lane = pick && pick.lane;
         const wait = lane && lane.wait;
-        const n = wait && wait.lanesOpenCount != null ? wait.lanesOpenCount : null;
         const main = wait && (isActiveWait(wait) || wait.pending)
           ? waitCellHtml(wait)
           : `<span class="wait-empty">—</span>`;
-        let openLine = "";
-        if (n != null && n > 0) openLine = n + " " + t("open");
-        else if (wait && wait.closed) openLine = t("closed").toLowerCase();
-        else if (n === 0) openLine = t("closed").toLowerCase();
-        else if (wait && wait.pending) openLine = t("pending");
         return {
           html: main,
-          openLine: openLine,
+          openLine: tileOpenText(sectionByKey(port, "pedestrian"), true),
           cls: wait && isActiveWait(wait) ? "has-" + wait.cls : (wait && wait.pending ? "has-pending" : "")
         };
       }
 
-      // Veterans: SENTRI-only cell (All / Passenger filters)
+      // Veterans: SENTRI wait; open line mirrors Vehicles (SENTRI is part of the vehicle pool).
       if (veteransOnlySentri) {
         const lane = pick && pick.lane;
         const wait = lane && lane.wait;
-        const n = (wait && wait.lanesOpenCount != null)
-          ? wait.lanesOpenCount
-          : veteransSentriOpenCount(port);
         const main = wait && isActiveWait(wait)
           ? waitCellHtml(wait)
           : wait && wait.pending
             ? waitCellHtml(wait)
             : `<span class="wait-empty">—</span>`;
-        let openLine = "";
-        if (n != null && n > 0) openLine = n + " " + t("open");
-        else if (wait && wait.closed) openLine = t("closed").toLowerCase();
-        else if (n === 0) openLine = t("closed").toLowerCase();
         return {
           html: main,
-          openLine: openLine,
+          openLine: vehicleOf,
           cls: wait && isActiveWait(wait) ? "has-" + wait.cls : (wait && wait.pending ? "has-pending" : "")
         };
       }
@@ -4666,28 +4689,21 @@
         return { html: `<span class="wait-empty">—</span>`, cls: "" };
       }
 
-      // Commercial filter: FAST only — never SENTRI; never show "0 open"
+      // Commercial filter: FAST only — never SENTRI
       if (commercialOnly) {
-        const n = pick.lane.wait.lanesOpenCount;
-        const closed = !!pick.lane.wait.closed;
-        let openLine = "";
-        if (n != null && n > 0) openLine = n + " " + t("open");
-        else if (closed || n === 0) openLine = t("closed").toLowerCase();
-        else if (pick.lane.wait.pending) openLine = t("pending");
         const main = isActiveWait(pick.lane.wait)
           ? waitCellHtml(pick.lane.wait)
           : `<span class="wait-empty">—</span>`;
         return {
           html: main,
-          openLine: openLine,
+          openLine: tileOpenText(sectionByKey(port, "commercial"), true),
           cls: isActiveWait(pick.lane.wait) ? "has-" + pick.lane.wait.cls : ""
         };
       }
 
-      const n = pick.lane.wait && pick.lane.wait.lanesOpenCount;
-      let openLine = "";
-      if (n != null && n > 0) openLine = n + " " + t("open");
-      else if (pick.lane.wait && pick.lane.wait.closed) openLine = t("closed").toLowerCase();
+      let openLine = /sentri/i.test(pick.lane.name)
+        ? vehicleOf
+        : sectionOfLine(sectionByKey(port, pick.sectionKey));
       return {
         html: waitCellHtml(pick.lane.wait),
         openLine: openLine,
@@ -4727,7 +4743,9 @@
 
     function openLineMarkup(text) {
       if (text) {
-        return `<span class="wait-extra open-line">${escapeHtml(text)}</span>`;
+        return String(text).split("\n").filter(Boolean).map(function (line) {
+          return `<span class="wait-extra open-line">${escapeHtml(line)}</span>`;
+        }).join("");
       }
       return `<span class="wait-extra open-line open-line-empty" aria-hidden="true">&nbsp;</span>`;
     }
@@ -4868,7 +4886,6 @@
         }).join("");
 
         const hoursLabel = formatHoursOfOperation(port.hours);
-        const lanesLine = portLaneTotals(port);
         const portStamp = collectPortAsOf(port);
         const updatedLabel = formatBridgeUpdated(portStamp);
         const updatedHtml = updatedLabel
@@ -4889,7 +4906,6 @@
               ${bridgeTitleHtml(port)}
               ${mexicoLineHtml(port, "mx-line")}
               <span class="hours-line"><strong>${escapeHtml(t("hours"))}</strong> ${escapeHtml(hoursLabel)}</span>
-              ${lanesLine ? `<span class="hours-line">${escapeHtml(lanesLine)}</span>` : ""}
               ${updatedHtml}
             </td>
             ${tdHtml}
@@ -4916,7 +4932,6 @@
               ${bridgeTitleHtml(port, "m-row-bridge")}
               ${mexicoLineHtml(port, "m-row-mx")}
               <span class="m-row-hours">${escapeHtml(hoursLabel)}</span>
-              ${lanesLine ? `<span class="m-row-hours">${escapeHtml(lanesLine)}</span>` : ""}
               ${updatedMobile}
             </div>
             <div class="m-row-waits">${waitBlocks}</div>
@@ -5668,7 +5683,8 @@
 
     /** Open-lane breakdown for share text — one port-wide total. */
     function formatShareOpenBreakdown(summary, modeKey, port) {
-      return portLaneTotals(port);
+      const key = modeKey === "trusted" ? "passenger" : modeKey;
+      return tileOpenText(sectionByKey(port, key), key === "passenger" || key === "pedestrian").replace(/\n/g, " · ");
     }
 
     /** One share line: "Veh 45 min · 1 Gen · 3 Ready" (includes Ready wait when it differs). */

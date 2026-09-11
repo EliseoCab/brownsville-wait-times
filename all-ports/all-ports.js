@@ -50,7 +50,7 @@
       midnight: "midnight",
       updated: "Updated",
       countLabel: "Showing",
-      lanesOf: "{open} of {total}"
+      lanesOf: "{open} of {total} open"
     },
     es: {
       checking: "Cargando todos los puertos…",
@@ -91,7 +91,7 @@
       midnight: "medianoche",
       updated: "Actualizado",
       countLabel: "Mostrando",
-      lanesOf: "{open} de {total}"
+      lanesOf: "{open} de {total} abiertos"
     }
   };
 
@@ -835,28 +835,44 @@
     });
   }
 
-  function portLaneTotals(port) {
-    if (!port) return "";
+  function sectionOfLine(section) {
+    if (!section) return "";
     var open = 0;
     var total = 0;
     var sawMax = false;
-    (port.sections || []).forEach(function (sec) {
-      if (sec.maxLanes != null && !isNaN(Number(sec.maxLanes)) && Number(sec.maxLanes) > 0) {
-        total += Number(sec.maxLanes);
-        sawMax = true;
+    var max = section.maxLanes != null && section.maxLanes !== "" ? Number(section.maxLanes) : NaN;
+    if (!isNaN(max) && max > 0) {
+      total = max;
+      sawMax = true;
+    }
+    (section.lanes || []).forEach(function (lane) {
+      var w = lane.wait;
+      if (!w || w.na || w.pending) return;
+      if (w.closed) {
+        if (!sawMax) total += 1;
+        return;
       }
-      (sec.lanes || []).forEach(function (lane) {
-        var w = lane.wait;
-        if (!w || w.na || w.pending) return;
-        if (w.closed) {
-          if (!sawMax) total += 1;
-          return;
-        }
-        if (w.lanesOpenCount != null) open += Number(w.lanesOpenCount);
-      });
+      if (w.lanesOpenCount != null) open += Number(w.lanesOpenCount);
     });
     if (total < 1) return "";
     return t("lanesOf").replace("{open}", String(open)).replace("{total}", String(total));
+  }
+
+  function genReadySplit(section) {
+    if (!section) return "";
+    var parts = [];
+    sortLanes(section.lanes || []).forEach(function (lane) {
+      var w = lane.wait;
+      if (!w || w.na || w.pending) return;
+      var n = w.closed ? 0 : (w.lanesOpenCount != null ? Number(w.lanesOpenCount) : NaN);
+      if (isNaN(n)) return;
+      if (/general/i.test(lane.name) && !/ready|sentri|fast|nexus/i.test(lane.name)) {
+        parts.push(n + " " + t("gen"));
+      } else if (/ready/i.test(lane.name)) {
+        parts.push(n + " " + t("ready"));
+      }
+    });
+    return parts.join(", ");
   }
 
   function modeCell(section, border, date, timeZone) {
@@ -877,6 +893,10 @@
       html = '<div class="compact-waits"><span class="compact-pair"><span class="dual-label dual-gen">' + t("gen") + "</span> " + waitHtml(primary) +
         '</span><span class="compact-pair"><span class="dual-label">' + lab + "</span> " + waitHtml(special.wait) + "</span></div>";
     }
+    var split = genReadySplit(section);
+    if (split) html += '<div class="open-line">' + escapeHtml(split) + "</div>";
+    var ofLine = sectionOfLine(section);
+    if (ofLine) html += '<div class="open-line">' + escapeHtml(ofLine) + "</div>";
     var clock = displayStampClock(collectSectionAsOf(section, date), timeZone);
     if (clock) html += '<div class="cell-asof">' + escapeHtml(clock) + "</div>";
     return html;
@@ -1027,7 +1047,6 @@
         ? "https://maps.apple.com/?q=" + mapsQ
         : "https://www.google.com/maps/search/?api=1&query=" + mapsQ;
       var hoursLabel = formatHoursOfOperation(it.hours);
-      var lanesLine = portLaneTotals(it);
       var portStamp = collectPortAsOf(it);
       var updatedLabel = displayStampClock(portStamp, it.timeZone);
       var hoursHtml =
@@ -1063,7 +1082,6 @@
                 "</svg></a>" +
             "</div>" +
             hoursHtml +
-            (lanesLine ? '<div class="port-hours">' + escapeHtml(lanesLine) + "</div>" : "") +
             updatedHtml +
           "</div>" +
           '<div class="port-grid">' +
