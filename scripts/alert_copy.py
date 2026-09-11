@@ -18,18 +18,33 @@ def _names(items: list[str]) -> str:
     return ", ".join(items)
 
 
-def hour_label(now: datetime | None) -> str:
-    """Floor to the current Chicago hour, CBP style: '2:00 pm CDT'."""
+def _chicago(now: datetime | None) -> datetime:
     if now is None:
         now = datetime.now(CHICAGO)
     elif now.tzinfo is None:
         now = now.replace(tzinfo=CHICAGO)
     else:
         now = now.astimezone(CHICAGO)
-    hour12 = now.hour % 12 or 12
-    ampm = "am" if now.hour < 12 else "pm"
-    tz = now.tzname() or "CT"
-    return f"{hour12}:00 {ampm} {tz}"
+    return now
+
+
+def _clock(hour: int, minute: int, tz: str) -> str:
+    hour12 = hour % 12 or 12
+    ampm = "am" if hour < 12 else "pm"
+    return f"{hour12}:{minute:02d} {ampm} {tz}"
+
+
+def hour_label(now: datetime | None) -> str:
+    """Floor to the current Chicago hour, CBP style: '2:00 pm CDT'."""
+    now = _chicago(now)
+    return _clock(now.hour, 0, now.tzname() or "CT")
+
+
+def slot_label(now: datetime | None) -> str:
+    """Hour or half-hour slot: '2:00 pm CDT' or '2:30 pm CDT'."""
+    now = _chicago(now)
+    minute = 0 if now.minute < 30 else 30
+    return _clock(now.hour, minute, now.tzname() or "CT")
 
 
 def stamp_label(dt: datetime | None) -> str:
@@ -56,18 +71,12 @@ def time_from_raw(raw: str, now: datetime | None = None) -> str:
 
 def template_wait_pending(bridges: list[str], when: str) -> tuple[str, str]:
     who = _names(bridges)
-    subject = f"{who}: please update {when} wait times"
+    subject = f"{when} — update wait times ({who})"
     body = (
-        f"Please update wait times for {when}.\n"
+        f"{when} — {who} wait times not posted (Update Pending).\n"
         "\n"
-        f"Bridges: {who}\n"
-        f"Time flagged: {when}\n"
-        f"Problem: Times for {when} are not posted yet (the system shows Update Pending).\n"
-        "\n"
-        "What you need to do:\n"
-        f"Update the wait times for these bridges for {when}.\n"
-        "\n"
-        "If the times are already updated, disregard this message."
+        "Update them now.\n"
+        "If already updated, disregard."
     )
     return subject, body
 
@@ -78,20 +87,13 @@ def template_wait_stale(
     last_posted: str = "",
 ) -> tuple[str, str]:
     who = _names(bridges)
-    subject = f"{who}: please update {when} wait times"
-    last_line = f"Last posted: {last_posted}\n" if last_posted else ""
+    subject = f"{when} — update wait times ({who})"
+    last = f" (last posted {last_posted})" if last_posted else ""
     body = (
-        f"Please update wait times for {when}.\n"
+        f"{when} — {who} wait times are old or missing{last}.\n"
         "\n"
-        f"Bridges: {who}\n"
-        f"Time flagged: {when}\n"
-        f"{last_line}"
-        f"Problem: Wait times for {when} are old or missing and have not been updated.\n"
-        "\n"
-        "What you need to do:\n"
-        f"Update the wait times for these bridges for {when}.\n"
-        "\n"
-        "If the times are already updated, disregard this message."
+        "Update them now.\n"
+        "If already updated, disregard."
     )
     return subject, body
 
@@ -103,29 +105,28 @@ def template_sentri(
     min_open_lanes: int = 4,
     when: str = "",
 ) -> tuple[str, str]:
-    d = "unknown" if delay_minutes is None else f"{delay_minutes} minutes"
+    d = "unknown" if delay_minutes is None else f"{delay_minutes} min"
     if lanes_open is None:
         lanes = "unknown"
+        lanes_short = "unknown"
     elif lanes_open == 1:
-        lanes = "1 lane"
+        lanes = "1"
+        lanes_short = "1 lane"
     else:
-        lanes = f"{lanes_open} lanes"
+        lanes = str(lanes_open)
+        lanes_short = f"{lanes_open} lanes"
     when = when or "this hour"
-    subject = f"Veterans SENTRI {when}: contact duty supervisor ({d}, {lanes} open)"
+    subject = f"SENTRI {when} — Veterans, {d}, {lanes_short}"
     body = (
-        f"Please contact the duty supervisor ({when}).\n"
-        "\n"
+        "Action: Contact duty supervisor\n"
+        f"Time: {when}\n"
         "Bridge: Veterans International\n"
-        f"Time flagged: {when}\n"
-        f"SENTRI wait: {d}\n"
-        f"SENTRI lanes open: {lanes}\n"
-        f"Rule: When SENTRI wait is {delay_min} minutes or more, at least "
-        f"{min_open_lanes} SENTRI lanes should be open.\n"
+        f"SENTRI wait: {d if delay_minutes is None else str(delay_minutes) + ' minutes'}\n"
+        f"Lanes open: {lanes}\n"
+        f"Required: {min_open_lanes} lanes if wait is {delay_min} minutes or more\n"
         "\n"
-        "What you need to do:\n"
-        f"Contact the duty supervisor and ask why {min_open_lanes} SENTRI lanes are not open.\n"
-        "\n"
-        "If the reason is already known, disregard this message."
+        f"Ask why {min_open_lanes} SENTRI lanes are not open.\n"
+        "If reason is already known: disregard"
     )
     return subject, body
 
@@ -169,33 +170,20 @@ def format_lag_alert(results, now: datetime | None = None) -> tuple[str, str]:
         return template_wait_stale(stale, when, last_posted=last_posted)
 
     who = _names([r.name for r in bad])
-    subject = f"{who}: please update {when} wait times"
-    parts = [f"Please update wait times for {when}.", ""]
+    subject = f"{when} — update wait times ({who})"
+    bits = []
     if pending:
-        parts.append(f"Bridges: {_names(pending)}")
-        parts.append(f"Time flagged: {when}")
-        parts.append(
-            f"Problem: Times for {when} are not posted yet (the system shows Update Pending)."
-        )
-        parts.append("")
+        bits.append(f"{_names(pending)} wait times not posted (Update Pending)")
     if stale:
-        parts.append(f"Bridges: {_names(stale)}")
-        parts.append(f"Time flagged: {when}")
-        if last_posted:
-            parts.append(f"Last posted: {last_posted}")
-        parts.append(
-            f"Problem: Wait times for {when} are old or missing and have not been updated."
-        )
-        parts.append("")
-    parts.extend(
-        [
-            "What you need to do:",
-            f"Update the wait times for these bridges for {when}.",
-            "",
-            "If the times are already updated, disregard this message.",
-        ]
+        last = f", last posted {last_posted}" if last_posted else ""
+        bits.append(f"{_names(stale)} wait times are old or missing{last}")
+    body = (
+        f"{when} — " + "; ".join(bits) + ".\n"
+        "\n"
+        "Update them now.\n"
+        "If already updated, disregard."
     )
-    return subject, "\n".join(parts)
+    return subject, body
 
 
 def format_sentri_alert(
@@ -206,7 +194,7 @@ def format_sentri_alert(
     now: datetime | None = None,
     raw: str = "",
 ) -> tuple[str, str]:
-    when = time_from_raw(raw, now)
+    when = slot_label(now)
     return template_sentri(
         delay_minutes,
         lanes_open,

@@ -97,7 +97,7 @@ Set repo secret **GMAIL** (Gmail app password) so Actions can send from `eliseoc
 
 Workflow: **Veterans SENTRI lane staffing** (`.github/workflows/check-veterans-sentri.yml`)
 
-- Runs at **:15, :20, and :45** past every hour (`15,20,45 * * * *`) plus manual dispatch — extra slots so a skipped GitHub cron is less likely to miss the hour
+- Runs **15 minutes after the hour and half hour** (`15,45 * * * *`) plus manual dispatch
 - Reads the **same live CBP Brownsville RSS** as the lag alarm (`Brownsville - Veterans International`)
 - Looks at **Passenger Vehicles → Sentri Lanes** only (not commercial Fast Lanes)
 - **Emails** when Veterans is in hours and SENTRI **delay ≥ 30 min** and **open lanes < 4**: contact the duty supervisor unless the reason is already known

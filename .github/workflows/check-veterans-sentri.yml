@@ -2,9 +2,8 @@ name: Veterans SENTRI lane staffing
 
 on:
   schedule:
-    # 15 minutes after each hour — after CBP’s typical top-of-hour update.
-    # Extra offsets in the same hour: GitHub cron can skip a slot.
-    - cron: "15,20,45 * * * *"
+    # 15 minutes after the hour and after the half hour.
+    - cron: "15,45 * * * *"
   workflow_dispatch:
 
 # Live CBP Brownsville RSS (same URL as the lag alarm). Fails the job when
