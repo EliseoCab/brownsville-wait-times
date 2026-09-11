@@ -644,7 +644,7 @@ async function handleCheckinHeat(request, env) {
   }
   const since = Date.now() - CHECKIN_WINDOW_MS;
   const res = await env.DB.prepare(
-    "SELECT lat, lng, bridge, lane, created_at FROM checkins WHERE created_at > ? AND status = 'pin' AND lat IS NOT NULL AND lng IS NOT NULL AND low_acc = 0"
+    "SELECT lat, lng, bridge, lane, created_at FROM checkins WHERE created_at > ? AND status = 'pin' AND lat IS NOT NULL AND lng IS NOT NULL"
   ).bind(since).all();
   const points = (res && res.results ? res.results : []).map(function (row) {
     return {

@@ -3569,6 +3569,8 @@
         crowdPinHint: "Pin your spot so others can see where the line starts. Not a wait-time report.",
         crowdThanks: "Thanks · {wait} · {bridge} {lane}",
         crowdThanksPin: "Pinned · {bridge}",
+        crowdLastPin: "Last check-in: {bridge} · {lat}, {lng} · {ago}",
+        crowdLastPinEmpty: "No location pins in the last 45 min.",
         crowdNeedPicks: "Choose how you cross, a bridge, and minutes.",
         crowdNeedPin: "Choose how you cross and a bridge, then allow location.",
         crowdWaitHr: "{h} hr",
@@ -3745,6 +3747,8 @@
         crowdPinHint: "Marque su sitio para que otros vean dónde empieza la fila. No es un reporte de minutos.",
         crowdThanks: "Gracias · {wait} · {bridge} {lane}",
         crowdThanksPin: "Ubicación marcada · {bridge}",
+        crowdLastPin: "Último registro: {bridge} · {lat}, {lng} · {ago}",
+        crowdLastPinEmpty: "No hay ubicaciones en los últimos 45 min.",
         crowdNeedPicks: "Elija cómo cruza, un puente y los minutos.",
         crowdNeedPin: "Elija cómo cruza y un puente, y permita la ubicación.",
         crowdWaitHr: "{h} h",
@@ -5447,6 +5451,7 @@
           <p class="crowd-status">${escapeHtml(t("crowdPinHint"))}</p>
           <button type="button" class="crowd-submit" id="crowdSubmitPin"${crowdReadyToPin() ? "" : " disabled"}>${escapeHtml(t("crowdCheckIn"))}</button>
           <p class="crowd-status" id="crowdPinMsg"></p>
+          <p class="crowd-status" id="crowdLastPin"></p>
           <div class="crowd-map" id="crowdMapEl"></div>
         </div>`}`;
     }
@@ -5737,7 +5742,7 @@
       }
     }
     function crowdEnsureLeaflet(done) {
-      if (window.L && window.L.heatLayer) {
+      if (window.L) {
         done();
         return;
       }
@@ -5756,26 +5761,65 @@
         const heat = document.createElement("script");
         heat.src = "https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js";
         heat.onload = function () { done(); };
+        heat.onerror = function () { done(); };
         document.head.appendChild(heat);
       };
+      js.onerror = function () { done(); };
       document.head.appendChild(js);
     }
+    function crowdPaintLastPin(points) {
+      const line = document.getElementById("crowdLastPin");
+      if (!line) return;
+      if (!points || !points.length) {
+        line.textContent = t("crowdLastPinEmpty");
+        return;
+      }
+      const last = points.slice().sort(function (a, b) { return (b.t || 0) - (a.t || 0); })[0];
+      const agoMin = Math.max(1, Math.round((Date.now() - last.t) / 60000));
+      line.textContent = t("crowdLastPin")
+        .replace("{bridge}", crowdBridgeLabel(last.bridge))
+        .replace("{lat}", Number(last.lat).toFixed(4))
+        .replace("{lng}", Number(last.lng).toFixed(4))
+        .replace("{ago}", t("crowdAgo").replace("{n}", String(agoMin)));
+    }
     function crowdPaintMap(points) {
+      crowdPaintLastPin(points);
       const el = document.getElementById("crowdMapEl");
-      if (!el || !window.L || !window.L.heatLayer) return;
+      if (!el || !window.L) return;
       crowdDropMap();
       crowdMap = L.map(el, { zoomControl: true, attributionControl: true }).setView([25.895, -97.50], 12);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 18,
         attribution: "&copy; OpenStreetMap"
       }).addTo(crowdMap);
-      const heat = (points || []).map(function (p) {
-        return [p.lat, p.lng, 0.7];
+      const pts = points || [];
+      if (window.L.heatLayer && pts.length) {
+        crowdHeatLayer = L.heatLayer(pts.map(function (p) {
+          return [p.lat, p.lng, 0.85];
+        }), { radius: 32, blur: 16, maxZoom: 16 }).addTo(crowdMap);
+      }
+      const bounds = [];
+      pts.forEach(function (p) {
+        const m = L.circleMarker([p.lat, p.lng], {
+          radius: 8,
+          color: "#0b1f3a",
+          weight: 2,
+          fillColor: "#38bdf8",
+          fillOpacity: 0.95
+        }).addTo(crowdMap);
+        const agoMin = Math.max(1, Math.round((Date.now() - p.t) / 60000));
+        m.bindPopup(
+          crowdBridgeLabel(p.bridge) + " · " + crowdLaneLabel(p.lane) + "<br>" +
+          Number(p.lat).toFixed(4) + ", " + Number(p.lng).toFixed(4) + "<br>" +
+          t("crowdAgo").replace("{n}", String(agoMin))
+        );
+        bounds.push([p.lat, p.lng]);
       });
-      crowdHeatLayer = L.heatLayer(heat, { radius: 28, blur: 18, maxZoom: 16 }).addTo(crowdMap);
+      if (bounds.length === 1) crowdMap.setView(bounds[0], 14);
+      else if (bounds.length > 1) crowdMap.fitBounds(bounds, { padding: [24, 24], maxZoom: 15 });
       setTimeout(function () {
         if (crowdMap) crowdMap.invalidateSize();
-      }, 200);
+      }, 250);
     }
     function crowdLoadHeat() {
       const el = document.getElementById("crowdMapEl");
