@@ -815,6 +815,19 @@
     }
     .crowd-submit { margin-top: 0.55rem; }
     .crowd-submit:disabled { opacity: 0.5; cursor: default; }
+    .crowd-block {
+      margin-top: 0.7rem;
+      padding-top: 0.55rem;
+      border-top: 1px solid var(--line);
+    }
+    .crowd-map {
+      height: 220px;
+      width: 100%;
+      border-radius: 12px;
+      margin-top: 0.45rem;
+      overflow: hidden;
+      background: #dbe3ee;
+    }
     .crowd-avg-bridge { font-weight: 800; color: var(--ink); margin-top: 0.45rem; }
     .crowd-avg-line { margin: 0.12rem 0; }
     @media (max-width: 560px) {
@@ -3548,16 +3561,19 @@
         crowdBridge: "Bridge",
         crowdLane: "Lane",
         crowdMinutes: "Minutes to booth from here",
-        crowdStatus: "Where you are",
-        crowdInQueue: "In queue",
-        crowdEnRouteToggle: "En route",
-        crowdSubmit: "Check in",
+        crowdReportWait: "Report wait",
+        crowdCheckIn: "Check in",
+        crowdWaitBlock: "Wait time",
+        crowdPinBlock: "Check in · line map",
+        crowdPinHint: "Pin your spot so others can see where the line starts. Not a wait-time report.",
         crowdThanks: "Thanks · {wait} · {bridge} {lane}",
+        crowdThanksPin: "Pinned · {bridge}",
+        crowdNeedPicks: "Choose how you cross, a bridge, and minutes.",
+        crowdNeedPin: "Choose how you cross and a bridge, then allow location.",
         crowdWaitHr: "{h} hr",
         crowdWaitHrMin: "{h} hr {m} min",
         crowdAvgLine: "{lane} {wait} · n={n} · {ago}",
         crowdNeedLoc: "Allow location to pin your spot, or pick a bridge.",
-        crowdNeedPicks: "Choose how you cross, a bridge, minutes, and in queue or en route.",
         crowdBusy: "Already reported this lane. Try again in 10 minutes.",
         crowdErr: "Could not send report.",
         crowdAvgs: "Traveler averages (last 45 min)",
@@ -3721,15 +3737,18 @@
         crowdBridge: "Puente",
         crowdLane: "Carril",
         crowdMinutes: "Minutos a la caseta desde aquí",
-        crowdStatus: "Dónde está",
-        crowdInQueue: "En fila",
-        crowdEnRouteToggle: "En ruta",
-        crowdSubmit: "Registrar",
+        crowdReportWait: "Reportar espera",
+        crowdCheckIn: "Registrar ubicación",
+        crowdWaitBlock: "Tiempo de espera",
+        crowdPinBlock: "Registro · mapa de la fila",
+        crowdPinHint: "Marque su sitio para que otros vean dónde empieza la fila. No es un reporte de minutos.",
         crowdThanks: "Gracias · {wait} · {bridge} {lane}",
+        crowdThanksPin: "Ubicación marcada · {bridge}",
+        crowdNeedPicks: "Elija cómo cruza, un puente y los minutos.",
+        crowdNeedPin: "Elija cómo cruza y un puente, y permita la ubicación.",
         crowdWaitHr: "{h} h",
         crowdWaitHrMin: "{h} h {m} min",
         crowdNeedLoc: "Permita la ubicación para marcar su sitio, o elija un puente.",
-        crowdNeedPicks: "Elija cómo cruza, un puente, los minutos, y si está en fila o en ruta.",
         crowdBusy: "Ya reportó este carril. Intente de nuevo en 10 minutos.",
         crowdErr: "No se pudo enviar el reporte.",
         crowdAvgs: "Promedios de viajeros (últimos 45 min)",
@@ -5354,7 +5373,14 @@
       if (crowdLane && lanes.indexOf(crowdLane) < 0) crowdLane = "";
     }
     function crowdReadyToSend() {
-      if (!crowdMode || !crowdBridge || crowdWait == null || !crowdWhere) return false;
+      if (!crowdMode || !crowdBridge || crowdWait == null) return false;
+      const lanes = crowdLanesFor();
+      if (!lanes.length) return false;
+      if (lanes.length > 1 && !crowdLane) return false;
+      return true;
+    }
+    function crowdReadyToPin() {
+      if (!crowdMode || !crowdBridge) return false;
       const lanes = crowdLanesFor();
       if (!lanes.length) return false;
       if (lanes.length > 1 && !crowdLane) return false;
@@ -5402,17 +5428,23 @@
           ${crowdChipRow("bridge", CROWD_BRIDGES.map(function (b) { return { id: b.id, label: b.short }; }), crowdBridge, "bridge")}
         </div>
         ${pedBlocked ? `<p class="crowd-status">${escapeHtml(t("crowdNoPed"))}</p>` : laneRow + `
-        <span class="crowd-label">${escapeHtml(t("crowdMinutes"))}</span>
-        <div class="crowd-chips">
-          ${crowdChipRow("wait", CROWD_MINS.map(function (n) { return { id: String(n), label: crowdWaitChipLabel(n) }; }), crowdWait == null ? "" : String(crowdWait), "wait")}
+        <div class="crowd-block">
+          <span class="crowd-label">${escapeHtml(t("crowdWaitBlock"))}</span>
+          <span class="crowd-label">${escapeHtml(t("crowdMinutes"))}</span>
+          <div class="crowd-chips">
+            ${crowdChipRow("wait", CROWD_MINS.map(function (n) { return { id: String(n), label: crowdWaitChipLabel(n) }; }), crowdWait == null ? "" : String(crowdWait), "wait")}
+          </div>
+          <button type="button" class="crowd-submit" id="crowdSubmitWait"${crowdReadyToSend() ? "" : " disabled"}>${escapeHtml(t("crowdReportWait"))}</button>
+          <p class="crowd-status" id="crowdMsg"></p>
         </div>
-        <span class="crowd-label">${escapeHtml(t("crowdStatus"))}</span>
-        <div class="crowd-chips">
-          ${crowdChipRow("where", [{ id: "in_queue", label: t("crowdInQueue") }, { id: "en_route", label: t("crowdEnRouteToggle") }], crowdWhere, "where")}
-        </div>
-        <button type="button" class="crowd-submit" id="crowdSubmit"${crowdReadyToSend() ? "" : " disabled"}>${escapeHtml(t("crowdSubmit"))}</button>
-        <p class="crowd-status" id="crowdMsg"></p>`}
-        <div class="crowd-avgs" id="crowdAvgs"></div>`;
+        <div class="crowd-avgs" id="crowdAvgs"></div>
+        <div class="crowd-block">
+          <span class="crowd-label">${escapeHtml(t("crowdPinBlock"))}</span>
+          <p class="crowd-status">${escapeHtml(t("crowdPinHint"))}</p>
+          <button type="button" class="crowd-submit" id="crowdSubmitPin"${crowdReadyToPin() ? "" : " disabled"}>${escapeHtml(t("crowdCheckIn"))}</button>
+          <p class="crowd-status" id="crowdPinMsg"></p>
+          <div class="crowd-map" id="crowdMapEl"></div>
+        </div>`}
     }
     function crowdPaintAvgs() {
       const el = document.getElementById("crowdAvgs");
@@ -5465,6 +5497,7 @@
         if (box.open) {
           crowdStartPoll();
           crowdLoadSummary();
+          crowdLoadHeat();
         } else {
           crowdStopPoll();
         }
@@ -5488,9 +5521,6 @@
         } else if (kind === "wait") {
           crowdWait = parseInt(val, 10);
           crowdRerenderForm();
-        } else if (kind === "where") {
-          crowdWhere = val;
-          crowdRerenderForm();
         } else if (kind === "sentri-yes") {
           crowdWriteSentri(true, Date.now());
           crowdRerenderForm();
@@ -5506,15 +5536,19 @@
           crowdRerenderForm();
         });
       }
-      const submit = document.getElementById("crowdSubmit");
-      if (submit) submit.addEventListener("click", crowdSubmit);
+      const submit = document.getElementById("crowdSubmitWait");
+      if (submit) submit.addEventListener("click", crowdSubmitWait);
+      const pin = document.getElementById("crowdSubmitPin");
+      if (pin) pin.addEventListener("click", crowdSubmitPin);
       crowdRefreshNear();
       crowdPaintAvgs();
+      crowdLoadHeat();
     }
     function crowdRerenderForm() {
       const box = document.getElementById("crowdSource");
       if (!box) return;
       const wasOpen = box.open;
+      crowdDropMap();
       const body = box.querySelector(".crowd-body");
       if (body) body.innerHTML = crowdFormHtml();
       box.open = wasOpen;
@@ -5532,12 +5566,23 @@
           crowdRerenderForm();
         };
       }
-      const submit = document.getElementById("crowdSubmit");
-      if (submit) submit.onclick = crowdSubmit;
+      const submit = document.getElementById("crowdSubmitWait");
+      if (submit) submit.onclick = crowdSubmitWait;
+      const pin = document.getElementById("crowdSubmitPin");
+      if (pin) pin.onclick = crowdSubmitPin;
+      crowdLoadHeat();
     }
     function crowdSubmit() {
+      crowdSubmitWait();
+    }
+    function crowdProxyBase() {
+      return (FEED_PROXY_URL && String(FEED_PROXY_URL).trim())
+        ? String(FEED_PROXY_URL).replace(/\/$/, "")
+        : "";
+    }
+    function crowdSubmitWait() {
       const msg = document.getElementById("crowdMsg");
-      const submit = document.getElementById("crowdSubmit");
+      const submit = document.getElementById("crowdSubmitWait");
       crowdEnsureLane();
       const lane = crowdLaneOrDefault();
       if (!crowdReadyToSend() || !lane) {
@@ -5546,26 +5591,23 @@
       }
       try {
         const last = JSON.parse(localStorage.getItem(CROWD_LAST_KEY) || "{}");
-        if (last.bridge === crowdBridge && last.lane === lane && Date.now() - (last.t || 0) < 10 * 60 * 1000) {
+        if (last.kind === "wait" && last.bridge === crowdBridge && last.lane === lane && Date.now() - (last.t || 0) < 10 * 60 * 1000) {
           if (msg) msg.textContent = t("crowdBusy");
           return;
         }
       } catch (_) { /* ignore */ }
       const geo = crowdGeo || (userGeo && userGeo !== "denied" ? userGeo : null);
-      if (crowdWhere === "in_queue") crowdAskGeo(true);
-      const base = (FEED_PROXY_URL && String(FEED_PROXY_URL).trim())
-        ? String(FEED_PROXY_URL).replace(/\/$/, "")
-        : "";
+      const base = crowdProxyBase();
       if (!base) {
         if (msg) msg.textContent = t("crowdErr");
         return;
       }
       if (submit) submit.disabled = true;
       const payload = {
+        kind: "wait",
         bridge: crowdBridge,
         lane: lane,
         wait_min: crowdWait,
-        status: crowdWhere,
         lat: geo && geo.lat,
         lng: geo && geo.lng,
         acc_m: geo && geo.acc,
@@ -5585,7 +5627,7 @@
           }
           try {
             localStorage.setItem(CROWD_LAST_KEY, JSON.stringify({
-              bridge: crowdBridge, lane: lane, t: Date.now()
+              kind: "wait", bridge: crowdBridge, lane: lane, t: Date.now()
             }));
           } catch (_) { /* ignore */ }
           if (msg) {
@@ -5600,6 +5642,151 @@
           if (submit) submit.disabled = false;
           if (msg) msg.textContent = t("crowdErr");
         });
+    }
+    function crowdSubmitPin() {
+      const msg = document.getElementById("crowdPinMsg");
+      const submit = document.getElementById("crowdSubmitPin");
+      crowdEnsureLane();
+      const lane = crowdLaneOrDefault();
+      if (!crowdReadyToPin() || !lane) {
+        if (msg) msg.textContent = t("crowdNeedPin");
+        return;
+      }
+      try {
+        const last = JSON.parse(localStorage.getItem(CROWD_LAST_KEY) || "{}");
+        if (last.kind === "pin" && last.bridge === crowdBridge && last.lane === lane && Date.now() - (last.t || 0) < 10 * 60 * 1000) {
+          if (msg) msg.textContent = t("crowdBusy");
+          return;
+        }
+      } catch (_) { /* ignore */ }
+      const base = crowdProxyBase();
+      if (!base) {
+        if (msg) msg.textContent = t("crowdErr");
+        return;
+      }
+      if (submit) submit.disabled = true;
+      function sendPin(geo) {
+        if (!geo || geo.lat == null) {
+          if (submit) submit.disabled = false;
+          if (msg) msg.textContent = t("crowdNeedLoc");
+          return;
+        }
+        fetch(base + "/checkins", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            kind: "pin",
+            bridge: crowdBridge,
+            lane: lane,
+            lat: geo.lat,
+            lng: geo.lng,
+            acc_m: geo.acc,
+            heading: geo.heading
+          })
+        }).then(function (res) { return res.json().then(function (j) { return { res: res, j: j }; }); })
+          .then(function (pack) {
+            if (submit) submit.disabled = false;
+            if (!pack.j || !pack.j.ok) {
+              if (msg) msg.textContent = pack.res && pack.res.status === 429 ? t("crowdBusy") : t("crowdErr");
+              return;
+            }
+            try {
+              localStorage.setItem(CROWD_LAST_KEY, JSON.stringify({
+                kind: "pin", bridge: crowdBridge, lane: lane, t: Date.now()
+              }));
+            } catch (_) { /* ignore */ }
+            if (msg) msg.textContent = t("crowdThanksPin").replace("{bridge}", crowdBridgeLabel(crowdBridge));
+            crowdLoadHeat();
+          })
+          .catch(function () {
+            if (submit) submit.disabled = false;
+            if (msg) msg.textContent = t("crowdErr");
+          });
+      }
+      if (!navigator.geolocation) {
+        sendPin(crowdGeo || (userGeo && userGeo !== "denied" ? userGeo : null));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          crowdGeo = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            acc: pos.coords.accuracy,
+            heading: pos.coords.heading
+          };
+          sendPin(crowdGeo);
+        },
+        function () {
+          sendPin(crowdGeo || (userGeo && userGeo !== "denied" ? userGeo : null));
+        },
+        { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+      );
+    }
+    let crowdMap = null;
+    let crowdHeatLayer = null;
+    function crowdDropMap() {
+      if (crowdMap) {
+        try { crowdMap.remove(); } catch (_) { /* ignore */ }
+        crowdMap = null;
+        crowdHeatLayer = null;
+      }
+    }
+    function crowdEnsureLeaflet(done) {
+      if (window.L && window.L.heatLayer) {
+        done();
+        return;
+      }
+      if (document.getElementById("crowdLeafletJs")) {
+        setTimeout(function () { crowdEnsureLeaflet(done); }, 200);
+        return;
+      }
+      const css = document.createElement("link");
+      css.rel = "stylesheet";
+      css.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      document.head.appendChild(css);
+      const js = document.createElement("script");
+      js.id = "crowdLeafletJs";
+      js.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+      js.onload = function () {
+        const heat = document.createElement("script");
+        heat.src = "https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js";
+        heat.onload = function () { done(); };
+        document.head.appendChild(heat);
+      };
+      document.head.appendChild(js);
+    }
+    function crowdPaintMap(points) {
+      const el = document.getElementById("crowdMapEl");
+      if (!el || !window.L || !window.L.heatLayer) return;
+      crowdDropMap();
+      crowdMap = L.map(el, { zoomControl: true, attributionControl: true }).setView([25.895, -97.50], 12);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+        attribution: "&copy; OpenStreetMap"
+      }).addTo(crowdMap);
+      const heat = (points || []).map(function (p) {
+        return [p.lat, p.lng, 0.7];
+      });
+      crowdHeatLayer = L.heatLayer(heat, { radius: 28, blur: 18, maxZoom: 16 }).addTo(crowdMap);
+      setTimeout(function () {
+        if (crowdMap) crowdMap.invalidateSize();
+      }, 200);
+    }
+    function crowdLoadHeat() {
+      const el = document.getElementById("crowdMapEl");
+      if (!el) return;
+      const base = crowdProxyBase();
+      crowdEnsureLeaflet(function () {
+        if (!base) {
+          crowdPaintMap([]);
+          return;
+        }
+        fetch(base + "/checkins/heat")
+          .then(function (res) { return res.json(); })
+          .then(function (j) { crowdPaintMap((j && j.points) || []); })
+          .catch(function () { crowdPaintMap([]); });
+      });
     }
     function crowdSectionHtml() {
       let open = false;

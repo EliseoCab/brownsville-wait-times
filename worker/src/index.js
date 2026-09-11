@@ -544,15 +544,18 @@ async function handleCheckinPost(request, env) {
   } catch (_) {
     return jsonResponse(request, { ok: false, error: "Invalid JSON" }, 400, 0);
   }
+  const kind = body.kind === "pin" ? "pin" : "wait";
   const bridge = String(body.bridge || "").toLowerCase();
   const lane = String(body.lane || "");
-  const waitMin = Number(body.wait_min);
-  const status = body.status === "en_route" ? "en_route" : "in_queue";
   if (!CHECKIN_BRIDGES[bridge] || !laneAllowed(bridge, lane)) {
     return jsonResponse(request, { ok: false, error: "Unknown bridge or lane" }, 400, 0);
   }
-  if (!Number.isFinite(waitMin) || waitMin < 0 || waitMin > 180) {
-    return jsonResponse(request, { ok: false, error: "Wait must be 0–180" }, 400, 0);
+  let waitMin = 0;
+  if (kind === "wait") {
+    waitMin = Number(body.wait_min);
+    if (!Number.isFinite(waitMin) || waitMin < 0 || waitMin > 180) {
+      return jsonResponse(request, { ok: false, error: "Wait must be 0–180" }, 400, 0);
+    }
   }
   const lat = body.lat == null ? null : Number(body.lat);
   const lng = body.lng == null ? null : Number(body.lng);
@@ -560,18 +563,29 @@ async function handleCheckinPost(request, env) {
   const heading = body.heading == null ? null : Number(body.heading);
   const cbpMin = body.cbp_min == null ? null : Number(body.cbp_min);
   let lowAcc = 0;
+  if (kind === "pin") {
+    if (lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return jsonResponse(request, { ok: false, error: "Location required to pin" }, 400, 0);
+    }
+  }
+  let storeLat = lat;
+  let storeLng = lng;
   if (lat != null && lng != null && Number.isFinite(lat) && Number.isFinite(lng)) {
     const miles = checkinMiles({ lat: lat, lng: lng }, CHECKIN_BRIDGES[bridge]);
-    if (status !== "en_route" && miles > 3) {
+    if (kind === "pin" && miles > 8) {
       return jsonResponse(request, { ok: false, error: "Too far from that bridge" }, 400, 0);
+    }
+    if (kind === "wait" && miles > 3) {
+      storeLat = null;
+      storeLng = null;
     }
     if (acc != null && Number.isFinite(acc) && acc > 150) lowAcc = 1;
   }
   const ipHash = await hashIpDay(clientIp(request));
   const now = Date.now();
   const recent = await env.DB.prepare(
-    "SELECT created_at FROM checkins WHERE ip_hash = ? AND bridge = ? AND lane = ? AND created_at > ? LIMIT 1"
-  ).bind(ipHash, bridge, lane, now - CHECKIN_COOLDOWN_MS).first();
+    "SELECT created_at FROM checkins WHERE ip_hash = ? AND bridge = ? AND lane = ? AND status = ? AND created_at > ? LIMIT 1"
+  ).bind(ipHash, bridge, lane, kind, now - CHECKIN_COOLDOWN_MS).first();
   if (recent) {
     return jsonResponse(request, { ok: false, error: "Already reported this lane. Try again in 10 minutes." }, 429, 0);
   }
@@ -582,9 +596,9 @@ async function handleCheckinPost(request, env) {
     bridge,
     lane,
     Math.round(waitMin),
-    status,
-    lat != null && Number.isFinite(lat) ? roundCoord(lat) : null,
-    lng != null && Number.isFinite(lng) ? roundCoord(lng) : null,
+    kind,
+    storeLat != null && Number.isFinite(storeLat) ? roundCoord(storeLat) : null,
+    storeLng != null && Number.isFinite(storeLng) ? roundCoord(storeLng) : null,
     acc != null && Number.isFinite(acc) ? Math.round(acc) : null,
     heading != null && Number.isFinite(heading) ? Math.round(heading) : null,
     cbpMin != null && Number.isFinite(cbpMin) ? Math.round(cbpMin) : null,
@@ -600,7 +614,7 @@ async function handleCheckinSummary(request, env) {
   }
   const since = Date.now() - CHECKIN_WINDOW_MS;
   const res = await env.DB.prepare(
-    "SELECT bridge, lane, wait_min, created_at FROM checkins WHERE created_at > ? AND status = 'in_queue'"
+    "SELECT bridge, lane, wait_min, created_at FROM checkins WHERE created_at > ? AND status = 'wait'"
   ).bind(since).all();
   const groups = {};
   (res && res.results ? res.results : []).forEach(function (row) {
@@ -622,6 +636,26 @@ async function handleCheckinSummary(request, env) {
     };
   });
   return jsonResponse(request, { ok: true, windowMin: 45, rows: rows }, 200, 60);
+}
+
+async function handleCheckinHeat(request, env) {
+  if (!env || !env.DB) {
+    return jsonResponse(request, { ok: true, windowMin: 45, points: [] }, 200, 30);
+  }
+  const since = Date.now() - CHECKIN_WINDOW_MS;
+  const res = await env.DB.prepare(
+    "SELECT lat, lng, bridge, lane, created_at FROM checkins WHERE created_at > ? AND status = 'pin' AND lat IS NOT NULL AND lng IS NOT NULL AND low_acc = 0"
+  ).bind(since).all();
+  const points = (res && res.results ? res.results : []).map(function (row) {
+    return {
+      lat: row.lat,
+      lng: row.lng,
+      bridge: row.bridge,
+      lane: row.lane,
+      t: row.created_at
+    };
+  });
+  return jsonResponse(request, { ok: true, windowMin: 45, points: points }, 200, 30);
 }
 
 async function purgeOldCheckins(env) {
@@ -651,6 +685,11 @@ export default {
         const rate = await enforceRateLimit(request, "checkinGet");
         if (rate instanceof Response) return rate;
         return withRateHeaders(await handleCheckinSummary(request, env), rate);
+      }
+      if (path === "/checkins/heat" && (request.method === "GET" || request.method === "HEAD")) {
+        const rate = await enforceRateLimit(request, "checkinGet");
+        if (rate instanceof Response) return rate;
+        return withRateHeaders(await handleCheckinHeat(request, env), rate);
       }
 
     if (request.method !== "GET" && request.method !== "HEAD") {
