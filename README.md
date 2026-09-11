@@ -100,7 +100,7 @@ Workflow: **Check data freshness (lag alarm)**
 
 Workflow: **Veterans SENTRI lane staffing** (`.github/workflows/check-veterans-sentri.yml`)
 
-- Runs at **:15 past every hour** (`15 * * * *`) plus manual dispatch
+- Runs at **:15, :20, and :45** past every hour (`15,20,45 * * * *`) plus manual dispatch — extra slots so a skipped GitHub cron is less likely to miss the hour
 - Reads the **same live CBP Brownsville RSS** as the lag alarm (`Brownsville - Veterans International`)
 - Looks at **Passenger Vehicles → Sentri Lanes** only (not commercial Fast Lanes)
 - **Fails** (GitHub email) when Veterans is in hours and SENTRI **delay ≥ 30 min** and **open lanes < 4**
