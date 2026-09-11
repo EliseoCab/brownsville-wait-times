@@ -4781,6 +4781,13 @@
       return `<span class="wait-extra open-line open-line-empty" aria-hidden="true">&nbsp;</span>`;
     }
 
+    function waitStackWithOpen(cell) {
+      let stack = cell.html && cell.html.includes("wait-stack")
+        ? cell.html
+        : `<div class="wait-stack">${cell.html || ""}</div>`;
+      return stack.replace(/<\/div>\s*$/, openLineMarkup(cell.openLine) + "</div>");
+    }
+
     function noticeBannerHtml(port) {
       if (!port || !port.notice) return "";
       return (
@@ -4910,10 +4917,7 @@
 
         const tdHtml = waitCols.map((c) => {
           const cell = cells[c.key];
-          const stack = cell.html.includes("wait-stack")
-            ? cell.html
-            : `<div class="wait-stack">${cell.html}</div>`;
-          return `<td class="wait-col ${cell.cls}"><div class="wait-col-inner">${stack}${openLineMarkup(cell.openLine)}</div></td>`;
+          return `<td class="wait-col ${cell.cls}"><div class="wait-col-inner">${waitStackWithOpen(cell)}</div></td>`;
         }).join("");
 
         const hoursLabel = formatHoursOfOperation(port.hours);
@@ -4947,13 +4951,9 @@
         // Compact phone cards (used for Pedestrian / few-column filters)
         const waitBlocks = waitCols.map((c) => {
           const cell = cells[c.key];
-          const stack = cell.html.includes("wait-stack")
-            ? cell.html
-            : `<div class="wait-stack">${cell.html}</div>`;
           return `<div class="m-wait-block ${cell.cls}">
             <span class="m-lab${c.key === "trusted" ? " lane-type" : ""}">${escapeHtml(c.label)}</span>
-            ${stack}
-            ${openLineMarkup(cell.openLine)}
+            ${waitStackWithOpen(cell)}
           </div>`;
         }).join("");
 
