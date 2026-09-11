@@ -1,17 +1,34 @@
 #!/usr/bin/env python3
-"""Send the concise alert. No-op if ALERT_SMTP_PASSWORD is unset."""
+"""Send the concise alert. No-op if ALERT_SMTP_PASSWORD is unset or expired."""
 
 from __future__ import annotations
 
 import os
 import smtplib
 import sys
+from datetime import date, datetime, timedelta
 from email.message import EmailMessage
+from zoneinfo import ZoneInfo
 
 DEFAULT_FROM = "eliseocab@gmail.com"
 DEFAULT_TO = "eliseo.cabrera@cbp.dhs.gov,eliseocab@gmail.com"
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = 465
+CHICAGO = ZoneInfo("America/Chicago")
+
+# GMAIL repo secret added 2026-09-11. Bump this date when you rotate it.
+SECRET_SET_ON = date(2026, 9, 11)
+ALERT_TTL_DAYS = 90
+
+
+def expires_on() -> date:
+    return SECRET_SET_ON + timedelta(days=ALERT_TTL_DAYS)
+
+
+def mail_expired(today: date | None = None) -> bool:
+    if today is None:
+        today = date.today()
+    return today > expires_on()
 
 
 def recipients(raw: str) -> list[str]:
@@ -29,6 +46,15 @@ def main() -> int:
     user = (os.environ.get("ALERT_SMTP_USER") or "").strip() or DEFAULT_FROM
     if not password:
         print("ALERT_SMTP_PASSWORD unset; skip SMTP (GitHub failure mail only).")
+        return 0
+
+    today = datetime.now(CHICAGO).date()
+    if mail_expired(today):
+        print(
+            f"Alert mail expired {expires_on().isoformat()} "
+            f"({ALERT_TTL_DAYS} days after {SECRET_SET_ON.isoformat()}). "
+            "Rotate the GMAIL secret and bump SECRET_SET_ON; skip send."
+        )
         return 0
 
     from_addr = (os.environ.get("ALERT_FROM") or "").strip() or DEFAULT_FROM
