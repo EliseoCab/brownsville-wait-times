@@ -71,8 +71,6 @@
     document.body.appendChild(lightbox);
     var lightImg = lightbox.querySelector("img");
     var closeBtn = lightbox.querySelector(".photo-lightbox-close");
-    var hoverTimer = null;
-    var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
     function fullSrc(thumb) {
       var raw = thumb.getAttribute("data-full-src") || thumb.getAttribute("src") || "";
@@ -124,18 +122,6 @@
         "aria-label",
         document.documentElement.lang === "es" ? "Ampliar foto" : "Expand photo"
       );
-
-      if (finePointer && img.getAttribute("data-full-src")) {
-        photo.addEventListener("mouseenter", function () {
-          clearTimeout(hoverTimer);
-          hoverTimer = setTimeout(function () {
-            openLightbox(img);
-          }, 150);
-        });
-        photo.addEventListener("mouseleave", function () {
-          clearTimeout(hoverTimer);
-        });
-      }
 
       photo.addEventListener("click", function (e) {
         if (e.target && e.target.closest && e.target.closest("a")) return;
