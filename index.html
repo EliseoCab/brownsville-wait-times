@@ -45,6 +45,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1f3a'/%3E%3Ccircle cx='16' cy='16' r='5.5' fill='%230ea5e9'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
   <title>Brownsville Bridge Wait Times · Live CBP Estimates</title>
   <script type="application/ld+json">
   {
@@ -828,6 +829,11 @@
       margin-top: 0.45rem;
       overflow: hidden;
       background: #dbe3ee;
+    }
+    .crowd-map .leaflet-container {
+      height: 100%;
+      width: 100%;
+      background: #d6e2ee;
     }
     .crowd-avg-bridge { font-weight: 800; color: var(--ink); margin-top: 0.45rem; }
     .crowd-avg-line { margin: 0.12rem 0; }
@@ -3488,6 +3494,7 @@
     </div>
   </footer>
 
+  <script src="vendor/leaflet/leaflet.js"></script>
   <script>
     const FEED_URL = "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43";
     // Same-origin mirror updated by GitHub Actions (backup if the Worker is down)
@@ -5746,26 +5753,16 @@
         done();
         return;
       }
-      if (document.getElementById("crowdLeafletJs")) {
+      const js = document.getElementById("crowdLeafletJs") || document.createElement("script");
+      if (!js.id) {
+        js.id = "crowdLeafletJs";
+        js.src = "vendor/leaflet/leaflet.js";
+        js.onload = function () { done(); };
+        js.onerror = function () { done(); };
+        document.head.appendChild(js);
+      } else {
         setTimeout(function () { crowdEnsureLeaflet(done); }, 200);
-        return;
       }
-      const css = document.createElement("link");
-      css.rel = "stylesheet";
-      css.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-      document.head.appendChild(css);
-      const js = document.createElement("script");
-      js.id = "crowdLeafletJs";
-      js.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-      js.onload = function () {
-        const heat = document.createElement("script");
-        heat.src = "https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js";
-        heat.onload = function () { done(); };
-        heat.onerror = function () { done(); };
-        document.head.appendChild(heat);
-      };
-      js.onerror = function () { done(); };
-      document.head.appendChild(js);
     }
     function crowdPaintLastPin(points) {
       const line = document.getElementById("crowdLastPin");
@@ -5788,16 +5785,11 @@
       if (!el || !window.L) return;
       crowdDropMap();
       crowdMap = L.map(el, { zoomControl: true, attributionControl: true }).setView([25.895, -97.50], 12);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 18,
-        attribution: "&copy; OpenStreetMap"
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
+        maxZoom: 19,
+        attribution: "Tiles © Esri"
       }).addTo(crowdMap);
       const pts = points || [];
-      if (window.L.heatLayer && pts.length) {
-        crowdHeatLayer = L.heatLayer(pts.map(function (p) {
-          return [p.lat, p.lng, 0.85];
-        }), { radius: 32, blur: 16, maxZoom: 16 }).addTo(crowdMap);
-      }
       const bounds = [];
       pts.forEach(function (p) {
         const m = L.circleMarker([p.lat, p.lng], {
