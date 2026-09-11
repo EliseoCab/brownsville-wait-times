@@ -690,6 +690,107 @@
       color: var(--muted);
       line-height: 1.35;
     }
+    .crowd-source {
+      margin-top: 0.65rem;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 0.15rem 0.85rem 0.75rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .crowd-source > summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.35rem 0.65rem;
+      padding: 0.7rem 0 0.55rem;
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+    .crowd-source > summary::-webkit-details-marker { display: none; }
+    .crowd-source > summary::before {
+      content: "▸";
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .crowd-source[open] > summary::before { content: "▾"; }
+    .crowd-sub {
+      font-size: 0.72rem;
+      font-weight: 650;
+      color: var(--muted);
+    }
+    .crowd-near-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      display: inline-block;
+    }
+    .crowd-privacy, .crowd-near-line, .crowd-status, .crowd-avgs {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.4;
+      margin: 0 0 0.55rem;
+    }
+    .crowd-near-line { font-weight: 700; color: var(--sky-deep); }
+    .crowd-label {
+      display: block;
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0.45rem 0 0.28rem;
+    }
+    .crowd-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.28rem;
+    }
+    .crowd-chip {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 0.28rem 0.62rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .crowd-chip.on {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #e8eef4;
+    }
+    .crowd-sentri-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin: 0.2rem 0 0.45rem;
+    }
+    .crowd-sentri-row button, .crowd-submit {
+      border: 1px solid var(--line);
+      background: var(--navy);
+      color: #e8eef4;
+      border-radius: 999px;
+      padding: 0.32rem 0.7rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .crowd-sentri-row button.ghost {
+      background: transparent;
+      color: var(--ink);
+    }
+    .crowd-submit { margin-top: 0.55rem; }
+    .crowd-submit:disabled { opacity: 0.5; cursor: default; }
+    .crowd-avg-bridge { font-weight: 800; color: var(--ink); margin-top: 0.45rem; }
+    .crowd-avg-line { margin: 0.12rem 0; }
     @media (max-width: 560px) {
       .stat-card {
         flex: 1 1 calc(50% - 0.35rem);
@@ -2628,12 +2729,20 @@
     html:not([data-theme="dark"]) .summary {
       margin-top: 0.85rem;
     }
-    html:not([data-theme="dark"]) .drive-card {
+    html:not([data-theme="dark"]) .drive-card,
+    html:not([data-theme="dark"]) .crowd-source {
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.58));
       border: 1px solid rgba(255, 255, 255, 0.9);
       box-shadow: 0 1px 0 #fff inset, 0 8px 22px rgba(15, 47, 84, 0.08);
       backdrop-filter: blur(18px) saturate(1.5);
       -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    }
+    html:not([data-theme="dark"]) .crowd-chip.on,
+    html:not([data-theme="dark"]) .crowd-submit,
+    html:not([data-theme="dark"]) .crowd-sentri-row button:not(.ghost) {
+      background: linear-gradient(180deg, rgba(18, 48, 86, 0.92), rgba(11, 31, 58, 0.88));
+      border-color: transparent;
+      color: #f8fbff;
     }
     html:not([data-theme="dark"]) .stat-card,
     html:not([data-theme="dark"]) .install-help,
@@ -2897,6 +3006,25 @@
     html[data-theme="dark"] .hero h1 { color: #f8fbff; }
     html[data-theme="dark"] .hero-lead { color: #9db0c6; }
     html[data-theme="dark"] .summary { margin-top: 0.85rem; }
+    html[data-theme="dark"] .crowd-source {
+      background: linear-gradient(180deg, rgba(28, 46, 72, 0.55), rgba(12, 22, 38, 0.42));
+      border: 1px solid rgba(125, 211, 252, 0.16);
+    }
+    html[data-theme="dark"] .crowd-chip {
+      border-color: rgba(125, 211, 252, 0.22);
+      color: #e0f2fe;
+    }
+    html[data-theme="dark"] .crowd-chip.on,
+    html[data-theme="dark"] .crowd-submit,
+    html[data-theme="dark"] .crowd-sentri-row button:not(.ghost) {
+      background: linear-gradient(180deg, rgba(125, 211, 252, 0.95), rgba(56, 189, 248, 0.78));
+      color: #0c1222;
+      border-color: transparent;
+    }
+    html[data-theme="dark"] .crowd-sentri-row button.ghost {
+      color: #e0f2fe;
+      border-color: rgba(125, 211, 252, 0.22);
+    }
     html[data-theme="dark"] .stat-card,
     html[data-theme="dark"] .install-help,
     html[data-theme="dark"] .refresh-meta,
@@ -3379,6 +3507,34 @@
         filterPedestrian: "Pedestrian",
         filterCommercial: "Commercial",
         filterDrive: "Drive",
+        crowdTitle: "Crowd source",
+        crowdSub: "Traveler reports · not CBP",
+        crowdPrivacy: "Anonymous. Used to show where the line starts and a traveler average. Not sent to CBP. Location is rounded and dropped after 24 hours.",
+        crowdNear: "Near {bridge}",
+        crowdEnRoute: "En route to {bridge}",
+        crowdHaveSentri: "I have SENTRI",
+        crowdStillSentri: "Still have SENTRI?",
+        crowdYes: "Yes",
+        crowdNo: "No",
+        crowdMode: "How you are crossing",
+        crowdVehicles: "Vehicles",
+        crowdWalking: "Walking",
+        crowdBridge: "Bridge",
+        crowdLane: "Lane",
+        crowdMinutes: "Minutes to booth from here",
+        crowdStatus: "Where you are",
+        crowdInQueue: "In queue",
+        crowdEnRouteToggle: "En route",
+        crowdSubmit: "Check in",
+        crowdThanks: "Thanks · {min} min · {bridge} {lane}",
+        crowdNeedLoc: "Allow location to pin your spot, or pick a bridge.",
+        crowdBusy: "Already reported this lane. Try again in 10 minutes.",
+        crowdErr: "Could not send report.",
+        crowdAvgs: "Traveler averages (last 45 min)",
+        crowdAvgLine: "{lane} {min} min · n={n} · {ago}",
+        crowdAgo: "{n} min ago",
+        crowdEmpty: "Not enough traveler reports yet.",
+        crowdNoPed: "No pedestrian report at this bridge.",
         filterAria: "Filter by traffic type",
         refresh: "Refresh times",
         refreshing: "Refreshing…",
@@ -3521,6 +3677,34 @@
         filterPedestrian: "Peatonal",
         filterCommercial: "Comercial",
         filterDrive: "En ruta",
+        crowdTitle: "Reportes de viajeros",
+        crowdSub: "Reportes de viajeros · no CBP",
+        crowdPrivacy: "Anónimo. Sirve para mostrar dónde empieza la fila y un promedio de viajeros. No se envía a CBP. La ubicación se redondea y se borra a las 24 horas.",
+        crowdNear: "Cerca de {bridge}",
+        crowdEnRoute: "En ruta a {bridge}",
+        crowdHaveSentri: "Tengo SENTRI",
+        crowdStillSentri: "¿Sigue teniendo SENTRI?",
+        crowdYes: "Sí",
+        crowdNo: "No",
+        crowdMode: "Cómo cruza",
+        crowdVehicles: "Vehículos",
+        crowdWalking: "A pie",
+        crowdBridge: "Puente",
+        crowdLane: "Carril",
+        crowdMinutes: "Minutos a la caseta desde aquí",
+        crowdStatus: "Dónde está",
+        crowdInQueue: "En fila",
+        crowdEnRouteToggle: "En ruta",
+        crowdSubmit: "Registrar",
+        crowdThanks: "Gracias · {min} min · {bridge} {lane}",
+        crowdNeedLoc: "Permita la ubicación para marcar su sitio, o elija un puente.",
+        crowdBusy: "Ya reportó este carril. Intente de nuevo en 10 minutos.",
+        crowdErr: "No se pudo enviar el reporte.",
+        crowdAvgs: "Promedios de viajeros (últimos 45 min)",
+        crowdAvgLine: "{lane} {min} min · n={n} · {ago}",
+        crowdAgo: "hace {n} min",
+        crowdEmpty: "Aún no hay suficientes reportes de viajeros.",
+        crowdNoPed: "No hay reporte peatonal en este puente.",
         filterAria: "Filtrar por tipo de tráfico",
         refresh: "Actualizar tiempos",
         refreshing: "Actualizando…",
@@ -4946,6 +5130,429 @@
       return `<span class="${cls}"><span class="bridge-name">${escapeHtml(name)}</span>${mapsLinkHtml(port)}</span>`;
     }
 
+    const CROWD_OPEN_KEY = "bwt-crowd-open";
+    const CROWD_SENTRI_KEY = "bwt-crowd-sentri";
+    const CROWD_LAST_KEY = "bwt-crowd-last";
+    const SENTRI_VERIFY_MS = 90 * 24 * 60 * 60 * 1000;
+    const CROWD_BRIDGES = [
+      { id: "bm", short: "B&M" },
+      { id: "gateway", short: "Gateway" },
+      { id: "veterans", short: "Veterans" },
+      { id: "los-indios", short: "Los Indios" }
+    ];
+    const CROWD_MINS = [0, 5, 10, 15, 20, 30, 45, 60, 90];
+    let crowdPollTimer = null;
+    let crowdGeo = null;
+    let crowdMode = "vehicle";
+    let crowdBridge = "veterans";
+    let crowdLane = "vehicle_gen";
+    let crowdWait = 10;
+    let crowdWhere = "in_queue";
+    let crowdSummary = null;
+
+    function crowdReadSentri() {
+      try {
+        const raw = localStorage.getItem(CROWD_SENTRI_KEY);
+        if (!raw) return { on: false, verifiedAt: 0 };
+        const o = JSON.parse(raw);
+        return { on: !!o.on, verifiedAt: Number(o.verifiedAt) || 0 };
+      } catch (_) {
+        return { on: false, verifiedAt: 0 };
+      }
+    }
+    function crowdWriteSentri(on, verifiedAt) {
+      try {
+        localStorage.setItem(CROWD_SENTRI_KEY, JSON.stringify({
+          on: !!on,
+          verifiedAt: verifiedAt || (on ? Date.now() : 0)
+        }));
+      } catch (_) { /* ignore */ }
+    }
+    function crowdSentriActive() {
+      const s = crowdReadSentri();
+      return s.on && s.verifiedAt && (Date.now() - s.verifiedAt) < SENTRI_VERIFY_MS;
+    }
+    function crowdSentriNeedsVerify() {
+      const s = crowdReadSentri();
+      return s.on && (!s.verifiedAt || (Date.now() - s.verifiedAt) >= SENTRI_VERIFY_MS);
+    }
+    function crowdPortId(port) {
+      if (isVeteransPort(port)) return "veterans";
+      if (isGatewayPort(port)) return "gateway";
+      if (isLosIndiosPort(port)) return "los-indios";
+      return "bm";
+    }
+    function crowdLanesFor() {
+      if (crowdMode === "ped") {
+        if (crowdBridge === "los-indios") return [];
+        if (crowdBridge === "gateway") return ["ped_gen", "ped_ready"];
+        return ["ped_gen"];
+      }
+      const lanes = ["vehicle_gen"];
+      if (crowdBridge === "veterans" && crowdSentriActive()) lanes.push("vehicle_sentri");
+      return lanes;
+    }
+    function crowdLaneLabel(lane) {
+      if (lane === "vehicle_sentri" || lane === "ped_ready") {
+        return lane === "vehicle_sentri" ? t("sentri") : t("ready");
+      }
+      return t("gen");
+    }
+    function crowdBridgeLabel(id) {
+      const row = CROWD_BRIDGES.filter(function (b) { return b.id === id; })[0];
+      return row ? row.short : id;
+    }
+    function crowdNearest(geo) {
+      if (!geo || geo === "denied") return null;
+      let best = null;
+      CROWD_BRIDGES.forEach(function (b) {
+        const meta = Object.keys(PORT_META).map(function (k) { return PORT_META[k]; }).filter(function (m) {
+          return (m.short || "").toLowerCase() === b.short.toLowerCase() ||
+            (b.id === "los-indios" && /los indios/i.test(m.short || ""));
+        })[0];
+        if (!meta || meta.lat == null) return;
+        const miles = haversineMiles(geo, { lat: meta.lat, lng: meta.lng });
+        if (!best || miles < best.miles) best = { id: b.id, short: b.short, miles: miles };
+      });
+      return best;
+    }
+    function crowdCbpMin(bridge, lane) {
+      if (!lastData || !lastData.items) return null;
+      const port = lastData.items.filter(function (p) { return crowdPortId(p) === bridge; })[0];
+      if (!port) return null;
+      if (lane === "vehicle_sentri") {
+        const w = laneWaitForShare(port, "sentri");
+        return w && isActiveWait(w) ? w.minutes : null;
+      }
+      if (lane.indexOf("ped_") === 0) {
+        const sum = summarizeMode(port.sections, "pedestrian");
+        if (lane === "ped_ready") {
+          const extra = (sum && sum.extras || []).filter(function (l) { return /ready/i.test(l.name); })[0];
+          return extra && extra.wait && extra.wait.minutes != null ? extra.wait.minutes : null;
+        }
+        return sum && sum.primary && sum.primary.minutes != null ? sum.primary.minutes : null;
+      }
+      return passengerVehicleWait(port);
+    }
+    function crowdChipRow(id, items, selected, attr) {
+      return items.map(function (item) {
+        const val = item.id || item;
+        const lab = item.label || item;
+        return `<button type="button" class="crowd-chip${val === selected ? " on" : ""}" data-crowd="${attr}" data-val="${escapeHtml(String(val))}">${escapeHtml(lab)}</button>`;
+      }).join("");
+    }
+    function crowdStopPoll() {
+      if (crowdPollTimer) {
+        clearInterval(crowdPollTimer);
+        crowdPollTimer = null;
+      }
+    }
+    function crowdAskGeo(highAcc) {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          crowdGeo = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            acc: pos.coords.accuracy,
+            heading: pos.coords.heading
+          };
+          crowdRefreshNear();
+        },
+        function () { /* keep last */ },
+        {
+          enableHighAccuracy: !!highAcc,
+          timeout: highAcc ? 12000 : 8000,
+          maximumAge: highAcc ? 0 : 30000
+        }
+      );
+    }
+    function crowdStartPoll() {
+      crowdStopPoll();
+      const geo = crowdGeo || (userGeo && userGeo !== "denied" ? userGeo : null);
+      if (geo) {
+        crowdGeo = crowdGeo || { lat: geo.lat, lng: geo.lng, acc: null, heading: null };
+        crowdRefreshNear();
+      }
+      crowdAskGeo(false);
+      crowdPollTimer = setInterval(function () {
+        if (document.hidden) return;
+        const box = document.getElementById("crowdSource");
+        if (!box || !box.open) return;
+        crowdAskGeo(false);
+      }, 90000);
+    }
+    function crowdRefreshNear() {
+      const near = crowdNearest(crowdGeo || (userGeo && userGeo !== "denied" ? userGeo : null));
+      const dot = document.getElementById("crowdNearDot");
+      const line = document.getElementById("crowdNearLine");
+      if (dot) {
+        if (near && near.miles <= 1.5) {
+          dot.hidden = false;
+          dot.setAttribute("title", t("crowdNear").replace("{bridge}", near.short));
+        } else {
+          dot.hidden = true;
+        }
+      }
+      if (!line) return;
+      if (near && near.miles <= 1.5) {
+        line.textContent = t("crowdNear").replace("{bridge}", near.short);
+        if (!crowdBridge) crowdBridge = near.id;
+      } else if (near && near.miles <= 8) {
+        line.textContent = t("crowdEnRoute").replace("{bridge}", near.short);
+      } else {
+        line.textContent = "";
+      }
+    }
+    function crowdEnsureLane() {
+      const lanes = crowdLanesFor();
+      if (lanes.indexOf(crowdLane) < 0) crowdLane = lanes[0] || "vehicle_gen";
+    }
+    function crowdFormHtml() {
+      crowdEnsureLane();
+      const sentri = crowdReadSentri();
+      const needs = crowdSentriNeedsVerify();
+      let sentriHtml = "";
+      if (needs) {
+        sentriHtml = `<div class="crowd-sentri-row" id="crowdSentriRow">
+          <span>${escapeHtml(t("crowdStillSentri"))}</span>
+          <button type="button" data-crowd="sentri-yes">${escapeHtml(t("crowdYes"))}</button>
+          <button type="button" class="ghost" data-crowd="sentri-no">${escapeHtml(t("crowdNo"))}</button>
+        </div>`;
+      } else {
+        sentriHtml = `<label class="crowd-sentri-row">
+          <input type="checkbox" id="crowdSentriOn" ${sentri.on ? "checked" : ""} />
+          ${escapeHtml(t("crowdHaveSentri"))}
+        </label>`;
+      }
+      const lanes = crowdLanesFor();
+      const laneRow = lanes.length > 1
+        ? `<span class="crowd-label">${escapeHtml(t("crowdLane"))}</span>
+           <div class="crowd-chips">${crowdChipRow("lane", lanes.map(function (l) { return { id: l, label: crowdLaneLabel(l) }; }), crowdLane, "lane")}</div>`
+        : "";
+      const pedBlocked = crowdMode === "ped" && crowdBridge === "los-indios";
+      return `
+        <p class="crowd-privacy">${escapeHtml(t("crowdPrivacy"))}</p>
+        <p class="crowd-near-line" id="crowdNearLine"></p>
+        ${sentriHtml}
+        <span class="crowd-label">${escapeHtml(t("crowdMode"))}</span>
+        <div class="crowd-chips">
+          ${crowdChipRow("mode", [{ id: "vehicle", label: t("crowdVehicles") }, { id: "ped", label: t("crowdWalking") }], crowdMode, "mode")}
+        </div>
+        <span class="crowd-label">${escapeHtml(t("crowdBridge"))}</span>
+        <div class="crowd-chips">
+          ${crowdChipRow("bridge", CROWD_BRIDGES.map(function (b) { return { id: b.id, label: b.short }; }), crowdBridge, "bridge")}
+        </div>
+        ${pedBlocked ? `<p class="crowd-status">${escapeHtml(t("crowdNoPed"))}</p>` : laneRow + `
+        <span class="crowd-label">${escapeHtml(t("crowdMinutes"))}</span>
+        <div class="crowd-chips">
+          ${crowdChipRow("wait", CROWD_MINS.map(function (n) { return { id: String(n), label: String(n) }; }), String(crowdWait), "wait")}
+        </div>
+        <span class="crowd-label">${escapeHtml(t("crowdStatus"))}</span>
+        <div class="crowd-chips">
+          ${crowdChipRow("where", [{ id: "in_queue", label: t("crowdInQueue") }, { id: "en_route", label: t("crowdEnRouteToggle") }], crowdWhere, "where")}
+        </div>
+        <button type="button" class="crowd-submit" id="crowdSubmit">${escapeHtml(t("crowdSubmit"))}</button>
+        <p class="crowd-status" id="crowdMsg"></p>`}
+        <div class="crowd-avgs" id="crowdAvgs"></div>`;
+    }
+    function crowdPaintAvgs() {
+      const el = document.getElementById("crowdAvgs");
+      if (!el) return;
+      const rows = (crowdSummary && crowdSummary.rows) || [];
+      const showSentri = crowdSentriActive();
+      const byBridge = {};
+      rows.forEach(function (r) {
+        if (r.n < 3) return;
+        if (r.lane === "vehicle_sentri" && !showSentri) return;
+        if (r.lane === "vehicle_ready") return;
+        if (!byBridge[r.bridge]) byBridge[r.bridge] = [];
+        byBridge[r.bridge].push(r);
+      });
+      const ids = Object.keys(byBridge);
+      if (!ids.length) {
+        el.innerHTML = `<div class="crowd-label">${escapeHtml(t("crowdAvgs"))}</div><p>${escapeHtml(t("crowdEmpty"))}</p>`;
+        return;
+      }
+      el.innerHTML = `<div class="crowd-label">${escapeHtml(t("crowdAvgs"))}</div>` + ids.map(function (id) {
+        const lines = byBridge[id].map(function (r) {
+          const agoMin = Math.max(1, Math.round((Date.now() - r.latest) / 60000));
+          return `<div class="crowd-avg-line">${escapeHtml(t("crowdAvgLine")
+            .replace("{lane}", crowdLaneLabel(r.lane))
+            .replace("{min}", String(r.median))
+            .replace("{n}", String(r.n))
+            .replace("{ago}", t("crowdAgo").replace("{n}", String(agoMin))))}</div>`;
+        }).join("");
+        return `<div class="crowd-avg-bridge">${escapeHtml(crowdBridgeLabel(id))}</div>${lines}`;
+      }).join("");
+    }
+    function crowdLoadSummary() {
+      const base = (FEED_PROXY_URL && String(FEED_PROXY_URL).trim())
+        ? String(FEED_PROXY_URL).replace(/\/$/, "")
+        : "";
+      if (!base) return;
+      fetch(base + "/checkins/summary")
+        .then(function (res) { return res.json(); })
+        .then(function (j) {
+          crowdSummary = j;
+          crowdPaintAvgs();
+        })
+        .catch(function () { /* keep empty */ });
+    }
+    function crowdBind() {
+      const box = document.getElementById("crowdSource");
+      if (!box) return;
+      box.addEventListener("toggle", function () {
+        try { localStorage.setItem(CROWD_OPEN_KEY, box.open ? "1" : "0"); } catch (_) { /* ignore */ }
+        if (box.open) {
+          crowdStartPoll();
+          crowdLoadSummary();
+        } else {
+          crowdStopPoll();
+        }
+      });
+      box.addEventListener("click", function (e) {
+        const btn = e.target.closest("[data-crowd]");
+        if (!btn || !box.contains(btn)) return;
+        const kind = btn.getAttribute("data-crowd");
+        const val = btn.getAttribute("data-val");
+        if (kind === "mode") {
+          crowdMode = val;
+          crowdEnsureLane();
+          crowdRerenderForm();
+        } else if (kind === "bridge") {
+          crowdBridge = val;
+          crowdEnsureLane();
+          crowdRerenderForm();
+        } else if (kind === "lane") {
+          crowdLane = val;
+          crowdRerenderForm();
+        } else if (kind === "wait") {
+          crowdWait = parseInt(val, 10);
+          crowdRerenderForm();
+        } else if (kind === "where") {
+          crowdWhere = val;
+          crowdRerenderForm();
+        } else if (kind === "sentri-yes") {
+          crowdWriteSentri(true, Date.now());
+          crowdRerenderForm();
+        } else if (kind === "sentri-no") {
+          crowdWriteSentri(false, 0);
+          crowdRerenderForm();
+        }
+      });
+      const sentriOn = document.getElementById("crowdSentriOn");
+      if (sentriOn) {
+        sentriOn.addEventListener("change", function () {
+          crowdWriteSentri(sentriOn.checked, sentriOn.checked ? Date.now() : 0);
+          crowdRerenderForm();
+        });
+      }
+      const submit = document.getElementById("crowdSubmit");
+      if (submit) submit.addEventListener("click", crowdSubmit);
+      crowdRefreshNear();
+      crowdPaintAvgs();
+    }
+    function crowdRerenderForm() {
+      const box = document.getElementById("crowdSource");
+      if (!box) return;
+      const wasOpen = box.open;
+      const body = box.querySelector(".crowd-body");
+      if (body) body.innerHTML = crowdFormHtml();
+      box.open = wasOpen;
+      crowdBindInner();
+      crowdRefreshNear();
+      crowdPaintAvgs();
+    }
+    function crowdBindInner() {
+      const box = document.getElementById("crowdSource");
+      if (!box) return;
+      const sentriOn = document.getElementById("crowdSentriOn");
+      if (sentriOn) {
+        sentriOn.onchange = function () {
+          crowdWriteSentri(sentriOn.checked, sentriOn.checked ? Date.now() : 0);
+          crowdRerenderForm();
+        };
+      }
+      const submit = document.getElementById("crowdSubmit");
+      if (submit) submit.onclick = crowdSubmit;
+    }
+    function crowdSubmit() {
+      const msg = document.getElementById("crowdMsg");
+      const submit = document.getElementById("crowdSubmit");
+      const lanes = crowdLanesFor();
+      if (!lanes.length) return;
+      crowdEnsureLane();
+      try {
+        const last = JSON.parse(localStorage.getItem(CROWD_LAST_KEY) || "{}");
+        if (last.bridge === crowdBridge && last.lane === crowdLane && Date.now() - (last.t || 0) < 10 * 60 * 1000) {
+          if (msg) msg.textContent = t("crowdBusy");
+          return;
+        }
+      } catch (_) { /* ignore */ }
+      const geo = crowdGeo || (userGeo && userGeo !== "denied" ? userGeo : null);
+      if (crowdWhere === "in_queue") crowdAskGeo(true);
+      const base = (FEED_PROXY_URL && String(FEED_PROXY_URL).trim())
+        ? String(FEED_PROXY_URL).replace(/\/$/, "")
+        : "";
+      if (!base) {
+        if (msg) msg.textContent = t("crowdErr");
+        return;
+      }
+      if (submit) submit.disabled = true;
+      const payload = {
+        bridge: crowdBridge,
+        lane: crowdLane,
+        wait_min: crowdWait,
+        status: crowdWhere,
+        lat: geo && geo.lat,
+        lng: geo && geo.lng,
+        acc_m: geo && geo.acc,
+        heading: geo && geo.heading,
+        cbp_min: crowdCbpMin(crowdBridge, crowdLane)
+      };
+      fetch(base + "/checkins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(payload)
+      }).then(function (res) { return res.json().then(function (j) { return { res: res, j: j }; }); })
+        .then(function (pack) {
+          if (submit) submit.disabled = false;
+          if (!pack.j || !pack.j.ok) {
+            if (msg) msg.textContent = pack.res && pack.res.status === 429 ? t("crowdBusy") : t("crowdErr");
+            return;
+          }
+          try {
+            localStorage.setItem(CROWD_LAST_KEY, JSON.stringify({
+              bridge: crowdBridge, lane: crowdLane, t: Date.now()
+            }));
+          } catch (_) { /* ignore */ }
+          if (msg) {
+            msg.textContent = t("crowdThanks")
+              .replace("{min}", String(crowdWait))
+              .replace("{bridge}", crowdBridgeLabel(crowdBridge))
+              .replace("{lane}", crowdLaneLabel(crowdLane));
+          }
+          crowdLoadSummary();
+        })
+        .catch(function () {
+          if (submit) submit.disabled = false;
+          if (msg) msg.textContent = t("crowdErr");
+        });
+    }
+    function crowdSectionHtml() {
+      let open = false;
+      try { open = localStorage.getItem(CROWD_OPEN_KEY) === "1"; } catch (_) { /* ignore */ }
+      return `<details class="crowd-source" id="crowdSource"${open ? " open" : ""}>
+        <summary>
+          <span class="crowd-title">${escapeHtml(t("crowdTitle"))}</span>
+          <span class="crowd-sub">${escapeHtml(t("crowdSub"))}</span>
+          <span class="crowd-near-dot" id="crowdNearDot" hidden></span>
+        </summary>
+        <div class="crowd-body">${crowdFormHtml()}</div>
+      </details>`;
+    }
+
     function renderDriveView(data) {
       const grid = document.getElementById("portGrid");
       if (!grid) return;
@@ -4960,7 +5567,8 @@
         return aw - bw;
       });
       if (!ports.length) {
-        grid.innerHTML = `<p class="empty">${escapeHtml(t("emptyFilter"))}</p>`;
+        grid.innerHTML = `<p class="empty">${escapeHtml(t("emptyFilter"))}</p>` + crowdSectionHtml();
+        crowdBind();
         return;
       }
       grid.innerHTML = '<div class="drive-list">' + ports.map(function (port) {
@@ -4987,12 +5595,23 @@
           <div class="drive-wait ${waitCls}">${waitHtml}</div>
           ${openBits.length ? `<div class="drive-open">${openBits.map(escapeHtml).join("<br>")}</div>` : ""}
         </article>`;
-      }).join("") + "</div>";
+      }).join("") + "</div>" + crowdSectionHtml();
+      crowdBind();
+      const crowdBox = document.getElementById("crowdSource");
+      if (crowdBox && crowdBox.open) {
+        crowdStartPoll();
+        crowdLoadSummary();
+      } else {
+        crowdStopPoll();
+        const geo = userGeo && userGeo !== "denied" ? userGeo : crowdGeo;
+        if (geo) crowdRefreshNear();
+      }
     }
 
     function renderPorts(data) {
       const grid = document.getElementById("portGrid");
       const tableRows = [];
+      if (currentFilter !== "drive") crowdStopPoll();
 
       const newestAsOf = collectAsOf(data);
       let pendingCount = 0;

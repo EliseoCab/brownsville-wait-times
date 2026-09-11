@@ -56,6 +56,8 @@ On the live page, after hard-refresh, **Refresh times** should show **Live · CB
 - `GET /all` — national land-border XML (`bwt.cbp.gov/xml/bwt.xml`, cached ~3 minutes; used by `all-ports/`)
 - `GET /all?fresh=1` — skip edge cache for the national feed
 - `GET /health` — small JSON status (includes rate-limit config)
+- `POST /checkins` — anonymous traveler wait report (Drive Crowd source)
+- `GET /checkins/summary` — 45-minute medians by bridge + lane
 - `OPTIONS` — CORS preflight
 - **Cron every 5 min** — re-fetch CBP so the cache stays warm
 - If CBP is down, serves the last good feed (up to ~30 minutes old) instead of failing
@@ -76,6 +78,8 @@ On the live page, after hard-refresh, **Refresh times** should show **Live · CB
 | `GET /all?fresh=1` | 12 / minute |
 | `GET /all` (cached national feed) | 60 / minute |
 | `GET /health` | 60 / minute |
+| `POST /checkins` | 6 / hour |
+| `GET /checkins/summary` | 60 / minute |
 
 Over-limit requests return **429** with `Retry-After` and `X-RateLimit-*` headers.
 

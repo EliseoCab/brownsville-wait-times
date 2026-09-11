@@ -16,3 +16,8 @@ compatibility_date = "2025-08-01"
 # Warm the edge cache about every 5 minutes (free plan supports cron triggers)
 [triggers]
 crons = ["*/5 * * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "brownsville-checkins"
+database_id = "0117edea-be6c-4add-b42e-c503fec76844"

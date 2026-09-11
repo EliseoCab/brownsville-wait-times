@@ -40,6 +40,8 @@ const RATE_LIMITS = {
   allFresh: { limit: 12, windowSeconds: 60 },
   all: { limit: 60, windowSeconds: 60 },
   health: { limit: 60, windowSeconds: 60 },
+  checkin: { limit: 6, windowSeconds: 3600 },
+  checkinGet: { limit: 60, windowSeconds: 60 },
 };
 
 function isAllowedOrigin(origin) {
@@ -72,7 +74,7 @@ function corsHeaders(request, extra) {
   return Object.assign(
     {
       "Access-Control-Allow-Origin": corsOrigin(request),
-      "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+      "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Accept, Content-Type",
       "Access-Control-Max-Age": "86400",
       Vary: "Origin",
@@ -471,22 +473,192 @@ async function cachedDfoPosts(request, env, ctx, fresh) {
   return res;
 }
 
+const CHECKIN_BRIDGES = {
+  bm: { lat: 25.899, lng: -97.497 },
+  gateway: { lat: 25.9017, lng: -97.4975 },
+  veterans: { lat: 25.882, lng: -97.478 },
+  "los-indios": { lat: 26.048, lng: -97.738 }
+};
+const CHECKIN_LANES = {
+  vehicle_gen: true,
+  vehicle_sentri: true,
+  ped_gen: true,
+  ped_ready: true
+};
+const CHECKIN_WINDOW_MS = 45 * 60 * 1000;
+const CHECKIN_COOLDOWN_MS = 10 * 60 * 1000;
+const CHECKIN_TTL_MS = 24 * 60 * 60 * 1000;
+
+function checkinMiles(a, b) {
+  const toRad = function (d) { return (d * Math.PI) / 180; };
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const s =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return 2 * 3958.8 * Math.asin(Math.min(1, Math.sqrt(s)));
+}
+
+function roundCoord(n) {
+  return Math.round(Number(n) * 10000) / 10000;
+}
+
+function median(nums) {
+  if (!nums.length) return null;
+  const s = nums.slice().sort(function (a, b) { return a - b; });
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid] : Math.round((s[mid - 1] + s[mid]) / 2);
+}
+
+async function hashIpDay(ip) {
+  const day = new Date().toISOString().slice(0, 10);
+  const buf = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(String(ip || "unknown") + "|" + day)
+  );
+  return Array.from(new Uint8Array(buf))
+    .map(function (b) { return b.toString(16).padStart(2, "0"); })
+    .join("")
+    .slice(0, 16);
+}
+
+function laneAllowed(bridge, lane) {
+  if (!CHECKIN_LANES[lane]) return false;
+  if (lane === "vehicle_sentri") return bridge === "veterans";
+  if (lane === "ped_ready") return bridge === "gateway";
+  if (lane === "ped_gen") return bridge !== "los-indios";
+  return true;
+}
+
+async function handleCheckinPost(request, env) {
+  if (!env || !env.DB) {
+    return jsonResponse(request, { ok: false, error: "Check-ins not configured" }, 503, 0);
+  }
+  const origin = request.headers.get("Origin");
+  if (origin && !isAllowedOrigin(origin)) {
+    return jsonResponse(request, { ok: false, error: "Forbidden" }, 403, 0);
+  }
+  let body;
+  try {
+    body = await request.json();
+  } catch (_) {
+    return jsonResponse(request, { ok: false, error: "Invalid JSON" }, 400, 0);
+  }
+  const bridge = String(body.bridge || "").toLowerCase();
+  const lane = String(body.lane || "");
+  const waitMin = Number(body.wait_min);
+  const status = body.status === "en_route" ? "en_route" : "in_queue";
+  if (!CHECKIN_BRIDGES[bridge] || !laneAllowed(bridge, lane)) {
+    return jsonResponse(request, { ok: false, error: "Unknown bridge or lane" }, 400, 0);
+  }
+  if (!Number.isFinite(waitMin) || waitMin < 0 || waitMin > 180) {
+    return jsonResponse(request, { ok: false, error: "Wait must be 0–180" }, 400, 0);
+  }
+  const lat = body.lat == null ? null : Number(body.lat);
+  const lng = body.lng == null ? null : Number(body.lng);
+  const acc = body.acc_m == null ? null : Number(body.acc_m);
+  const heading = body.heading == null ? null : Number(body.heading);
+  const cbpMin = body.cbp_min == null ? null : Number(body.cbp_min);
+  let lowAcc = 0;
+  if (lat != null && lng != null && Number.isFinite(lat) && Number.isFinite(lng)) {
+    const miles = checkinMiles({ lat: lat, lng: lng }, CHECKIN_BRIDGES[bridge]);
+    if (status !== "en_route" && miles > 3) {
+      return jsonResponse(request, { ok: false, error: "Too far from that bridge" }, 400, 0);
+    }
+    if (acc != null && Number.isFinite(acc) && acc > 150) lowAcc = 1;
+  }
+  const ipHash = await hashIpDay(clientIp(request));
+  const now = Date.now();
+  const recent = await env.DB.prepare(
+    "SELECT created_at FROM checkins WHERE ip_hash = ? AND bridge = ? AND lane = ? AND created_at > ? LIMIT 1"
+  ).bind(ipHash, bridge, lane, now - CHECKIN_COOLDOWN_MS).first();
+  if (recent) {
+    return jsonResponse(request, { ok: false, error: "Already reported this lane. Try again in 10 minutes." }, 429, 0);
+  }
+  await env.DB.prepare(
+    "INSERT INTO checkins (created_at, bridge, lane, wait_min, status, lat, lng, acc_m, heading, cbp_min, low_acc, ip_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+  ).bind(
+    now,
+    bridge,
+    lane,
+    Math.round(waitMin),
+    status,
+    lat != null && Number.isFinite(lat) ? roundCoord(lat) : null,
+    lng != null && Number.isFinite(lng) ? roundCoord(lng) : null,
+    acc != null && Number.isFinite(acc) ? Math.round(acc) : null,
+    heading != null && Number.isFinite(heading) ? Math.round(heading) : null,
+    cbpMin != null && Number.isFinite(cbpMin) ? Math.round(cbpMin) : null,
+    lowAcc,
+    ipHash
+  ).run();
+  return jsonResponse(request, { ok: true }, 200, 0);
+}
+
+async function handleCheckinSummary(request, env) {
+  if (!env || !env.DB) {
+    return jsonResponse(request, { ok: true, windowMin: 45, rows: [] }, 200, 60);
+  }
+  const since = Date.now() - CHECKIN_WINDOW_MS;
+  const res = await env.DB.prepare(
+    "SELECT bridge, lane, wait_min, created_at FROM checkins WHERE created_at > ? AND status = 'in_queue'"
+  ).bind(since).all();
+  const groups = {};
+  (res && res.results ? res.results : []).forEach(function (row) {
+    const key = row.bridge + "|" + row.lane;
+    if (!groups[key]) {
+      groups[key] = { bridge: row.bridge, lane: row.lane, waits: [], latest: 0 };
+    }
+    groups[key].waits.push(Number(row.wait_min));
+    if (row.created_at > groups[key].latest) groups[key].latest = row.created_at;
+  });
+  const rows = Object.keys(groups).map(function (key) {
+    const g = groups[key];
+    return {
+      bridge: g.bridge,
+      lane: g.lane,
+      median: median(g.waits),
+      n: g.waits.length,
+      latest: g.latest
+    };
+  });
+  return jsonResponse(request, { ok: true, windowMin: 45, rows: rows }, 200, 60);
+}
+
+async function purgeOldCheckins(env) {
+  if (!env || !env.DB) return;
+  await env.DB.prepare("DELETE FROM checkins WHERE created_at < ?")
+    .bind(Date.now() - CHECKIN_TTL_MS)
+    .run();
+}
+
 export default {
   async fetch(request, env, ctx) {
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: corsHeaders(request) });
-    }
-    if (request.method !== "GET" && request.method !== "HEAD") {
-      return new Response("Method not allowed", {
-        status: 405,
-        headers: corsHeaders(request, { "Content-Type": "text/plain; charset=utf-8" }),
-      });
     }
 
     try {
       const url = new URL(request.url);
       const path = url.pathname.replace(/\/+$/, "") || "/";
       const fresh = url.searchParams.get("fresh") === "1";
+
+      if (path === "/checkins" && request.method === "POST") {
+        const rate = await enforceRateLimit(request, "checkin");
+        if (rate instanceof Response) return rate;
+        return withRateHeaders(await handleCheckinPost(request, env), rate);
+      }
+      if (path === "/checkins/summary" && (request.method === "GET" || request.method === "HEAD")) {
+        const rate = await enforceRateLimit(request, "checkinGet");
+        if (rate instanceof Response) return rate;
+        return withRateHeaders(await handleCheckinSummary(request, env), rate);
+      }
+
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      return new Response("Method not allowed", {
+        status: 405,
+        headers: corsHeaders(request, { "Content-Type": "text/plain; charset=utf-8" }),
+      });
+    }
 
       if (path === "/health") {
         const rate = await enforceRateLimit(request, "health");
@@ -591,6 +763,11 @@ export default {
           await cachedDfoPosts(fakeReq, env, null, true);
         } catch (_) {
           // X warm is best-effort
+        }
+        try {
+          await purgeOldCheckins(env);
+        } catch (_) {
+          // Check-in TTL is best-effort
         }
       })()
     );
