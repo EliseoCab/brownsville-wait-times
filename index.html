@@ -1580,8 +1580,8 @@
         padding-top: max(0.55rem, env(safe-area-inset-top));
       }
 
-      /* Few-column filters only: hide wide table, show compact phone cards.
-         All filter keeps the same bridge-band table as desktop. */
+      /* Tight filters only: hide wide table, show compact phone cards.
+         All / Pedestrian keep the same bridge-band table as desktop. */
       .table-wrap.table-tight .table-scroll {
         display: none !important;
       }
@@ -1593,7 +1593,7 @@
         padding: 0.45rem 0.65rem;
       }
 
-      /* All filter: never swap to mobile-cards — same layout as desktop */
+      /* Card tilers (All, Pedestrian): never swap to mobile-cards */
       .table-wrap.table-cards .table-scroll {
         display: block !important;
       }
@@ -1602,7 +1602,7 @@
       }
     }
 
-    /* Compact cards for Pedestrian / few-column filters on phone */
+    /* Compact cards for Vehicles / Commercial on phone */
     .mobile-cards {
       display: none;
       flex-direction: column;
@@ -1904,6 +1904,7 @@
     @media (max-width: 640px) {
       table.wait-table { min-width: 640px; }
       .table-wrap.table-cards table.wait-table { min-width: 580px; }
+      .table-wrap.table-cards.table-cards-1 table.wait-table { min-width: 0; }
       .wait-cell .num { font-size: 1.35rem; }
       .wait-table thead th,
       .wait-table td { padding: 0.7rem 0.55rem; }
@@ -4536,7 +4537,7 @@
     /**
      * Concise wait cell:
      *  - Same wait: "60 min" + open line
-     *  - All filter, Gateway Pedestrian only when Gen ≠ Ready: "Gen 15 · Ready 30" + open line
+     *  - All / Pedestrian, Gateway when Gen ≠ Ready: "Gen 15 · Ready 30" + open line
      *  - All filter, Commercial when Gen ≠ FAST: "Gen 15 · FAST 5" + open line
      */
     function waitCellBlock(summary, modeKey, port) {
@@ -4552,7 +4553,7 @@
       );
 
       const gatewayPedDual =
-        currentFilter === "all" &&
+        (currentFilter === "all" || currentFilter === "pedestrian") &&
         port &&
         isGatewayPort(port) &&
         modeKey === "pedestrian" &&
@@ -5019,7 +5020,8 @@
       }
 
       // All: Vehicles · SENTRI · Pedestrian · Commercial
-      // Focused: primary wait · special column (SENTRI / Ready / FAST) when that column has data
+      // Pedestrian: one All-style wait column (Ready lives inside that tile)
+      // Vehicles / Commercial: primary wait · special column (SENTRI / FAST) when published
       const portsSorted = data.items.slice().sort((a, b) => {
         const an = (a.meta && a.meta.short ? a.meta.short : a.title || "").toLowerCase();
         const bn = (b.meta && b.meta.short ? b.meta.short : b.title || "").toLowerCase();
@@ -5040,7 +5042,6 @@
         if (showSpecialCol) waitCols.push({ key: "trusted", label: t("sentri") });
       } else if (currentFilter === "pedestrian") {
         waitCols.push({ key: "pedestrian", label: t("filterPedestrian") });
-        if (showSpecialCol) waitCols.push({ key: "trusted", label: t("ready") });
       } else if (currentFilter === "commercial") {
         waitCols.push({ key: "commercial", label: t("filterCommercial") });
         if (showSpecialCol) waitCols.push({ key: "trusted", label: t("fast") });
@@ -5093,7 +5094,7 @@
           ${noticeRow}
           ${gapRow}`);
 
-        // Compact phone cards (used for Pedestrian / few-column filters)
+        // Compact phone cards (used for Vehicles / Commercial tight filters)
         const waitBlocks = waitCols.map((c) => {
           const cell = cells[c.key];
           return `<div class="m-wait-block ${cell.cls}">
@@ -5120,11 +5121,12 @@
         return;
       }
 
-      // Vehicles / Pedestrian / Commercial: same tight uniform layout; All is full card table
+      // Vehicles / Commercial: tight table. All / Pedestrian: bridge-band cards.
       const waitN = Math.max(waitCols.length, 1);
-      const tight = currentFilter !== "all";
+      const useCards = currentFilter === "all" || currentFilter === "pedestrian";
+      const tight = !useCards;
       let bridgePct;
-      if (waitN === 1) bridgePct = 42;
+      if (waitN === 1) bridgePct = useCards ? 58 : 42;
       else if (waitN === 2) bridgePct = 36;
       else if (waitN === 3) bridgePct = 28;
       else bridgePct = 20;
@@ -5140,8 +5142,10 @@
       const tightClass = tight
         ? ` table-tight table-tight-${waitN}`
         : "";
-      // All filter: long bridge bands + floating chips (headers on top)
-      const cardsClass = currentFilter === "all" ? " table-cards" : "";
+      // All + Pedestrian: long bridge bands + floating chips (headers on top)
+      const cardsClass = useCards
+        ? (waitN === 1 ? " table-cards table-cards-1" : " table-cards")
+        : "";
 
       grid.innerHTML = `
         <div class="table-wrap${tightClass}${cardsClass}">
