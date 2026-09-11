@@ -4587,9 +4587,12 @@
 
       const sec = sectionByKey(port, modeKey);
       const withSplit = modeKey === "passenger" || modeKey === "pedestrian" || modeKey === "commercial";
+      // All filter Commercial tile lists Gen + FAST. Commercial filter keeps FAST
+      // on the FAST column only; both tiles still get the pool total.
+      const splitIncludesFast = modeKey === "commercial" && currentFilter !== "commercial";
       return {
         html: `<div class="wait-stack">${mainHtml}</div>`,
-        openLine: tileOpenText(sec, withSplit, modeKey === "commercial"),
+        openLine: tileOpenText(sec, withSplit, splitIncludesFast),
         cls: (dual ? "has-dual " : "") + "has-" + w.cls
       };
     }
