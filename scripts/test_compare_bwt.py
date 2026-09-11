@@ -65,8 +65,9 @@ EVENING = chicago(2026, 9, 10, 22, 20)  # Los Indios in post-close grace (10pm +
 NIGHT = chicago(2026, 9, 10, 23, 10)  # Los Indios closed; Veterans still open
 AFTER_MID = chicago(2026, 9, 11, 0, 20)  # Veterans in post-close grace
 PREDWN = chicago(2026, 9, 11, 2, 0)  # Veterans + Los Indios closed
-JUST_OPEN = chicago(2026, 9, 10, 6, 20)  # first hour after 6am
-OPEN_LONG = chicago(2026, 9, 10, 7, 30)  # open > 75 min
+JUST_OPEN = chicago(2026, 9, 10, 6, 10)  # 10 min after 6am — still in 15 min grace
+OPEN_15 = chicago(2026, 9, 10, 6, 15)  # 15 min after 6am — first-post checks start
+OPEN_LONG = chicago(2026, 9, 10, 7, 30)  # well after first hourly post
 
 
 class HoursParsingTests(unittest.TestCase):
@@ -262,6 +263,31 @@ class PerBridgeEvaluateTests(unittest.TestCase):
         by = self.by_id(ordered)
         self.assertFalse(by["veterans"].problems)
         self.assertFalse(by["los_indios"].problems)
+
+    def test_limited_hours_pending_15_min_after_open_is_stale(self):
+        xml = feed(
+            item(BM, "24 hrs/day", "9/10/2026", FRESH.replace("2:00 pm", "6:00 am")),
+            item(GW, "24 hrs/day", "9/10/2026", FRESH.replace("2:00 pm", "6:00 am")),
+            item(VA, "6 am-Midnight", "9/10/2026", PENDING),
+            item(LI, "6 am-10 pm", "9/10/2026", PENDING),
+        )
+        ordered = self.checks(xml, xml, OPEN_15)
+        by = self.by_id(ordered)
+        self.assertIn("cbp_pending", by["veterans"].problems)
+        self.assertIn("cbp_pending", by["los_indios"].problems)
+
+    def test_limited_hours_overnight_stamp_15_min_after_open_is_stuck(self):
+        overnight = "General Lanes: At 10:00 pm CDT 5 min delay 1 lane(s) open"
+        xml = feed(
+            item(BM, "24 hrs/day", "9/10/2026", "General Lanes: At 6:00 am CDT 5 min delay 1 lane(s) open"),
+            item(GW, "24 hrs/day", "9/10/2026", "General Lanes: At 6:00 am CDT 5 min delay 1 lane(s) open"),
+            item(VA, "6 am-Midnight", "9/9/2026", overnight),
+            item(LI, "6 am-10 pm", "9/9/2026", overnight),
+        )
+        ordered = self.checks(xml, xml, OPEN_15)
+        by = self.by_id(ordered)
+        self.assertIn("cbp_stuck", by["veterans"].problems)
+        self.assertIn("cbp_stuck", by["los_indios"].problems)
 
     def test_after_open_grace_pending_is_stale(self):
         xml = feed(

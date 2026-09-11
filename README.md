@@ -74,8 +74,8 @@ Workflow: **Check data freshness (lag alarm)**
 - Runs about every **15 minutes**
 - Compares **live CBP** vs **GitHub Pages** `data/bwt.xml` **per Brownsville bridge** (B&M, Gateway, Veterans, Los Indios)
 - Uses each item’s CBP `Hours:` line in **America/Chicago**; Veterans / Los Indios are skipped when closed, plus a **45-minute post-close grace** so a frozen last-open stamp does not alert
-- **Update Pending** on a limited-hours bridge is **stale** after **75 minutes open**. 24h bridges (B&M, Gateway) wait **15 minutes into the current hour** so overnight Pending does not fail all night
-- Also flags CBP itself if an open bridge is missing a stamp or stuck beyond 75 minutes (limited-hours bridges get 75 minutes after open for the first hourly post)
+- **Update Pending** on Veterans / Los Indios is **stale** **15 minutes after official open**. 24h bridges (B&M, Gateway) wait **15 minutes into the current hour** so overnight Pending does not fail all night
+- Also flags CBP itself if an open bridge is missing a stamp or stuck beyond 75 minutes (limited-hours bridges start those checks 15 minutes after open)
 - Also logs the **Cloudflare Worker** per-bridge times (informational; not pass/fail)
 - If any in-hours bridge is **~75+ minutes** behind (or pending/stuck):
   1. Automatically runs **Update CBP wait times**

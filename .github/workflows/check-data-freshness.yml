@@ -8,7 +8,7 @@ on:
 
 # Compares live CBP vs GitHub Pages mirror (backup) PER Brownsville bridge.
 # Uses each RSS item's Hours: line (America/Chicago); skips closed crossings
-# plus a short post-close grace. Update Pending: limited-hours wait 75 min
+# plus a short post-close grace. Update Pending: limited-hours wait 15 min
 # after open; 24h bridges wait 15 min into the current hour.
 # The live page prefers the Cloudflare Worker; this alarm keeps the Actions
 # mirror honest. Worker feed is logged only (not pass/fail).

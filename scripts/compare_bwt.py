@@ -4,9 +4,9 @@
 Evaluates EACH Brownsville bridge separately (B&M, Gateway, Veterans,
 Los Indios). Operating hours come from that item's CBP `Hours:` line
 (America/Chicago). Closed bridges (plus a short post-close grace) are
-skipped. Update Pending on a limited-hours bridge is stale after
-max-lag minutes open. 24h bridges wait 15 minutes into the current
-hour so overnight Pending does not fail all night.
+skipped. Update Pending: 24h bridges wait 15 minutes into the current
+hour; limited-hours bridges (Veterans, Los Indios) wait 15 minutes
+after official open.
 
 Writes GitHub Actions outputs:
   lagging, reason, lag_minutes, lagging_bridges, still_lagging
@@ -56,20 +56,20 @@ __all__ = [
     "summarize",
 ]
 
-# Minutes into the current clock hour before 24h Update Pending is stale.
-# CBP typically posts near :00; overnight 24h items often sit on Pending.
+# Minutes to wait before Update Pending / first-post checks are stale:
+# 24h — into the current clock hour; limited-hours — after official open.
 HOUR_PENDING_GRACE_MIN = 15
 
 
-def pending_ready(window: HoursWindow, now: datetime, open_for: int | None, max_lag: int) -> bool:
+def pending_ready(window: HoursWindow, now: datetime, open_for: int | None) -> bool:
     """When Update Pending is stale for this bridge.
 
-    Limited-hours: after max_lag minutes open (time for the first hourly post).
-    24h: after HOUR_PENDING_GRACE_MIN into the current clock hour.
+    Limited-hours: 15 minutes after official open.
+    24h: 15 minutes into the current clock hour.
     """
     if window.always:
         return now.astimezone(CHICAGO).minute >= HOUR_PENDING_GRACE_MIN
-    return open_for is not None and open_for >= max_lag
+    return open_for is not None and open_for >= HOUR_PENDING_GRACE_MIN
 
 
 @dataclass
@@ -170,10 +170,12 @@ def evaluate_bridges(
             results.append(check)
             continue
 
-        # Stuck/missing: 24h always eligible; limited-hours wait max_lag after open.
-        cbp_self_ready = window.always or (open_for is not None and open_for >= max_lag)
-        # Pending: 24h waits 15 min into the current hour; limited-hours wait max_lag after open.
-        pending_ok_to_flag = pending_ready(window, now, open_for, max_lag)
+        # Stuck/missing: 24h always eligible; limited-hours wait 15 min after open.
+        cbp_self_ready = window.always or (
+            open_for is not None and open_for >= HOUR_PENDING_GRACE_MIN
+        )
+        # Pending: 24h waits 15 min into the current hour; limited-hours wait 15 min after open.
+        pending_ok_to_flag = pending_ready(window, now, open_for)
 
         if cbp.pending_only:
             if pending_ok_to_flag:
