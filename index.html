@@ -642,6 +642,32 @@
       flex-direction: column;
       gap: 0.45rem;
     }
+    .drive-heading {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0.15rem 0 0.35rem;
+    }
+    .drive-heading + .drive-list { margin-bottom: 0.15rem; }
+    .drive-list + .drive-heading { margin-top: 0.85rem; }
+    .drive-dual {
+      font-size: 0.92rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.25;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .drive-dual .unit {
+      font-size: 0.68rem;
+      font-weight: 700;
+      opacity: 0.75;
+    }
+    .drive-dual .good { color: var(--green); }
+    .drive-dual .warn { color: var(--orange); }
+    .drive-dual .bad { color: var(--red); }
     .drive-card {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -5570,49 +5596,122 @@
       </details>`;
     }
 
-    function renderDriveView(data) {
-      const grid = document.getElementById("portGrid");
-      if (!grid) return;
-      const ports = (data.items || []).filter(function (p) {
-        return summarizeMode(p.sections, "passenger");
-      }).sort(function (a, b) {
-        const aw = passengerVehicleWait(a);
-        const bw = passengerVehicleWait(b);
-        if (aw == null && bw == null) return 0;
-        if (aw == null) return 1;
-        if (bw == null) return -1;
-        return aw - bw;
-      });
-      if (!ports.length) {
-        grid.innerHTML = `<p class="empty">${escapeHtml(t("emptyFilter"))}</p>` + crowdSectionHtml();
-        crowdBind();
-        return;
+    function driveWaitTone(mins) {
+      if (mins == null) return "";
+      if (mins <= 15) return "good";
+      if (mins <= 45) return "warn";
+      return "bad";
+    }
+    function driveSortWait(a, b, kind) {
+      const aw = kind === "ped" ? drivePedMinutes(a) : passengerVehicleWait(a);
+      const bw = kind === "ped" ? drivePedMinutes(b) : passengerVehicleWait(b);
+      if (aw == null && bw == null) return 0;
+      if (aw == null) return 1;
+      if (bw == null) return -1;
+      return aw - bw;
+    }
+    function drivePedMinutes(port) {
+      const summary = summarizeMode(port.sections || [], "pedestrian");
+      if (!summary || !summary.primary || !isActiveWait(summary.primary)) return null;
+      return summary.primary.minutes;
+    }
+    function drivePedWaitPack(port) {
+      const summary = summarizeMode(port.sections || [], "pedestrian");
+      if (!summary || !summary.primary) {
+        return { html: "—", cls: "", openBits: [] };
       }
-      grid.innerHTML = '<div class="drive-list">' + ports.map(function (port) {
+      const w = summary.primary;
+      const ready = (summary.extras || []).find(function (l) {
+        return /ready/i.test(l.name) && isShowableWait(l.wait);
+      });
+      const dual = isGatewayPort(port) &&
+        ready &&
+        isActiveWait(w) &&
+        isActiveWait(ready.wait) &&
+        w.minutes !== ready.wait.minutes;
+      const sec = sectionByKey(port, "pedestrian");
+      const openText = tileOpenText(sec, true, false);
+      const openBits = openText ? openText.split("\n").filter(Boolean) : [];
+      if (dual) {
+        const gTone = driveWaitTone(w.minutes);
+        const rTone = driveWaitTone(ready.wait.minutes);
+        return {
+          html: `<div class="drive-dual">
+            <div>${escapeHtml(t("gen"))} <span class="${gTone}">${escapeHtml(String(w.minutes))}<span class="unit"> min</span></span></div>
+            <div>${escapeHtml(t("ready"))} <span class="${rTone}">${escapeHtml(String(ready.wait.minutes))}<span class="unit"> min</span></span></div>
+          </div>`,
+          cls: "",
+          openBits: openBits
+        };
+      }
+      const mins = isActiveWait(w) ? w.minutes : null;
+      return {
+        html: mins == null ? "—" : mins + '<span class="unit"> min</span>',
+        cls: driveWaitTone(mins),
+        openBits: openBits
+      };
+    }
+    function driveCardHtml(port, kind) {
+      const hoursLabel = formatHoursOfOperation(port.hours);
+      let extra = "";
+      let waitHtml;
+      let waitCls;
+      let openBits;
+      if (kind === "ped") {
+        const pack = drivePedWaitPack(port);
+        waitHtml = pack.html;
+        waitCls = pack.cls;
+        openBits = pack.openBits;
+      } else {
         const wait = passengerVehicleWait(port);
         const pass = sectionByKey(port, "passenger");
         const split = genReadySplit(pass);
         const ofLine = sectionOfLine(pass);
-        const hoursLabel = formatHoursOfOperation(port.hours);
         const sentriWait = isVeteransPort(port) ? laneWaitForShare(port, "sentri") : null;
-        const sentriLine = sentriWait && isActiveWait(sentriWait)
+        extra = sentriWait && isActiveWait(sentriWait)
           ? `<div class="drive-sentri">${escapeHtml(t("sentri"))} ${sentriWait.minutes} min</div>`
           : "";
-        const waitCls = wait == null ? "" : wait <= 15 ? "good" : wait <= 45 ? "warn" : "bad";
-        const waitHtml = wait == null
-          ? "—"
-          : wait + '<span class="unit"> min</span>';
-        const openBits = [split, ofLine].filter(Boolean);
-        return `<article class="drive-card">
-          <div>
-            ${bridgeTitleHtml(port, "drive-name")}
-            <div class="drive-hours">${escapeHtml(hoursLabel)}</div>
-            ${sentriLine}
-          </div>
-          <div class="drive-wait ${waitCls}">${waitHtml}</div>
-          ${openBits.length ? `<div class="drive-open">${openBits.map(escapeHtml).join("<br>")}</div>` : ""}
-        </article>`;
-      }).join("") + "</div>" + crowdSectionHtml();
+        waitCls = driveWaitTone(wait);
+        waitHtml = wait == null ? "—" : wait + '<span class="unit"> min</span>';
+        openBits = [split, ofLine].filter(Boolean);
+      }
+      return `<article class="drive-card">
+        <div>
+          ${bridgeTitleHtml(port, "drive-name")}
+          <div class="drive-hours">${escapeHtml(hoursLabel)}</div>
+          ${extra}
+        </div>
+        <div class="drive-wait ${waitCls}">${waitHtml}</div>
+        ${openBits.length ? `<div class="drive-open">${openBits.map(escapeHtml).join("<br>")}</div>` : ""}
+      </article>`;
+    }
+    function driveListHtml(ports, kind) {
+      return '<div class="drive-list">' + ports.map(function (port) {
+        return driveCardHtml(port, kind);
+      }).join("") + "</div>";
+    }
+    function renderDriveView(data) {
+      const grid = document.getElementById("portGrid");
+      if (!grid) return;
+      const vehiclePorts = (data.items || []).filter(function (p) {
+        return summarizeMode(p.sections, "passenger");
+      }).sort(function (a, b) { return driveSortWait(a, b, "vehicle"); });
+      const walkPorts = (data.items || []).filter(function (p) {
+        return summarizeMode(p.sections, "pedestrian");
+      }).sort(function (a, b) { return driveSortWait(a, b, "ped"); });
+      if (!vehiclePorts.length && !walkPorts.length) {
+        grid.innerHTML = `<p class="empty">${escapeHtml(t("emptyFilter"))}</p>` + crowdSectionHtml();
+        crowdBind();
+        return;
+      }
+      let html = "";
+      if (vehiclePorts.length) {
+        html += `<div class="drive-heading">${escapeHtml(t("crowdVehicles"))}</div>` + driveListHtml(vehiclePorts, "vehicle");
+      }
+      if (walkPorts.length) {
+        html += `<div class="drive-heading">${escapeHtml(t("crowdWalking"))}</div>` + driveListHtml(walkPorts, "ped");
+      }
+      grid.innerHTML = html + crowdSectionHtml();
       crowdBind();
       const crowdBox = document.getElementById("crowdSource");
       if (crowdBox && crowdBox.open) {
