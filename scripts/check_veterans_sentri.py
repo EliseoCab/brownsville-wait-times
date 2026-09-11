@@ -210,6 +210,8 @@ def main() -> int:
             check.lanes_open,
             delay_min=args.delay_min,
             min_open_lanes=args.min_open_lanes,
+            now=now,
+            raw=check.raw,
         )
         print(body)
     write_out(

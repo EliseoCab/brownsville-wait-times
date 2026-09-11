@@ -331,7 +331,7 @@ def compare(
         feed_pubdate=channel_pubdate(cbp),
     )
     lagging, reason, lag_s, names = summarize(results)
-    subject, body = format_lag_alert(results)
+    subject, body = format_lag_alert(results, now=now)
     print()
     if not lagging:
         print("OK: every in-hours Brownsville bridge is fresh enough.")
@@ -377,7 +377,7 @@ def recheck(
         feed_pubdate=channel_pubdate(cbp),
     )
     lagging, reason, lag_s, names = summarize(results)
-    subject, body = format_lag_alert(results)
+    subject, body = format_lag_alert(results, now=now)
     print()
     if not lagging:
         write_out(

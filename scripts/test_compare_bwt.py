@@ -363,9 +363,10 @@ class AlertCopyTests(unittest.TestCase):
         xml = four_bridges(bm=PENDING, gw=PENDING, date="9/11/2026")
         results = c.evaluate_bridges(xml, xml, "", 75, 45, now=chicago(2026, 9, 11, 2, 20))
         from alert_copy import format_lag_alert
-        subject, body = format_lag_alert(results)
-        self.assertEqual(subject, "B&M, Gateway: please update wait times")
-        self.assertIn("Please update wait times.", body)
+        subject, body = format_lag_alert(results, now=chicago(2026, 9, 11, 2, 20))
+        self.assertEqual(subject, "B&M, Gateway: please update 2:00 am CDT wait times")
+        self.assertIn("Please update wait times for 2:00 am CDT.", body)
+        self.assertIn("Time flagged: 2:00 am CDT", body)
         self.assertIn("Bridges: B&M, Gateway", body)
         self.assertIn("Update Pending", body)
         self.assertIn("If the times are already updated, disregard this message.", body)
@@ -375,19 +376,24 @@ class AlertCopyTests(unittest.TestCase):
         cbp = four_bridges()
         site = four_bridges(gw=OLD)
         results = c.evaluate_bridges(cbp, site, "", 75, 45, now=AFTERNOON)
-        subject, body = format_lag_alert(results)
-        self.assertEqual(subject, "Gateway: please update wait times")
+        subject, body = format_lag_alert(results, now=AFTERNOON)
+        self.assertEqual(subject, "Gateway: please update 2:00 pm CDT wait times")
+        self.assertIn("Time flagged: 2:00 pm CDT", body)
+        self.assertIn("Last posted: 11:00 am CDT", body)
         self.assertIn("old or missing", body)
         self.assertIn("If the times are already updated, disregard this message.", body)
 
     def test_sentri_copy(self):
         from alert_copy import format_sentri_alert
-        subject, body = format_sentri_alert(30, 2)
+        subject, body = format_sentri_alert(
+            30, 2, now=AFTERNOON, raw="At 2:00 pm CDT 30 min delay 2 lane(s) open"
+        )
         self.assertEqual(
             subject,
-            "Veterans SENTRI: contact duty supervisor (30 minutes, 2 lanes open)",
+            "Veterans SENTRI 2:00 pm CDT: contact duty supervisor (30 minutes, 2 lanes open)",
         )
-        self.assertIn("Please contact the duty supervisor.", body)
+        self.assertIn("Please contact the duty supervisor (2:00 pm CDT).", body)
+        self.assertIn("Time flagged: 2:00 pm CDT", body)
         self.assertIn("SENTRI wait: 30 minutes", body)
         self.assertIn("SENTRI lanes open: 2 lanes", body)
         self.assertIn("at least 4 SENTRI lanes should be open", body)
