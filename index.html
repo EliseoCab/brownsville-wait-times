@@ -3380,8 +3380,8 @@
         lanesClosed: "Lanes closed",
         asOf: "As of",
         lanesOpen: "lane(s) open",
-        lanesOf: "{open} of {total} open",
-        open: "open",
+        lanesOf: "{open} of {total} Open",
+        open: "Open",
         gen: "Gen",
         ready: "Ready",
         fastOpen: "FAST open",
@@ -3521,8 +3521,8 @@
         lanesClosed: "Carriles cerrados",
         asOf: "A las",
         lanesOpen: "carril(es) abierto(s)",
-        lanesOf: "{open} de {total} abiertos",
-        open: "abiertos",
+        lanesOf: "{open} de {total} Abiertos",
+        open: "Abiertos",
         gen: "Gen",
         ready: "Ready",
         fastOpen: "FAST abiertos",
@@ -4176,7 +4176,10 @@
       stat.textContent = boothStr;
       stat.className = "stat " + (pick.wait <= 15 ? "good" : pick.wait <= 45 ? "warn" : "bad");
       if (kicker) kicker.textContent = t("statLeave");
-      hint.textContent = t("leaveAtBooth").replace("{leave}", leaveStr).replace("{booth}", boothStr);
+      hint.textContent =
+        pick.short +
+        " · " +
+        t("leaveAtBooth").replace("{leave}", leaveStr).replace("{booth}", boothStr);
       card.classList.remove("is-action");
     }
 

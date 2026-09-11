@@ -25,7 +25,7 @@
       sentri: "SENTRI",
       nexus: "NEXUS",
       fast: "FAST",
-      open: "open",
+      open: "Open",
       closed: "Closed",
       pending: "Pending",
       na: "N/A",
@@ -50,7 +50,7 @@
       midnight: "midnight",
       updated: "Updated",
       countLabel: "Showing",
-      lanesOf: "{open} of {total} open"
+      lanesOf: "{open} of {total} Open"
     },
     es: {
       checking: "Cargando todos los puertos…",
@@ -66,7 +66,7 @@
       sentri: "SENTRI",
       nexus: "NEXUS",
       fast: "FAST",
-      open: "abiertos",
+      open: "Abiertos",
       closed: "Cerrado",
       pending: "Pendiente",
       na: "N/A",
@@ -91,7 +91,7 @@
       midnight: "medianoche",
       updated: "Actualizado",
       countLabel: "Mostrando",
-      lanesOf: "{open} de {total} abiertos"
+      lanesOf: "{open} de {total} Abiertos"
     }
   };
 
