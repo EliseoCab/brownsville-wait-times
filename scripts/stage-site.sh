@@ -19,6 +19,11 @@ if [[ -d images ]]; then
   mkdir -p _site/images
   cp -R images/. _site/images/
 fi
+# Same-origin Leaflet for Crowd source map (CSP blocks CDNs)
+if [[ -d vendor ]]; then
+  mkdir -p _site/vendor
+  cp -R vendor/. _site/vendor/
+fi
 # Google Search Console HTML verification files (must be at site root)
 shopt -s nullglob
 for f in google*.html; do
