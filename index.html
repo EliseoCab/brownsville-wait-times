@@ -3583,13 +3583,14 @@
         crowdCheckIn: "Check in",
         crowdWaitBlock: "Wait time",
         crowdPinBlock: "Check in · line map",
-        crowdPinHint: "Pin your spot so others can see where the line starts. Not a wait-time report.",
+        crowdPinHint: "Independent of wait times. Uses your location so others can see where the line starts.",
         crowdThanks: "Thanks · {wait} · {bridge} {lane}",
         crowdThanksPin: "Pinned · {bridge}",
         crowdLastPin: "Last check-in: {bridge} · {lat}, {lng} · {ago}",
         crowdLastPinEmpty: "No location pins in the last 45 min.",
         crowdNeedPicks: "Choose how you cross, a bridge, and minutes.",
-        crowdNeedPin: "Choose how you cross and a bridge, then allow location.",
+        crowdNeedPin: "Allow location to pin where you are.",
+        crowdPinFar: "Too far from a Brownsville bridge to pin.",
         crowdWaitHr: "{h} hr",
         crowdWaitHrMin: "{h} hr {m} min",
         crowdAvgLine: "{lane} {wait} · n={n} · {ago}",
@@ -3761,13 +3762,14 @@
         crowdCheckIn: "Registrar ubicación",
         crowdWaitBlock: "Tiempo de espera",
         crowdPinBlock: "Registro · mapa de la fila",
-        crowdPinHint: "Marque su sitio para que otros vean dónde empieza la fila. No es un reporte de minutos.",
+        crowdPinHint: "Independiente de los minutos. Usa su ubicación para que otros vean dónde empieza la fila.",
         crowdThanks: "Gracias · {wait} · {bridge} {lane}",
         crowdThanksPin: "Ubicación marcada · {bridge}",
         crowdLastPin: "Último registro: {bridge} · {lat}, {lng} · {ago}",
         crowdLastPinEmpty: "No hay ubicaciones en los últimos 45 min.",
         crowdNeedPicks: "Elija cómo cruza, un puente y los minutos.",
-        crowdNeedPin: "Elija cómo cruza y un puente, y permita la ubicación.",
+        crowdNeedPin: "Permita la ubicación para marcar dónde está.",
+        crowdPinFar: "Demasiado lejos de un puente de Brownsville para marcar.",
         crowdWaitHr: "{h} h",
         crowdWaitHrMin: "{h} h {m} min",
         crowdNeedLoc: "Permita la ubicación para marcar su sitio, o elija un puente.",
@@ -5224,6 +5226,7 @@
     let crowdLane = "";
     let crowdWait = null;
     let crowdWhere = "";
+    let crowdPinMode = "";
     let crowdSummary = null;
 
     function crowdReadSentri() {
@@ -5404,12 +5407,13 @@
       if (lanes.length > 1 && !crowdLane) return false;
       return true;
     }
-    function crowdReadyToPin() {
-      if (!crowdMode || !crowdBridge) return false;
-      const lanes = crowdLanesFor();
-      if (!lanes.length) return false;
-      if (lanes.length > 1 && !crowdLane) return false;
-      return true;
+    function crowdPinLaneFor(bridge) {
+      if (crowdPinMode === "ped") {
+        if (bridge === "los-indios") return "vehicle_gen";
+        if (bridge === "gateway") return "ped_gen";
+        return "ped_gen";
+      }
+      return "vehicle_gen";
     }
     function crowdLaneOrDefault() {
       const lanes = crowdLanesFor();
@@ -5440,19 +5444,11 @@
            <div class="crowd-chips">${crowdChipRow("lane", lanes.map(function (l) { return { id: l, label: crowdLaneLabel(l) }; }), crowdLane, "lane")}</div>`
         : "";
       const pedBlocked = crowdMode === "ped" && crowdBridge === "los-indios";
-      return `
-        <p class="crowd-privacy">${escapeHtml(t("crowdPrivacy"))}</p>
-        <p class="crowd-near-line" id="crowdNearLine"></p>
-        ${sentriHtml}
-        <span class="crowd-label">${escapeHtml(t("crowdMode"))}</span>
-        <div class="crowd-chips">
-          ${crowdChipRow("mode", [{ id: "vehicle", label: t("crowdVehicles") }, { id: "ped", label: t("crowdWalking") }], crowdMode, "mode")}
-        </div>
-        <span class="crowd-label">${escapeHtml(t("crowdBridge"))}</span>
-        <div class="crowd-chips">
-          ${crowdChipRow("bridge", CROWD_BRIDGES.map(function (b) { return { id: b.id, label: b.short }; }), crowdBridge, "bridge")}
-        </div>
-        ${pedBlocked ? `<p class="crowd-status">${escapeHtml(t("crowdNoPed"))}</p>` : laneRow + `
+      let waitHtml;
+      if (pedBlocked) {
+        waitHtml = `<p class="crowd-status">${escapeHtml(t("crowdNoPed"))}</p>`;
+      } else {
+        waitHtml = laneRow + `
         <div class="crowd-block">
           <span class="crowd-label">${escapeHtml(t("crowdWaitBlock"))}</span>
           <span class="crowd-label">${escapeHtml(t("crowdMinutes"))}</span>
@@ -5462,15 +5458,36 @@
           <button type="button" class="crowd-submit" id="crowdSubmitWait"${crowdReadyToSend() ? "" : " disabled"}>${escapeHtml(t("crowdReportWait"))}</button>
           <p class="crowd-status" id="crowdMsg"></p>
         </div>
-        <div class="crowd-avgs" id="crowdAvgs"></div>
+        <div class="crowd-avgs" id="crowdAvgs"></div>`;
+      }
+      const pinHtml = `
         <div class="crowd-block">
           <span class="crowd-label">${escapeHtml(t("crowdPinBlock"))}</span>
           <p class="crowd-status">${escapeHtml(t("crowdPinHint"))}</p>
-          <button type="button" class="crowd-submit" id="crowdSubmitPin"${crowdReadyToPin() ? "" : " disabled"}>${escapeHtml(t("crowdCheckIn"))}</button>
+          <span class="crowd-label">${escapeHtml(t("crowdMode"))}</span>
+          <div class="crowd-chips">
+            ${crowdChipRow("pin-mode", [{ id: "vehicle", label: t("crowdVehicles") }, { id: "ped", label: t("crowdWalking") }], crowdPinMode, "pin-mode")}
+          </div>
+          <button type="button" class="crowd-submit" id="crowdSubmitPin">${escapeHtml(t("crowdCheckIn"))}</button>
           <p class="crowd-status" id="crowdPinMsg"></p>
           <p class="crowd-status" id="crowdLastPin"></p>
           <div class="crowd-map" id="crowdMapEl"></div>
-        </div>`}`;
+        </div>`;
+      return `
+        <p class="crowd-privacy">${escapeHtml(t("crowdPrivacy"))}</p>
+        <p class="crowd-near-line" id="crowdNearLine"></p>
+        ${sentriHtml}
+        <span class="crowd-label">${escapeHtml(t("crowdWaitBlock"))}</span>
+        <span class="crowd-label">${escapeHtml(t("crowdMode"))}</span>
+        <div class="crowd-chips">
+          ${crowdChipRow("mode", [{ id: "vehicle", label: t("crowdVehicles") }, { id: "ped", label: t("crowdWalking") }], crowdMode, "mode")}
+        </div>
+        <span class="crowd-label">${escapeHtml(t("crowdBridge"))}</span>
+        <div class="crowd-chips">
+          ${crowdChipRow("bridge", CROWD_BRIDGES.map(function (b) { return { id: b.id, label: b.short }; }), crowdBridge, "bridge")}
+        </div>
+        ${waitHtml}
+        ${pinHtml}`;
     }
     function crowdPaintAvgs() {
       const el = document.getElementById("crowdAvgs");
@@ -5546,6 +5563,9 @@
           crowdRerenderForm();
         } else if (kind === "wait") {
           crowdWait = parseInt(val, 10);
+          crowdRerenderForm();
+        } else if (kind === "pin-mode") {
+          crowdPinMode = val;
           crowdRerenderForm();
         } else if (kind === "sentri-yes") {
           crowdWriteSentri(true, Date.now());
@@ -5672,19 +5692,6 @@
     function crowdSubmitPin() {
       const msg = document.getElementById("crowdPinMsg");
       const submit = document.getElementById("crowdSubmitPin");
-      crowdEnsureLane();
-      const lane = crowdLaneOrDefault();
-      if (!crowdReadyToPin() || !lane) {
-        if (msg) msg.textContent = t("crowdNeedPin");
-        return;
-      }
-      try {
-        const last = JSON.parse(localStorage.getItem(CROWD_LAST_KEY) || "{}");
-        if (last.kind === "pin" && last.bridge === crowdBridge && last.lane === lane && Date.now() - (last.t || 0) < 10 * 60 * 1000) {
-          if (msg) msg.textContent = t("crowdBusy");
-          return;
-        }
-      } catch (_) { /* ignore */ }
       const base = crowdProxyBase();
       if (!base) {
         if (msg) msg.textContent = t("crowdErr");
@@ -5697,12 +5704,27 @@
           if (msg) msg.textContent = t("crowdNeedLoc");
           return;
         }
+        const near = crowdNearest(geo);
+        if (!near || near.miles > 8) {
+          if (submit) submit.disabled = false;
+          if (msg) msg.textContent = t("crowdPinFar");
+          return;
+        }
+        const lane = crowdPinLaneFor(near.id);
+        try {
+          const last = JSON.parse(localStorage.getItem(CROWD_LAST_KEY) || "{}");
+          if (last.kind === "pin" && last.bridge === near.id && last.lane === lane && Date.now() - (last.t || 0) < 10 * 60 * 1000) {
+            if (submit) submit.disabled = false;
+            if (msg) msg.textContent = t("crowdBusy");
+            return;
+          }
+        } catch (_) { /* ignore */ }
         fetch(base + "/checkins", {
           method: "POST",
           headers: { "Content-Type": "application/json", Accept: "application/json" },
           body: JSON.stringify({
             kind: "pin",
-            bridge: crowdBridge,
+            bridge: near.id,
             lane: lane,
             lat: geo.lat,
             lng: geo.lng,
@@ -5718,10 +5740,10 @@
             }
             try {
               localStorage.setItem(CROWD_LAST_KEY, JSON.stringify({
-                kind: "pin", bridge: crowdBridge, lane: lane, t: Date.now()
+                kind: "pin", bridge: near.id, lane: lane, t: Date.now()
               }));
             } catch (_) { /* ignore */ }
-            if (msg) msg.textContent = t("crowdThanksPin").replace("{bridge}", crowdBridgeLabel(crowdBridge));
+            if (msg) msg.textContent = t("crowdThanksPin").replace("{bridge}", crowdBridgeLabel(near.id));
             crowdLoadHeat();
           })
           .catch(function () {
