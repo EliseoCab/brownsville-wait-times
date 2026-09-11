@@ -717,7 +717,8 @@
       line-height: 1.35;
     }
     .crowd-source {
-      margin-top: 0.65rem;
+      margin-top: 0.15rem;
+      margin-bottom: 0.85rem;
       background: var(--white);
       border: 1px solid var(--line);
       border-radius: 16px;
@@ -4355,6 +4356,9 @@
       } else {
         applyStatCardLabels();
       }
+      if (filter === "drive") {
+        window.scrollTo(0, 0);
+      }
     }
 
     function syncFilterUi() {
@@ -5905,18 +5909,18 @@
         return summarizeMode(p.sections, "pedestrian");
       }).sort(function (a, b) { return driveSortWait(a, b, "ped"); });
       if (!vehiclePorts.length && !walkPorts.length) {
-        grid.innerHTML = `<p class="empty">${escapeHtml(t("emptyFilter"))}</p>` + crowdSectionHtml();
+        grid.innerHTML = crowdSectionHtml() + `<p class="empty">${escapeHtml(t("emptyFilter"))}</p>`;
         crowdBind();
         return;
       }
-      let html = "";
+      let html = crowdSectionHtml();
       if (vehiclePorts.length) {
         html += `<div class="drive-heading">${escapeHtml(t("crowdVehicles"))}</div>` + driveListHtml(vehiclePorts, "vehicle");
       }
       if (walkPorts.length) {
         html += `<div class="drive-heading">${escapeHtml(t("crowdWalking"))}</div>` + driveListHtml(walkPorts, "ped");
       }
-      grid.innerHTML = html + crowdSectionHtml();
+      grid.innerHTML = html;
       crowdBind();
       const crowdBox = document.getElementById("crowdSource");
       if (crowdBox && crowdBox.open) {
