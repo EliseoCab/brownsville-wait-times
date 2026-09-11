@@ -1057,6 +1057,10 @@
       text-align: left;
       padding-left: 1.15rem;
     }
+    .wait-table thead th.th-lane {
+      text-transform: none;
+      letter-spacing: 0.04em;
+    }
     .wait-table tbody tr {
       border-bottom: 1px solid var(--line);
       transition: background 0.12s;
@@ -1647,6 +1651,9 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       padding: 0 0.1rem;
+    }
+    .m-wait-block .m-lab.lane-type {
+      text-transform: none;
     }
     .m-wait-block .wait-stack {
       gap: 0.06rem;
@@ -3892,6 +3899,17 @@
       });
     }
 
+    /** Visible lane-type label: always Gen, Ready, SENTRI (never gen / ready / Sentri). */
+    function laneTypeLabel(name) {
+      const n = String(name || "").toLowerCase();
+      if (/ready/.test(n)) return t("ready");
+      if (/sentri/.test(n)) return t("sentri");
+      if (/nexus/.test(n)) return "NEXUS";
+      if (/fast/.test(n)) return t("fast");
+      if (/general/.test(n)) return t("gen");
+      return name || "";
+    }
+
     function parseDescription(markup) {
       const text = decodeHtml(markup || "");
       const plain = text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -4243,7 +4261,7 @@
         const bestTrustedWait = trustedWaits[0];
         trustedEl.textContent = bestTrustedWait.mins + " min";
         trustedEl.className = "stat " + (bestTrustedWait.mins <= 15 ? "good" : "warn");
-        trustedHint.textContent = bestTrustedWait.port + " · " + bestTrustedWait.name;
+        trustedHint.textContent = bestTrustedWait.port + " · " + laneTypeLabel(bestTrustedWait.name);
       } else {
         trustedEl.textContent = t("na");
         trustedEl.className = "stat";
@@ -4886,7 +4904,7 @@
             ? cell.html
             : `<div class="wait-stack">${cell.html}</div>`;
           return `<div class="m-wait-block ${cell.cls}">
-            <span class="m-lab">${escapeHtml(c.label)}</span>
+            <span class="m-lab${c.key === "trusted" ? " lane-type" : ""}">${escapeHtml(c.label)}</span>
             ${stack}
             ${openLineMarkup(cell.openLine)}
           </div>`;
@@ -4925,7 +4943,7 @@
         waitCols.map(() => `<col class="c-wait" style="width:${waitPct}%" />`).join("");
 
       const headCols = waitCols.map((c) =>
-        `<th scope="col">${escapeHtml(c.label)}</th>`
+        `<th scope="col"${c.key === "trusted" ? ' class="th-lane"' : ""}>${escapeHtml(c.label)}</th>`
       ).join("");
 
       const tightClass = tight
