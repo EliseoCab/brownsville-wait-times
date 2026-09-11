@@ -620,6 +620,76 @@
     .stat-card.leave-card .hint {
       max-width: none;
     }
+
+    html[data-view="drive"] .summary .stat-card:not(.leave-card),
+    html[data-view="drive"] .nearby-section,
+    html[data-view="drive"] .live-cams,
+    html[data-view="drive"] .x-updates,
+    html[data-view="drive"] .all-ports-link,
+    html[data-view="drive"] .section-sub,
+    html[data-view="drive"] .btn-share,
+    html[data-view="drive"] .btn-install,
+    html[data-view="drive"] .install-help,
+    html[data-view="drive"] .nearby-footer {
+      display: none !important;
+    }
+    html[data-view="drive"] .summary {
+      margin-top: 0.85rem;
+      margin-bottom: 0.75rem;
+    }
+    .drive-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .drive-card {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.15rem 0.75rem;
+      align-items: center;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 0.75rem 0.85rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .drive-name {
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+    .drive-hours {
+      font-size: 0.68rem;
+      font-weight: 650;
+      color: var(--sky-deep);
+    }
+    .drive-sentri {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+    .drive-wait {
+      font-size: 2.35rem;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      line-height: 0.95;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .drive-wait .unit {
+      font-size: 0.8rem;
+      font-weight: 700;
+      opacity: 0.75;
+    }
+    .drive-wait.good { color: var(--green); }
+    .drive-wait.warn { color: var(--orange); }
+    .drive-wait.bad { color: var(--red); }
+    .drive-open {
+      grid-column: 1 / -1;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--muted);
+      line-height: 1.35;
+    }
     @media (max-width: 560px) {
       .stat-card {
         flex: 1 1 calc(50% - 0.35rem);
@@ -2557,6 +2627,13 @@
     html:not([data-theme="dark"]) .summary {
       margin-top: 0.85rem;
     }
+    html:not([data-theme="dark"]) .drive-card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.58));
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 1px 0 #fff inset, 0 8px 22px rgba(15, 47, 84, 0.08);
+      backdrop-filter: blur(18px) saturate(1.5);
+      -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    }
     html:not([data-theme="dark"]) .stat-card,
     html:not([data-theme="dark"]) .install-help,
     html:not([data-theme="dark"]) .refresh-meta,
@@ -3163,6 +3240,7 @@
             <button type="button" class="filter-btn" data-filter="passenger" data-i18n="filterVehicles" onclick="setFilter('passenger', this)">Vehicles</button>
             <button type="button" class="filter-btn" data-filter="pedestrian" data-i18n="filterPedestrian" onclick="setFilter('pedestrian', this)">Pedestrian</button>
             <button type="button" class="filter-btn" data-filter="commercial" data-i18n="filterCommercial" onclick="setFilter('commercial', this)">Commercial</button>
+            <button type="button" class="filter-btn" data-filter="drive" data-i18n="filterDrive" onclick="setFilter('drive', this)">Drive</button>
           </div>
           <div class="asof-bar" id="asofBar" aria-live="polite">
             <span data-i18n="latestReport">Latest report:</span>
@@ -3231,7 +3309,7 @@
         <span><span data-i18n="source">Source:</span> <a href="https://bwt.cbp.gov" target="_blank" rel="noopener">CBP Border Wait Times (bwt.cbp.gov)</a></span>
         <a href="https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43" target="_blank" rel="noopener" data-i18n="rawRss">Raw RSS feed</a>
         <a href="https://www.cbp.gov/travel/trusted-traveler-programs" target="_blank" rel="noopener" data-i18n="trustedTraveler">Trusted Traveler</a>
-        <span><span data-i18n="nearbyTitle">Near each bridge</span>:
+        <span class="nearby-footer"><span data-i18n="nearbyTitle">Near each bridge</span>:
           <a href="bm/">B&amp;M</a> ·
           <a href="gateway/">Gateway</a> ·
           <a href="los-indios/">Los Indios</a> ·
@@ -3255,6 +3333,8 @@
 
     const LANG_KEY = "bwt-lang";
     const THEME_KEY = "bwt-theme";
+    const FILTER_KEY = "bwt-filter";
+    const VALID_FILTERS = ["all", "passenger", "pedestrian", "commercial", "drive"];
     const STR = {
       en: {
         pageTitle: "Brownsville Bridge Wait Times · Live CBP Estimates",
@@ -3297,6 +3377,7 @@
         filterVehicles: "Vehicles",
         filterPedestrian: "Pedestrian",
         filterCommercial: "Commercial",
+        filterDrive: "Drive",
         filterAria: "Filter by traffic type",
         refresh: "Refresh times",
         refreshing: "Refreshing…",
@@ -3438,6 +3519,7 @@
         filterVehicles: "Vehículos",
         filterPedestrian: "Peatonal",
         filterCommercial: "Comercial",
+        filterDrive: "En ruta",
         filterAria: "Filtrar por tipo de tráfico",
         refresh: "Actualizar tiempos",
         refreshing: "Actualizando…",
@@ -3647,6 +3729,10 @@
     const FALLBACK_RSS = `<?xml version='1.0' encoding='UTF-8'?><rss version='2.0'><channel><title>CBP Border Wait Times</title><link>https://bwt.cbp.gov</link><description>Estimated wait times for reaching the primary inspection booth, the first point of contact with CBP when crossing the Canada/U.S. and Mexico/U.S. land borders. Each border location updates its estimated wait times hourly. </description><pubDate>Wed, 12 Aug 2026 16:16:00 EST</pubDate><item><title>Brownsville - B&amp;M</title><description>Hours: 24 hrs/day <br/> Date: 8/12/2026 <br/> <h4><b> Passenger Vehicles </b></h4>  Maximum Lanes: 4 <br/>General Lanes: At 3:00 pm CDT 60 min delay 1 lane(s) open  <br/>Sentri Lanes:  N/A  <br/>Ready Lanes: At 3:00 pm CDT 60 min delay 3 lane(s) open  <br/> <h4><b> Pedestrian </b></h4>  Maximum Lanes: 2 <br/>General Lanes: At 3:00 pm CDT 30 min delay 1 lane(s) open  <br/>Ready Lanes:  N/A  <br/></description><link>https://bwt.cbp.gov/ViewAllPorts</link><pubDate>Wed, 12 Aug 2026 16:16:00 EST</pubDate><guid>https://bwt.cbp.gov/ViewAllPorts</guid></item><item><title>Brownsville - Gateway</title><description>Hours: 24 hrs/day <br/> Date: 8/12/2026 <br/> <h4><b> Passenger Vehicles </b></h4>  Maximum Lanes: 5 <br/>General Lanes: At 3:00 pm CDT 30 min delay 1 lane(s) open  <br/>Sentri Lanes:  N/A  <br/>Ready Lanes: At 3:00 pm CDT 30 min delay 3 lane(s) open  <br/> <h4><b> Pedestrian </b></h4>  Maximum Lanes: 5 <br/>General Lanes: At 3:00 pm CDT 25 min delay 2 lane(s) open  <br/>Ready Lanes:  Lanes Closed  <br/><b>Border Notice: </b>Ready Lane is now operational at Gateway Bridge - Lane 1.  Tune in to AM 1610 for border crossing information.</description><link>https://bwt.cbp.gov/ViewAllPorts</link><pubDate>Wed, 12 Aug 2026 16:16:00 EST</pubDate><guid>https://bwt.cbp.gov/ViewAllPorts</guid></item><item><title>Brownsville - Los Indios</title><description>Hours: 6 am-10 pm <br/> Date: 8/12/2026 <br/> <h4><b> Commercial Vehicles </b></h4>  Maximum Lanes: 4 <br/>General Lanes: At 3:00 pm CDT 0 min delay 1 lane(s) open  <br/>Fast Lanes:  Lanes Closed  <br/> <h4><b> Passenger Vehicles </b></h4>  Maximum Lanes: 4 <br/>General Lanes: At 3:00 pm CDT 5 min delay 2 lane(s) open  <br/>Sentri Lanes:  N/A  <br/>Ready Lanes:  Lanes Closed  <br/></description><link>https://bwt.cbp.gov/ViewAllPorts</link><pubDate>Wed, 12 Aug 2026 16:16:00 EST</pubDate><guid>https://bwt.cbp.gov/ViewAllPorts</guid></item><item><title>Brownsville - Veterans International</title><description>Hours: 6 am-Midnight <br/> Date: 8/12/2026 <br/> <h4><b> Commercial Vehicles </b></h4>  Maximum Lanes: 4 <br/>General Lanes: At 3:00 pm CDT 45 min delay 2 lane(s) open  <br/>Fast Lanes: At 3:00 pm CDT 0 min delay 1 lane(s) open  <br/> <h4><b> Passenger Vehicles </b></h4>  Maximum Lanes: 8 <br/>General Lanes: At 3:00 pm CDT 60 min delay 1 lane(s) open  <br/>Sentri Lanes: At 3:00 pm CDT 5 min delay 2 lane(s) open  <br/>Ready Lanes: At 3:00 pm CDT 60 min delay 1 lane(s) open  <br/> <h4><b> Pedestrian </b></h4>  Maximum Lanes: 1 <br/>General Lanes: At 3:00 pm CDT 0 min delay 1 lane(s) open  <br/>Ready Lanes:  N/A  <br/></description><link>https://bwt.cbp.gov/ViewAllPorts</link><pubDate>Wed, 12 Aug 2026 16:16:00 EST</pubDate><guid>https://bwt.cbp.gov/ViewAllPorts</guid></item></channel></rss>`;
 
     let currentFilter = "all";
+    try {
+      const savedFilter = localStorage.getItem(FILTER_KEY);
+      if (VALID_FILTERS.indexOf(savedFilter) >= 0) currentFilter = savedFilter;
+    } catch (e) { /* private mode */ }
     let lastData = null;
     let lastXmlText = null;
     let lastSourceId = null;
@@ -4025,14 +4111,21 @@
 
     function setFilter(filter, btn) {
       currentFilter = filter;
-      document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
+      try { localStorage.setItem(FILTER_KEY, filter); } catch (e) { /* private mode */ }
+      syncFilterUi();
       if (lastData) {
         updateSummary(lastData);
         renderPorts(lastData);
       } else {
         applyStatCardLabels();
       }
+    }
+
+    function syncFilterUi() {
+      document.querySelectorAll(".filter-btn").forEach(function (b) {
+        b.classList.toggle("active", b.getAttribute("data-filter") === currentFilter);
+      });
+      document.documentElement.setAttribute("data-view", currentFilter === "drive" ? "drive" : "");
     }
 
     function filterGeneralMode() {
@@ -4620,7 +4713,9 @@
     function portHasActiveForFilter(port) {
       const modes = currentFilter === "all"
         ? ["passenger", "pedestrian", "commercial"]
-        : [currentFilter];
+        : currentFilter === "drive"
+          ? ["passenger"]
+          : [currentFilter];
       return modes.some((m) => summarizeMode(port.sections, m));
     }
 
@@ -4847,6 +4942,50 @@
       return `<span class="${cls}"><span class="bridge-name">${escapeHtml(name)}</span>${mapsLinkHtml(port)}</span>`;
     }
 
+    function renderDriveView(data) {
+      const grid = document.getElementById("portGrid");
+      if (!grid) return;
+      const ports = (data.items || []).filter(function (p) {
+        return summarizeMode(p.sections, "passenger");
+      }).sort(function (a, b) {
+        const aw = passengerVehicleWait(a);
+        const bw = passengerVehicleWait(b);
+        if (aw == null && bw == null) return 0;
+        if (aw == null) return 1;
+        if (bw == null) return -1;
+        return aw - bw;
+      });
+      if (!ports.length) {
+        grid.innerHTML = `<p class="empty">${escapeHtml(t("emptyFilter"))}</p>`;
+        return;
+      }
+      grid.innerHTML = '<div class="drive-list">' + ports.map(function (port) {
+        const wait = passengerVehicleWait(port);
+        const pass = sectionByKey(port, "passenger");
+        const split = genReadySplit(pass);
+        const ofLine = sectionOfLine(pass);
+        const hoursLabel = formatHoursOfOperation(port.hours);
+        const sentriWait = isVeteransPort(port) ? laneWaitForShare(port, "sentri") : null;
+        const sentriLine = sentriWait && isActiveWait(sentriWait)
+          ? `<div class="drive-sentri">${escapeHtml(t("sentri"))} ${sentriWait.minutes} min</div>`
+          : "";
+        const waitCls = wait == null ? "" : wait <= 15 ? "good" : wait <= 45 ? "warn" : "bad";
+        const waitHtml = wait == null
+          ? "—"
+          : wait + '<span class="unit"> min</span>';
+        const openBits = [split, ofLine].filter(Boolean);
+        return `<article class="drive-card">
+          <div>
+            ${bridgeTitleHtml(port, "drive-name")}
+            <div class="drive-hours">${escapeHtml(hoursLabel)}</div>
+            ${sentriLine}
+          </div>
+          <div class="drive-wait ${waitCls}">${waitHtml}</div>
+          ${openBits.length ? `<div class="drive-open">${openBits.map(escapeHtml).join("<br>")}</div>` : ""}
+        </article>`;
+      }).join("") + "</div>";
+    }
+
     function renderPorts(data) {
       const grid = document.getElementById("portGrid");
       const tableRows = [];
@@ -4873,6 +5012,11 @@
       }
       const asofStamp = document.getElementById("asofStamp");
       if (asofStamp) asofStamp.textContent = asOfText;
+
+      if (currentFilter === "drive") {
+        renderDriveView(data);
+        return;
+      }
 
       // All: Vehicles · SENTRI · Pedestrian · Commercial
       // Focused: primary wait · special column (SENTRI / Ready / FAST) when that column has data
@@ -6010,6 +6154,7 @@
 
     applyTheme(currentTheme(), false);
     applyStaticLang();
+    syncFilterUi();
     setupInstallButton();
     registerServiceWorker();
     setupLiveCams();
