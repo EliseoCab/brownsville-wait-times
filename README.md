@@ -85,7 +85,7 @@ Workflow: **Check data freshness (lag alarm)**
 
 Alert mail is one line, bottom line first, e.g. `B&M, Gateway: Update Pending.`
 
-Set repo secrets **ALERT_SMTP_USER** and **ALERT_SMTP_PASSWORD** (Gmail app password) so Actions can send from `eliseocab@gmail.com`. Optional: **ALERT_TO**, **ALERT_FROM**. Turn off GitHub Actions failure emails if you only want this custom mail.
+Set repo secret **GMAIL** (Gmail app password) so Actions can send from `eliseocab@gmail.com`. Optional: **ALERT_SMTP_USER**, **ALERT_TO**, **ALERT_FROM**. Turn off GitHub Actions failure emails if you only want this custom mail.
 
 > The open page uses the Worker first (`Live · CBP proxy`). A lag email is about the **GitHub backup mirror**, not necessarily a broken page.  
 

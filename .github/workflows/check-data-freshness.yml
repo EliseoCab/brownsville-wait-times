@@ -163,7 +163,7 @@ jobs:
         if: steps.compare.outputs.lagging == 'true' && steps.recheck.outputs.still_lagging == 'true'
         env:
           ALERT_SMTP_USER: ${{ secrets.ALERT_SMTP_USER }}
-          ALERT_SMTP_PASSWORD: ${{ secrets.ALERT_SMTP_PASSWORD }}
+          ALERT_SMTP_PASSWORD: ${{ secrets.ALERT_SMTP_PASSWORD || secrets.GMAIL }}
           ALERT_TO: ${{ secrets.ALERT_TO }}
           ALERT_FROM: ${{ secrets.ALERT_FROM }}
           ALERT_SUBJECT: ${{ steps.recheck.outputs.alert_subject || steps.compare.outputs.alert_subject }}
