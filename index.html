@@ -4416,12 +4416,14 @@
       return lines.join("\n");
     }
 
-    /** SENTRI/FAST note, then the same pool total as Vehicles/Commercial. */
+    /** SENTRI / FAST / pedestrian Ready note, then the matching pool total. */
     function specialPoolOpenText(port, kind) {
-      const isFast = kind === "fast";
-      const sec = sectionByKey(port, isFast ? "commercial" : "passenger");
+      const secKey = kind === "fast" ? "commercial" : kind === "ready" ? "pedestrian" : "passenger";
+      const re = kind === "fast" ? /fast/i : kind === "ready" ? /ready/i : /sentri/i;
+      const label = kind === "fast" ? t("fast") : kind === "ready" ? t("ready") : t("sentri");
+      const sec = sectionByKey(port, secKey);
       const lines = [];
-      const note = typeOpenNote(sec, isFast ? /fast/i : /sentri/i, isFast ? t("fast") : t("sentri"));
+      const note = typeOpenNote(sec, re, label);
       if (note) lines.push(note);
       const ofLine = sectionOfLine(sec);
       if (ofLine) lines.push(ofLine);
@@ -4687,7 +4689,7 @@
           : `<span class="wait-empty">—</span>`;
         return {
           html: main,
-          openLine: tileOpenText(sectionByKey(port, "pedestrian"), true),
+          openLine: specialPoolOpenText(port, "ready"),
           cls: wait && isActiveWait(wait) ? "has-" + wait.cls : (wait && wait.pending ? "has-pending" : "")
         };
       }
