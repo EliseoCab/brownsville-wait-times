@@ -19,6 +19,7 @@ import sys
 from dataclasses import dataclass
 from datetime import datetime
 
+from alert_copy import format_sentri_alert
 from bwt_rss import (
     BRIDGES,
     CHICAGO,
@@ -202,12 +203,23 @@ def main() -> int:
         xml, now=now, delay_min=args.delay_min, min_open_lanes=args.min_open_lanes
     )
     print_report(check, now, args.delay_min, args.min_open_lanes)
+    subject, body = ("", "")
+    if check.alert:
+        subject, body = format_sentri_alert(
+            check.delay_minutes,
+            check.lanes_open,
+            delay_min=args.delay_min,
+            min_open_lanes=args.min_open_lanes,
+        )
+        print(body)
     write_out(
         alert="true" if check.alert else "false",
         reason=check.reason,
         delay_minutes="" if check.delay_minutes is None else str(check.delay_minutes),
         lanes_open="" if check.lanes_open is None else str(check.lanes_open),
         hours_status=check.hours_status,
+        alert_subject=subject,
+        alert_body=body,
     )
     return 0
 

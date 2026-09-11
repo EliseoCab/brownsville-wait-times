@@ -80,17 +80,14 @@ Workflow: **Check data freshness (lag alarm)**
 - If any in-hours bridge is **~75+ minutes** behind (or pending/stuck):
   1. Automatically runs **Update CBP wait times**
   2. Waits for deploy and re-checks
-  3. **Emails only if still lagging** after that (job fails)
-  4. If auto-refresh fixed it → job **succeeds** (notice only, no failure email)
+  3. **Emails only if still lagging** after that
+  4. If auto-refresh fixed it → job **succeeds** (no email)
 
-> The open page uses the Worker first (`Live · CBP proxy`). A lag email is about the **GitHub backup mirror**, not necessarily a broken page.
+Alert mail is one line, bottom line first, e.g. `B&M, Gateway: Update Pending.`
 
-### Turn on GitHub email when it fails
+Set repo secrets **ALERT_SMTP_USER** and **ALERT_SMTP_PASSWORD** (Gmail app password) so Actions can send from `eliseocab@gmail.com`. Optional: **ALERT_TO**, **ALERT_FROM**. Turn off GitHub Actions failure emails if you only want this custom mail.
 
-1. Open https://github.com/settings/notifications  
-2. Find **Actions** (or **GitHub Actions**)  
-3. Enable notifications for **failed** workflows  
-4. Use an email you actually check  
+> The open page uses the Worker first (`Live · CBP proxy`). A lag email is about the **GitHub backup mirror**, not necessarily a broken page.  
 
 ### Manual lag check
 
@@ -103,7 +100,7 @@ Workflow: **Veterans SENTRI lane staffing** (`.github/workflows/check-veterans-s
 - Runs at **:15, :20, and :45** past every hour (`15,20,45 * * * *`) plus manual dispatch — extra slots so a skipped GitHub cron is less likely to miss the hour
 - Reads the **same live CBP Brownsville RSS** as the lag alarm (`Brownsville - Veterans International`)
 - Looks at **Passenger Vehicles → Sentri Lanes** only (not commercial Fast Lanes)
-- **Fails** (GitHub email) when Veterans is in hours and SENTRI **delay ≥ 30 min** and **open lanes < 4**
+- **Emails** when Veterans is in hours and SENTRI **delay ≥ 30 min** and **open lanes < 4**, e.g. `Veterans SENTRI: 30 min, 2 lanes open. Need <30 min or >=4 lanes.`
 - Uses the item’s `Hours:` line (typically `6 am-Midnight` America/Chicago). Outside hours: no alert
 - **Update Pending** with no delay number: log WARN, do not invent lane counts, do not fail. If delay ≥ 30 and lanes < 4 are still parseable, fail.
 

@@ -24,6 +24,7 @@ import sys
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
+from alert_copy import format_lag_alert
 from bwt_rss import (
     BRIDGES,
     CHICAGO,
@@ -330,6 +331,7 @@ def compare(
         feed_pubdate=channel_pubdate(cbp),
     )
     lagging, reason, lag_s, names = summarize(results)
+    subject, body = format_lag_alert(results)
     print()
     if not lagging:
         print("OK: every in-hours Brownsville bridge is fresh enough.")
@@ -338,18 +340,19 @@ def compare(
             reason=reason,
             lag_minutes=lag_s,
             lagging_bridges="",
+            alert_subject="",
+            alert_body="",
         )
         return 0
 
-    print(
-        f"STALE: in-hours bridge(s) failing: {names.replace(',', ', ')} "
-        f"({reason}). Will try auto-refresh."
-    )
+    print(body)
     write_out(
         lagging="true",
         reason=reason,
         lag_minutes=lag_s,
         lagging_bridges=names,
+        alert_subject=subject,
+        alert_body=body,
     )
     return 0
 
@@ -374,6 +377,7 @@ def recheck(
         feed_pubdate=channel_pubdate(cbp),
     )
     lagging, reason, lag_s, names = summarize(results)
+    subject, body = format_lag_alert(results)
     print()
     if not lagging:
         write_out(
@@ -381,6 +385,8 @@ def recheck(
             reason=reason,
             lag_minutes=lag_s,
             lagging_bridges="",
+            alert_subject="",
+            alert_body="",
         )
         print("OK: mirror recovered after auto-refresh.")
     else:
@@ -389,10 +395,10 @@ def recheck(
             reason=reason,
             lag_minutes=lag_s,
             lagging_bridges=names,
+            alert_subject=subject,
+            alert_body=body,
         )
-        print(
-            f"STILL STALE after auto-refresh: {names.replace(',', ', ')} ({reason})."
-        )
+        print(body)
     return 0
 
 

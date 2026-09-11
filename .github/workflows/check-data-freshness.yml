@@ -159,11 +159,17 @@ jobs:
             echo "All in-hours bridges are fresh enough (worst lag ~${{ steps.compare.outputs.lag_minutes }} min)."
           fi
 
-      - name: Fail only if still lagging after auto-refresh
+      - name: ${{ steps.recheck.outputs.alert_subject || steps.compare.outputs.alert_subject }}
         if: steps.compare.outputs.lagging == 'true' && steps.recheck.outputs.still_lagging == 'true'
+        env:
+          ALERT_SMTP_USER: ${{ secrets.ALERT_SMTP_USER }}
+          ALERT_SMTP_PASSWORD: ${{ secrets.ALERT_SMTP_PASSWORD }}
+          ALERT_TO: ${{ secrets.ALERT_TO }}
+          ALERT_FROM: ${{ secrets.ALERT_FROM }}
+          ALERT_SUBJECT: ${{ steps.recheck.outputs.alert_subject || steps.compare.outputs.alert_subject }}
+          ALERT_BODY: ${{ steps.recheck.outputs.alert_body || steps.compare.outputs.alert_body }}
         run: |
-          echo "::error::Still lagging after auto-refresh: ${{ steps.recheck.outputs.lagging_bridges || steps.compare.outputs.lagging_bridges }} (${{ steps.recheck.outputs.reason || steps.compare.outputs.reason }}, ~${{ steps.recheck.outputs.lag_minutes || steps.compare.outputs.lag_minutes }} min)."
-          echo "Manual fix: Actions → Update CBP wait times → Run workflow"
-          echo "Note: the live page may still be OK via Cloudflare Worker (Live · CBP proxy)."
-          echo "Closed bridges (Veterans after midnight, Los Indios after 10 pm, plus post-close grace) are skipped."
+          python3 scripts/send_alert_email.py
+          echo "::error::${ALERT_BODY}"
+          echo "${ALERT_BODY}"
           exit 1

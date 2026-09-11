@@ -54,10 +54,17 @@ jobs:
         run: |
           echo "Veterans passenger SENTRI: ${{ steps.sentri.outputs.reason }} (delay=${{ steps.sentri.outputs.delay_minutes }} min, lanes=${{ steps.sentri.outputs.lanes_open }}, hours=${{ steps.sentri.outputs.hours_status }})."
 
-      - name: Fail if SENTRI wait is high and understaffed
+      - name: ${{ steps.sentri.outputs.alert_subject }}
         if: steps.sentri.outputs.alert == 'true'
+        env:
+          ALERT_SMTP_USER: ${{ secrets.ALERT_SMTP_USER }}
+          ALERT_SMTP_PASSWORD: ${{ secrets.ALERT_SMTP_PASSWORD }}
+          ALERT_TO: ${{ secrets.ALERT_TO }}
+          ALERT_FROM: ${{ secrets.ALERT_FROM }}
+          ALERT_SUBJECT: ${{ steps.sentri.outputs.alert_subject }}
+          ALERT_BODY: ${{ steps.sentri.outputs.alert_body }}
         run: |
-          echo "::error::Veterans passenger SENTRI is ${{ steps.sentri.outputs.delay_minutes }} min delay with ${{ steps.sentri.outputs.lanes_open }} lane(s) open (need delay < 30 or at least 4 open lanes)."
-          echo "Source: live CBP Brownsville RSS, item Brownsville - Veterans International → Passenger Vehicles → Sentri Lanes."
-          echo "Outside 6 am–Midnight America/Chicago this job does not alert."
+          python3 scripts/send_alert_email.py
+          echo "::error::${ALERT_BODY}"
+          echo "${ALERT_BODY}"
           exit 1
