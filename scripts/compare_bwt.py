@@ -4,7 +4,9 @@
 Evaluates EACH Brownsville bridge separately (B&M, Gateway, Veterans,
 Los Indios). Operating hours come from that item's CBP `Hours:` line
 (America/Chicago). Closed bridges (plus a short post-close grace) are
-skipped. Update Pending on an in-hours bridge is stale.
+skipped. Update Pending on a limited-hours bridge is stale after
+max-lag minutes open. 24h bridges wait 15 minutes into the current
+hour so overnight Pending does not fail all night.
 
 Writes GitHub Actions outputs:
   lagging, reason, lag_minutes, lagging_bridges, still_lagging
@@ -44,6 +46,7 @@ __all__ = [
     "BRIDGES",
     "CHICAGO",
     "HoursWindow",
+    "HOUR_PENDING_GRACE_MIN",
     "evaluate_bridges",
     "hours_status",
     "parse_bridge_items",
@@ -52,6 +55,21 @@ __all__ = [
     "pending_only",
     "summarize",
 ]
+
+# Minutes into the current clock hour before 24h Update Pending is stale.
+# CBP typically posts near :00; overnight 24h items often sit on Pending.
+HOUR_PENDING_GRACE_MIN = 15
+
+
+def pending_ready(window: HoursWindow, now: datetime, open_for: int | None, max_lag: int) -> bool:
+    """When Update Pending is stale for this bridge.
+
+    Limited-hours: after max_lag minutes open (time for the first hourly post).
+    24h: after HOUR_PENDING_GRACE_MIN into the current clock hour.
+    """
+    if window.always:
+        return now.astimezone(CHICAGO).minute >= HOUR_PENDING_GRACE_MIN
+    return open_for is not None and open_for >= max_lag
 
 
 @dataclass
@@ -152,14 +170,16 @@ def evaluate_bridges(
             results.append(check)
             continue
 
-        # CBP-not-updating checks wait until the port has been open long enough
-        # for the first hourly post (24h bridges: always eligible).
+        # Stuck/missing: 24h always eligible; limited-hours wait max_lag after open.
         cbp_self_ready = window.always or (open_for is not None and open_for >= max_lag)
+        # Pending: 24h waits 15 min into the current hour; limited-hours wait max_lag after open.
+        pending_ok_to_flag = pending_ready(window, now, open_for, max_lag)
 
-        if cbp_self_ready:
-            if cbp.pending_only:
+        if cbp.pending_only:
+            if pending_ok_to_flag:
                 check.problems.append("cbp_pending")
-            elif not cbp.present:
+        elif cbp_self_ready:
+            if not cbp.present:
                 check.problems.append("cbp_missing")
             elif cbp.newest is None:
                 check.problems.append("cbp_missing_stamp")
@@ -168,8 +188,8 @@ def evaluate_bridges(
 
         if site.pending_only:
             # Open + Update Pending means the mirror has not received times.
-            # During the first hour after open, matching CBP pending is expected.
-            if not (cbp.pending_only and not cbp_self_ready):
+            # Matching CBP pending during the pending grace is expected.
+            if not (cbp.pending_only and not pending_ok_to_flag):
                 check.problems.append("site_pending")
         elif not site.present:
             check.problems.append("site_missing")

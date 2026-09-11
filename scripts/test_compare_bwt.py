@@ -203,7 +203,8 @@ class PerBridgeEvaluateTests(unittest.TestCase):
         self.assertEqual(by["bm"].status, "open")
         self.assertFalse(by["bm"].problems)
         self.assertEqual(by["gateway"].status, "open")
-        self.assertIn("cbp_pending", by["gateway"].problems)
+        # 2:00am is still inside the 15-minute 24h pending grace
+        self.assertFalse(by["gateway"].problems)
 
     def test_post_close_grace_skips_frozen_stamp(self):
         # Last-open 10pm stamp, now 10:20pm — would look stale if still "open".
@@ -273,6 +274,48 @@ class PerBridgeEvaluateTests(unittest.TestCase):
         by = self.by_id(ordered)
         self.assertIn("cbp_pending", by["veterans"].problems)
         self.assertIn("cbp_pending", by["los_indios"].problems)
+
+    def test_24h_pending_before_hour_grace_is_ok(self):
+        xml = four_bridges(bm=PENDING, gw=PENDING, date="9/11/2026")
+        now = chicago(2026, 9, 11, 2, 5)
+        ordered = self.checks(xml, xml, now)
+        by = self.by_id(ordered)
+        self.assertFalse(by["bm"].problems)
+        self.assertFalse(by["gateway"].problems)
+        lagging, reason, _, _ = c.summarize(ordered)
+        self.assertFalse(lagging)
+        self.assertEqual(reason, "fresh")
+
+    def test_24h_pending_after_hour_grace_is_stale(self):
+        xml = four_bridges(bm=PENDING, gw=PENDING, date="9/11/2026")
+        now = chicago(2026, 9, 11, 2, 20)
+        ordered = self.checks(xml, xml, now)
+        by = self.by_id(ordered)
+        self.assertIn("cbp_pending", by["bm"].problems)
+        self.assertIn("cbp_pending", by["gateway"].problems)
+        self.assertIn("site_pending", by["bm"].problems)
+        lagging, reason, _, names = c.summarize(ordered)
+        self.assertTrue(lagging)
+        self.assertIn("cbp_pending", reason)
+        self.assertIn("B&M", names)
+        self.assertIn("Gateway", names)
+
+    def test_24h_pending_at_exactly_15_is_stale(self):
+        xml = four_bridges(gw=PENDING, date="9/11/2026")
+        now = chicago(2026, 9, 11, 2, 15)
+        gw = self.by_id(self.checks(xml, xml, now))["gateway"]
+        self.assertIn("cbp_pending", gw.problems)
+
+    def test_24h_site_pending_while_cbp_has_times_is_stale_in_hour_grace(self):
+        cbp = four_bridges(
+            bm="General Lanes: At 2:00 am CDT 5 min delay 1 lane(s) open",
+            gw="General Lanes: At 2:00 am CDT 5 min delay 1 lane(s) open",
+            date="9/11/2026",
+        )
+        site = four_bridges(gw=PENDING, date="9/11/2026")
+        now = chicago(2026, 9, 11, 2, 5)
+        gw = self.by_id(self.checks(cbp, site, now))["gateway"]
+        self.assertIn("site_pending", gw.problems)
 
     def test_site_pending_flagged_when_cbp_has_times(self):
         cbp = four_bridges()
