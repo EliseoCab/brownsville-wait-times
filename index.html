@@ -2581,9 +2581,10 @@
       backdrop-filter: blur(22px) saturate(1.7);
       -webkit-backdrop-filter: blur(22px) saturate(1.7);
     }
-    html:not([data-theme="dark"]) .filter-btn.active {
+    html:not([data-theme="dark"]) .filter-btn.active,
+    html:not([data-theme="dark"]) .filters .filter-btn.active {
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.5));
-      color: var(--ink);
+      color: #0c1222;
       box-shadow: 0 1px 0 #fff inset, 0 4px 12px rgba(15, 47, 84, 0.08);
     }
     html:not([data-theme="dark"]) .filter-btn:hover { background: rgba(255, 255, 255, 0.45); color: var(--ink); }

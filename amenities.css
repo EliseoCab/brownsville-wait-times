@@ -499,9 +499,10 @@ html[data-theme="dark"] .callout {
 
 html:not([data-theme="dark"]) body {
   background:
-    radial-gradient(1200px 520px at 8% -10%, rgba(125, 211, 252, 0.5), transparent 55%),
-    radial-gradient(900px 480px at 108% 8%, rgba(253, 186, 116, 0.28), transparent 50%),
-    linear-gradient(180deg, #e8f4ff 0%, #f4f8fc 48%, #eef6fb 100%);
+    radial-gradient(1100px 480px at 0% -8%, rgba(70, 128, 168, 0.88), transparent 58%),
+    radial-gradient(900px 420px at 100% -4%, rgba(253, 186, 116, 0.72), transparent 54%),
+    radial-gradient(700px 420px at 50% 110%, rgba(45, 212, 191, 0.16), transparent 55%),
+    linear-gradient(105deg, #6f8faf 0%, #8eabc4 38%, #d6e2ee 72%, #f1e8d8 100%);
 }
 html:not([data-theme="dark"]) .shell,
 html:not([data-theme="dark"]) .poi {
@@ -521,9 +522,10 @@ html:not([data-theme="dark"]) .icon-btn {
   -webkit-backdrop-filter: blur(12px) saturate(1.4);
 }
 html:not([data-theme="dark"]) .chip.active,
-html:not([data-theme="dark"]) .seg button.active {
+html:not([data-theme="dark"]) .seg button.active,
+html:not([data-theme="dark"]) .bridge-tabs a.active {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.58));
-  color: var(--ink);
+  color: #0c1222;
   border-color: var(--glass-border);
   box-shadow: 0 1px 0 #fff inset;
 }
