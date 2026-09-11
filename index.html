@@ -4373,8 +4373,8 @@
       return t("lanesOf").replace("{open}", String(open)).replace("{total}", String(total));
     }
 
-    /** "2 Gen, 2 Ready" from a section (SENTRI/FAST omitted from this split). */
-    function genReadySplit(section) {
+    /** "2 Gen, 2 Ready" or commercial "1 Gen, 1 FAST". */
+    function genReadySplit(section, commercial) {
       if (!section) return "";
       const parts = [];
       const lanes = sortLanes(section.lanes || []);
@@ -4385,7 +4385,9 @@
         if (isNaN(n)) continue;
         if (/general/i.test(lane.name) && !/ready|sentri|fast|nexus/i.test(lane.name)) {
           parts.push(n + " " + t("gen"));
-        } else if (/ready/i.test(lane.name)) {
+        } else if (commercial && /fast/i.test(lane.name)) {
+          parts.push(n + " " + t("fast"));
+        } else if (!commercial && /ready/i.test(lane.name)) {
           parts.push(n + " " + t("ready"));
         }
       }
@@ -4405,10 +4407,10 @@
       return "";
     }
 
-    function tileOpenText(section, withSplit) {
+    function tileOpenText(section, withSplit, commercial) {
       const lines = [];
       if (withSplit) {
-        const split = genReadySplit(section);
+        const split = genReadySplit(section, !!commercial);
         if (split) lines.push(split);
       }
       const ofLine = sectionOfLine(section);
@@ -4467,8 +4469,7 @@
         modeKey === "commercial" &&
         fastActive &&
         isActiveWait(w) &&
-        isActiveWait(fastActive.wait) &&
-        w.minutes !== fastActive.wait.minutes;
+        isActiveWait(fastActive.wait);
 
       const dual = gatewayPedDual
         ? { label: t("ready"), wait: readyActive.wait }
@@ -4490,7 +4491,7 @@
       const withSplit = modeKey === "passenger" || modeKey === "pedestrian" || modeKey === "commercial";
       return {
         html: `<div class="wait-stack">${mainHtml}</div>`,
-        openLine: tileOpenText(sec, withSplit),
+        openLine: tileOpenText(sec, withSplit, modeKey === "commercial"),
         cls: (dual ? "has-dual " : "") + "has-" + w.cls
       };
     }

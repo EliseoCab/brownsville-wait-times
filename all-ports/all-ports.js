@@ -870,6 +870,8 @@
         parts.push(n + " " + t("gen"));
       } else if (/ready/i.test(lane.name)) {
         parts.push(n + " " + t("ready"));
+      } else if (/fast/i.test(lane.name)) {
+        parts.push(n + " " + t("fast"));
       }
     });
     return parts.join(", ");
@@ -884,8 +886,10 @@
       primary = anyShowable ? anyShowable.wait : (general && general.wait);
     }
     var special = sortLanes(section.lanes).find(function (l) {
-      return /ready|sentri|nexus|fast/i.test(l.name) && isShowableWait(l.wait) &&
-        primary && isActiveWait(l.wait) && primary.minutes !== l.wait.minutes;
+      if (!/ready|sentri|nexus|fast/i.test(l.name) || !isShowableWait(l.wait)) return false;
+      if (!primary || !isActiveWait(l.wait) || !isActiveWait(primary)) return false;
+      if (/fast/i.test(l.name)) return true;
+      return primary.minutes !== l.wait.minutes;
     });
     var html = waitHtml(primary);
     if (special && special !== general && isActiveWait(special.wait) && primary && isActiveWait(primary) && special.wait.minutes !== primary.minutes) {
@@ -900,7 +904,7 @@
       if (!w || w.na || w.pending) return;
       var n = w.closed ? 0 : (w.lanesOpenCount != null ? Number(w.lanesOpenCount) : NaN);
       if (isNaN(n)) return;
-      var lab = /fast/i.test(lane.name) ? t("fast") : /sentri/i.test(lane.name) ? t("sentri") : /nexus/i.test(lane.name) ? t("nexus") : "";
+      var lab = /sentri/i.test(lane.name) ? t("sentri") : /nexus/i.test(lane.name) ? t("nexus") : "";
       if (lab) html += '<div class="open-line">' + escapeHtml(n + " " + lab + " " + t("open")) + "</div>";
     });
     var ofLine = sectionOfLine(section);
