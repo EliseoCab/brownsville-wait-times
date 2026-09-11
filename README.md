@@ -83,7 +83,7 @@ Workflow: **Check data freshness (lag alarm)**
   3. **Emails only if still lagging** after that
   4. If auto-refresh fixed it → job **succeeds** (no email)
 
-Alert mail is one line, bottom line first, e.g. `B&M, Gateway: Update Pending.`
+Alert mail tells employees what to do in plain language (update wait times, or contact the duty supervisor for SENTRI). Disregard if already handled.
 
 Set repo secret **GMAIL** (Gmail app password) so Actions can send from `eliseocab@gmail.com`. Optional: **ALERT_SMTP_USER**, **ALERT_TO**, **ALERT_FROM**. Turn off GitHub Actions failure emails if you only want this custom mail. Alert mail **expires 90 days** after the secret date in `scripts/send_alert_email.py` (currently 2026-09-11 → 2026-12-10); rotate **GMAIL** and bump `SECRET_SET_ON` to extend.
 
@@ -100,7 +100,7 @@ Workflow: **Veterans SENTRI lane staffing** (`.github/workflows/check-veterans-s
 - Runs at **:15, :20, and :45** past every hour (`15,20,45 * * * *`) plus manual dispatch — extra slots so a skipped GitHub cron is less likely to miss the hour
 - Reads the **same live CBP Brownsville RSS** as the lag alarm (`Brownsville - Veterans International`)
 - Looks at **Passenger Vehicles → Sentri Lanes** only (not commercial Fast Lanes)
-- **Emails** when Veterans is in hours and SENTRI **delay ≥ 30 min** and **open lanes < 4**, e.g. `Veterans SENTRI: 30 min, 2 lanes open. Need <30 min or >=4 lanes.`
+- **Emails** when Veterans is in hours and SENTRI **delay ≥ 30 min** and **open lanes < 4**: contact the duty supervisor unless the reason is already known
 - Uses the item’s `Hours:` line (typically `6 am-Midnight` America/Chicago). Outside hours: no alert
 - **Update Pending** with no delay number: log WARN, do not invent lane counts, do not fail. If delay ≥ 30 and lanes < 4 are still parseable, fail.
 

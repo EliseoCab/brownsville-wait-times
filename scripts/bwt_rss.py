@@ -132,7 +132,11 @@ def write_out(**kwargs) -> None:
         return
     with open(out_path, "a") as out:
         for k, v in kwargs.items():
-            out.write(f"{k}={v}\n")
+            text = "" if v is None else str(v)
+            if "\n" in text or "\r" in text:
+                out.write(f"{k}<<BWTALERT\n{text}\nBWTALERT\n")
+            else:
+                out.write(f"{k}={text}\n")
 
 
 def plain_text(text: str) -> str:

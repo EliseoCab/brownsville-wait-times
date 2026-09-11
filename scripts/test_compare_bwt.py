@@ -364,26 +364,35 @@ class AlertCopyTests(unittest.TestCase):
         results = c.evaluate_bridges(xml, xml, "", 75, 45, now=chicago(2026, 9, 11, 2, 20))
         from alert_copy import format_lag_alert
         subject, body = format_lag_alert(results)
-        self.assertEqual(subject, "B&M, Gateway: Update Pending")
-        self.assertEqual(body, "B&M, Gateway: Update Pending.")
+        self.assertEqual(subject, "B&M, Gateway: please update wait times")
+        self.assertIn("Please update wait times.", body)
+        self.assertIn("Bridges: B&M, Gateway", body)
+        self.assertIn("Update Pending", body)
+        self.assertIn("If the times are already updated, disregard this message.", body)
 
-    def test_site_behind_includes_minutes(self):
+    def test_stale_uses_update_template(self):
         from alert_copy import format_lag_alert
         cbp = four_bridges()
         site = four_bridges(gw=OLD)
         results = c.evaluate_bridges(cbp, site, "", 75, 45, now=AFTERNOON)
         subject, body = format_lag_alert(results)
-        self.assertEqual(subject, "Gateway: site 180 min behind CBP")
-        self.assertEqual(body, "Gateway: site 180 min behind CBP.")
+        self.assertEqual(subject, "Gateway: please update wait times")
+        self.assertIn("old or missing", body)
+        self.assertIn("If the times are already updated, disregard this message.", body)
 
     def test_sentri_copy(self):
         from alert_copy import format_sentri_alert
         subject, body = format_sentri_alert(30, 2)
-        self.assertEqual(subject, "Veterans SENTRI: 30 min, 2 lanes")
         self.assertEqual(
-            body,
-            "Veterans SENTRI: 30 min, 2 lanes open. Need <30 min or >=4 lanes.",
+            subject,
+            "Veterans SENTRI: contact duty supervisor (30 minutes, 2 lanes open)",
         )
+        self.assertIn("Please contact the duty supervisor.", body)
+        self.assertIn("SENTRI wait: 30 minutes", body)
+        self.assertIn("SENTRI lanes open: 2 lanes", body)
+        self.assertIn("at least 4 SENTRI lanes should be open", body)
+        self.assertIn("ask why 4 SENTRI lanes are not open", body)
+        self.assertIn("If the reason is already known, disregard this message.", body)
 
 
 class CliOutputTests(unittest.TestCase):
