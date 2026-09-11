@@ -614,6 +614,8 @@
     }
     .stat-card.leave-card .kicker {
       white-space: normal;
+      text-transform: none;
+      letter-spacing: 0.02em;
     }
     .stat-card.leave-card .hint {
       max-width: none;
@@ -928,12 +930,9 @@
       font-size: 0.58rem;
       font-weight: 800;
       letter-spacing: 0.03em;
-      text-transform: uppercase;
+      text-transform: none;
       color: var(--muted);
       flex: 0 0 auto;
-    }
-    .table-wrap.table-cards .wait-table tbody td.wait-col .dual-label.dual-gen {
-      text-transform: none;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .compact-pair .wait-cell {
       flex: 0 0 auto;
@@ -1260,13 +1259,10 @@
     .dual-label {
       font-size: 0.62rem;
       font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      text-transform: none;
       color: var(--muted);
       text-align: center;
-    }
-    .dual-label.dual-gen {
-      text-transform: none;
     }
     .wait-extra.open-line {
       margin-top: 0.15rem;
@@ -3040,7 +3036,7 @@
         <div class="hint" id="statTrustedHint" data-i18n="statTrustedHint">SENTRI lanes only</div>
       </div>
       <div class="stat-card leave-card" id="leaveCard">
-        <div class="kicker" data-i18n="statLeave">Leave now</div>
+        <div class="kicker" data-i18n="statLeave">Leave Now (Vehicles)</div>
         <div class="stat" id="statLeave">—</div>
         <div class="hint" id="statLeaveHint" data-i18n="statLeaveHint">Nearest vehicle bridge</div>
       </div>
@@ -3107,7 +3103,7 @@
             </button>
             <iframe
               data-src="https://g3.ipcamlive.com/player/player.php?alias=5df59f3827371"
-              title="Live camera · Old Bridge (B&amp;M Express)"
+              title="Live camera · B&amp;M"
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
               allowfullscreen
@@ -3115,7 +3111,7 @@
             ></iframe>
           </div>
           <div class="live-cam-meta">
-            <span class="live-cam-name" data-i18n="liveCamOld">Old Bridge (B&amp;M Express)</span>
+            <span class="live-cam-name" data-i18n="liveCamOld">B&amp;M</span>
             <span class="live-cam-tag" data-i18n="liveCamStill">Still</span>
           </div>
         </article>
@@ -3127,7 +3123,7 @@
             </button>
             <iframe
               data-src="https://g3.ipcamlive.com/player/player.php?alias=61af904e45b24"
-              title="Live camera · New Bridge (Gateway)"
+              title="Live camera · Gateway"
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
               allowfullscreen
@@ -3135,7 +3131,7 @@
             ></iframe>
           </div>
           <div class="live-cam-meta">
-            <span class="live-cam-name" data-i18n="liveCamNew">New Bridge (Gateway)</span>
+            <span class="live-cam-name" data-i18n="liveCamNew">Gateway</span>
             <span class="live-cam-tag" data-i18n="liveCamStill">Still</span>
           </div>
         </article>
@@ -3270,7 +3266,7 @@
         statTrusted: "Best SENTRI",
         statTrustedReady: "Best Ready",
         statTrustedFast: "Best FAST",
-        statLeave: "Leave now",
+        statLeave: "Leave Now (Vehicles)",
         statLeaveHint: "Nearest vehicle bridge",
         statLeaveNeedLoc: "Allow location for nearest-bridge leave time",
         statLeaveDenied: "Location off — enable it for a leave time",
@@ -3319,8 +3315,8 @@
         liveCamsSub: "Streaming views of downtown Brownsville crossings",
         liveCamsOpen: "Open COMTODO cameras →",
         liveCamsAria: "Live bridge cameras",
-        liveCamOld: "Old Bridge (B&M Express)",
-        liveCamNew: "New Bridge (Gateway)",
+        liveCamOld: "B&M",
+        liveCamNew: "Gateway",
         liveCamLive: "Live",
         liveCamStill: "Still",
         liveCamTap: "Tap for live",
@@ -3377,11 +3373,12 @@
         lanesClosed: "Lanes closed",
         asOf: "As of",
         lanesOpen: "lane(s) open",
+        lanesOf: "{open} of {total}",
         open: "open",
-        gen: "gen",
+        gen: "Gen",
         ready: "Ready",
         fastOpen: "FAST open",
-        genClosed: "gen closed",
+        genClosed: "Gen closed",
         readyClosed: "Ready closed",
         noTrusted: "No open SENTRI lanes reported",
         noReady: "No open Ready lanes reported",
@@ -3410,7 +3407,7 @@
         statTrusted: "Mejor SENTRI",
         statTrustedReady: "Mejor carril Ready",
         statTrustedFast: "Mejor FAST",
-        statLeave: "Salga ahora",
+        statLeave: "Salga ahora (Vehículos)",
         statLeaveHint: "Puente vehicular más cercano",
         statLeaveNeedLoc: "Permita la ubicación para la hora de salida",
         statLeaveDenied: "Ubicación desactivada — actívela para una hora de salida",
@@ -3517,12 +3514,13 @@
         lanesClosed: "Carriles cerrados",
         asOf: "A las",
         lanesOpen: "carril(es) abierto(s)",
+        lanesOf: "{open} de {total}",
         open: "abiertos",
-        gen: "gen",
-        ready: "Carril Ready",
+        gen: "Gen",
+        ready: "Ready",
         fastOpen: "FAST abiertos",
-        genClosed: "gen cerrado",
-        readyClosed: "Carril Ready cerrado",
+        genClosed: "Gen cerrado",
+        readyClosed: "Ready cerrado",
         noTrusted: "No hay carriles SENTRI abiertos",
         noReady: "No hay carriles Ready abiertos",
         noFast: "No hay carriles FAST abiertos",
@@ -3869,11 +3867,28 @@
       }
       // Keep first occurrence of each lane name within a section
       const seen = new Set();
-      return lanes.filter((l) => {
+      const unique = lanes.filter((l) => {
         const key = l.name.toLowerCase();
         if (seen.has(key)) return false;
         seen.add(key);
         return true;
+      });
+      return sortLanes(unique);
+    }
+
+    function laneSortRank(name) {
+      const n = String(name || "").toLowerCase();
+      if (/general/.test(n)) return 0;
+      if (/ready/.test(n)) return 1;
+      if (/sentri/.test(n)) return 2;
+      if (/nexus/.test(n)) return 3;
+      if (/fast/.test(n)) return 4;
+      return 5;
+    }
+
+    function sortLanes(lanes) {
+      return (lanes || []).slice().sort(function (a, b) {
+        return laneSortRank(a.name) - laneSortRank(b.name);
       });
     }
 
@@ -4142,7 +4157,7 @@
       const boothStr = formatLeaveClock(booth);
       stat.textContent = boothStr;
       stat.className = "stat " + (pick.wait <= 15 ? "good" : pick.wait <= 45 ? "warn" : "bad");
-      if (kicker) kicker.textContent = t("statLeave") + " · " + pick.short;
+      if (kicker) kicker.textContent = t("statLeave");
       hint.textContent = t("leaveAtBooth").replace("{leave}", leaveStr).replace("{booth}", boothStr);
       card.classList.remove("is-action");
     }
@@ -4258,12 +4273,13 @@
 
       // Ready Lanes belong with their traffic type (e.g. Gateway pedestrian Ready), not SENTRI/Fast
       const readyExtras = showable.filter((l) => /ready/i.test(l.name) && l !== primary);
+      const sentriExtras = showable.filter((l) => /sentri/i.test(l.name) && l !== primary);
       const fastExtras = showable.filter((l) => /fast/i.test(l.name) && l !== primary);
 
       return {
         primary: primary.wait,
         primaryName: primary.name,
-        extras: readyExtras.concat(fastExtras),
+        extras: readyExtras.concat(sentriExtras, fastExtras),
         open: primary.wait.lanesOpen,
         max: sec.maxLanes
       };
@@ -4308,73 +4324,37 @@
       return null;
     }
 
-    /**
-     * Concise open line under the wait number:
-     *   "2 Gen · 2 Ready · 4/5 open"  when Ready is open
-     *   "2/5 open" or "2 open"        when only General has counts
-     * Commercial (Veterans / Los Indios): add "N FAST open" only when N > 0 (never "0 FAST").
-     */
-    function formatOpenLine(summary, modeKey, port) {
-      if (!summary) return "";
-      const bits = [];
+    /** Port-wide open booths vs CBP maximum (closed lanes stay in the denominator). */
+    function portLaneTotals(port) {
+      if (!port) return "";
+      let open = 0;
       let total = 0;
-      let hasCounts = false;
-
-      if (summary.primary && !summary.primary.pending && summary.primary.lanesOpenCount != null) {
-        bits.push(summary.primary.lanesOpenCount + " " + t("gen"));
-        total += summary.primary.lanesOpenCount;
-        hasCounts = true;
-      } else if (summary.primary && summary.primary.closed) {
-        bits.push(t("genClosed"));
-      }
-
-      for (const l of summary.extras || []) {
-        if (!/ready/i.test(l.name)) continue;
-        // Pedestrian filter: Ready is its own column — don't duplicate it on Gen
-        if (currentFilter === "pedestrian") continue;
-        if (l.wait && !l.wait.pending && l.wait.lanesOpenCount != null) {
-          bits.push(l.wait.lanesOpenCount + " " + t("ready"));
-          total += l.wait.lanesOpenCount;
-          hasCounts = true;
-        } else if (l.wait && l.wait.closed) {
-          bits.push(t("readyClosed"));
+      let sawMax = false;
+      for (const sec of port.sections || []) {
+        const max = sec.maxLanes != null && sec.maxLanes !== "" ? Number(sec.maxLanes) : NaN;
+        if (!isNaN(max) && max > 0) {
+          total += max;
+          sawMax = true;
+        }
+        for (const lane of sec.lanes || []) {
+          const w = lane.wait;
+          if (!w || w.na || w.pending) continue;
+          if (w.closed) {
+            if (!sawMax) total += 1;
+            continue;
+          }
+          if (w.lanesOpenCount != null) {
+            const n = Number(w.lanesOpenCount);
+            if (!isNaN(n)) open += n;
+          }
         }
       }
+      if (total < 1) return "";
+      return t("lanesOf").replace("{open}", String(open)).replace("{total}", String(total));
+    }
 
-      // Veterans / Los Indios commercial: note FAST only when at least one is open
-      if (modeKey === "commercial" && isCommercialFastPort(port)) {
-        const n = fastOpenCount(port);
-        if (n != null && n > 0) {
-          bits.push(n + " " + t("fastOpen"));
-        }
-      }
-
-      if (!hasCounts && !bits.length) return "";
-
-      // If we only have a FAST note (no Gen counts), return it alone
-      if (!hasCounts && bits.length) return bits.join(" · ");
-
-      if (hasCounts && summary.max) {
-        const fastBits = bits.filter((b) => /FAST/i.test(b));
-        const coreBits = bits.filter((b) => !/FAST/i.test(b));
-        let core;
-        const genOnly = new RegExp("^(\\d+) " + t("gen").replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$");
-        if (coreBits.length === 1 && genOnly.test(coreBits[0])) {
-          core = total + "/" + summary.max + " " + t("open");
-        } else if (coreBits.length) {
-          core = coreBits.join(" · ") + " · " + total + "/" + summary.max + " " + t("open");
-        } else {
-          core = total + "/" + summary.max + " " + t("open");
-        }
-        return fastBits.length ? core + " · " + fastBits.join(" · ") : core;
-      }
-      const genOnlyBit = new RegExp("^(\\d+) " + t("gen").replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$");
-      if (hasCounts && bits.filter((b) => !/FAST/i.test(b)).length === 1 && genOnlyBit.test(bits[0])) {
-        const fastBits = bits.filter((b) => /FAST/i.test(b));
-        return (total + " " + t("open")) + (fastBits.length ? " · " + fastBits.join(" · ") : "");
-      }
-      if (hasCounts) return bits.join(" · ") + " · " + total + " " + t("open");
-      return bits.join(" · ");
+    function formatOpenLine(summary, modeKey, port) {
+      return portLaneTotals(port);
     }
 
     /**
@@ -4429,11 +4409,9 @@
         mainHtml = waitCellHtml(w);
       }
 
-      const openLine = formatOpenLine(summary, modeKey, port);
-
       return {
         html: `<div class="wait-stack">${mainHtml}</div>`,
-        openLine: openLine || "",
+        openLine: "",
         cls: (dual ? "has-dual " : "") + "has-" + w.cls
       };
     }
@@ -4872,6 +4850,7 @@
         }).join("");
 
         const hoursLabel = formatHoursOfOperation(port.hours);
+        const lanesLine = portLaneTotals(port);
         const portStamp = collectPortAsOf(port);
         const updatedLabel = formatBridgeUpdated(portStamp);
         const updatedHtml = updatedLabel
@@ -4892,6 +4871,7 @@
               ${bridgeTitleHtml(port)}
               ${mexicoLineHtml(port, "mx-line")}
               <span class="hours-line"><strong>${escapeHtml(t("hours"))}</strong> ${escapeHtml(hoursLabel)}</span>
+              ${lanesLine ? `<span class="hours-line">${escapeHtml(lanesLine)}</span>` : ""}
               ${updatedHtml}
             </td>
             ${tdHtml}
@@ -4918,6 +4898,7 @@
               ${bridgeTitleHtml(port, "m-row-bridge")}
               ${mexicoLineHtml(port, "m-row-mx")}
               <span class="m-row-hours">${escapeHtml(hoursLabel)}</span>
+              ${lanesLine ? `<span class="m-row-hours">${escapeHtml(lanesLine)}</span>` : ""}
               ${updatedMobile}
             </div>
             <div class="m-row-waits">${waitBlocks}</div>
@@ -5667,25 +5648,9 @@
       return null;
     }
 
-    /** Open-lane breakdown for share text (Gen + Ready + FAST) — not filter-dependent. */
+    /** Open-lane breakdown for share text — one port-wide total. */
     function formatShareOpenBreakdown(summary, modeKey, port) {
-      if (!summary) return "";
-      const bits = [];
-      if (summary.primary && !summary.primary.pending && summary.primary.lanesOpenCount != null) {
-        bits.push(summary.primary.lanesOpenCount + " " + t("gen"));
-      } else if (summary.primary && summary.primary.closed) {
-        bits.push(t("genClosed"));
-      }
-      for (const l of summary.extras || []) {
-        if (!/ready/i.test(l.name)) continue;
-        if (l.wait && !l.wait.pending && l.wait.lanesOpenCount != null) {
-          bits.push(l.wait.lanesOpenCount + " Ready");
-        } else if (l.wait && l.wait.closed) {
-          bits.push("Ready closed");
-        }
-      }
-      // FAST open counts are included on the separate FAST share line
-      return bits.join(" · ");
+      return portLaneTotals(port);
     }
 
     /** One share line: "Veh 45 min · 1 Gen · 3 Ready" (includes Ready wait when it differs). */
@@ -5706,7 +5671,7 @@
           label +
           " " + t("gen") + " " +
           summary.primary.minutes +
-          " min / Ready " +
+          " min / " + t("ready") + " " +
           readyActive.wait.minutes +
           " min";
       } else {

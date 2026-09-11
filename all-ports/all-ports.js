@@ -20,7 +20,7 @@
       showMore: "Show more",
       showLess: "Show fewer",
       mi: "mi",
-      gen: "gen",
+      gen: "Gen",
       ready: "Ready",
       sentri: "SENTRI",
       nexus: "NEXUS",
@@ -49,7 +49,8 @@
       hours24: "24 hours",
       midnight: "midnight",
       updated: "Updated",
-      countLabel: "Showing"
+      countLabel: "Showing",
+      lanesOf: "{open} of {total}"
     },
     es: {
       checking: "Cargando todos los puertos…",
@@ -60,7 +61,7 @@
       showMore: "Mostrar más",
       showLess: "Mostrar menos",
       mi: "mi",
-      gen: "gen",
+      gen: "Gen",
       ready: "Ready",
       sentri: "SENTRI",
       nexus: "NEXUS",
@@ -89,7 +90,8 @@
       hours24: "24 horas",
       midnight: "medianoche",
       updated: "Actualizado",
-      countLabel: "Mostrando"
+      countLabel: "Mostrando",
+      lanesOf: "{open} de {total}"
     }
   };
 
@@ -226,8 +228,8 @@
         var lanes = [];
         if (key === "passenger") {
           lanes.push(parseLane(groupEl.getElementsByTagName("standard_lanes")[0], "General Lane"));
-          lanes.push(parseLane(groupEl.getElementsByTagName("NEXUS_SENTRI_lanes")[0], trustedName + " Lane", trustedName));
           lanes.push(parseLane(groupEl.getElementsByTagName("ready_lanes")[0], "Ready Lane"));
+          lanes.push(parseLane(groupEl.getElementsByTagName("NEXUS_SENTRI_lanes")[0], trustedName + " Lane", trustedName));
         } else if (key === "pedestrian") {
           lanes.push(parseLane(groupEl.getElementsByTagName("standard_lanes")[0], "General Lane"));
           lanes.push(parseLane(groupEl.getElementsByTagName("ready_lanes")[0], "Ready Lane"));
@@ -239,7 +241,7 @@
           key: key,
           label: label,
           maxLanes: max && !isNaN(Number(max)) ? Number(max) : null,
-          lanes: lanes
+          lanes: sortLanes(lanes)
         };
       }
 
@@ -817,40 +819,59 @@
     return '<span class="' + cls + '">' + w.minutes + " min</span>";
   }
 
-  function openBits(section, border) {
-    if (!section) return "";
-    var bits = [];
-    section.lanes.forEach(function (lane) {
-      if (!lane.wait || lane.wait.pending || lane.wait.na) return;
-      if (lane.wait.closed) return;
-      if (lane.wait.lanesOpenCount == null) return;
-      var label = /ready/i.test(lane.name)
-        ? t("ready")
-        : /fast/i.test(lane.name)
-          ? t("fast")
-          : /nexus/i.test(lane.name)
-            ? t("nexus")
-            : /sentri/i.test(lane.name)
-              ? t("sentri")
-              : t("gen");
-      bits.push(lane.wait.lanesOpenCount + " " + label);
+  function laneSortRank(name) {
+    var n = String(name || "").toLowerCase();
+    if (/general/.test(n)) return 0;
+    if (/ready/.test(n)) return 1;
+    if (/sentri/.test(n)) return 2;
+    if (/nexus/.test(n)) return 3;
+    if (/fast/.test(n)) return 4;
+    return 5;
+  }
+
+  function sortLanes(lanes) {
+    return (lanes || []).slice().sort(function (a, b) {
+      return laneSortRank(a.name) - laneSortRank(b.name);
     });
-    return bits.join(" · ");
+  }
+
+  function portLaneTotals(port) {
+    if (!port) return "";
+    var open = 0;
+    var total = 0;
+    var sawMax = false;
+    (port.sections || []).forEach(function (sec) {
+      if (sec.maxLanes != null && !isNaN(Number(sec.maxLanes)) && Number(sec.maxLanes) > 0) {
+        total += Number(sec.maxLanes);
+        sawMax = true;
+      }
+      (sec.lanes || []).forEach(function (lane) {
+        var w = lane.wait;
+        if (!w || w.na || w.pending) return;
+        if (w.closed) {
+          if (!sawMax) total += 1;
+          return;
+        }
+        if (w.lanesOpenCount != null) open += Number(w.lanesOpenCount);
+      });
+    });
+    if (total < 1) return "";
+    return t("lanesOf").replace("{open}", String(open)).replace("{total}", String(total));
   }
 
   function modeCell(section, border, date, timeZone) {
     if (!section) return '<span class="wait-empty">' + t("na") + "</span>";
     var general = section.lanes.find(function (l) { return /general/i.test(l.name); });
-    var special = section.lanes.find(function (l) {
-      return /sentri|nexus|fast|ready/i.test(l.name) && isShowableWait(l.wait);
-    });
     var primary = general && isShowableWait(general.wait) ? general.wait : null;
     if (!primary) {
       var anyShowable = section.lanes.find(function (l) { return isShowableWait(l.wait); });
       primary = anyShowable ? anyShowable.wait : (general && general.wait);
     }
+    var special = sortLanes(section.lanes).find(function (l) {
+      return /ready|sentri|nexus|fast/i.test(l.name) && isShowableWait(l.wait) &&
+        primary && isActiveWait(l.wait) && primary.minutes !== l.wait.minutes;
+    });
     var html = waitHtml(primary);
-    var open = openBits(section, border);
     if (special && special !== general && isActiveWait(special.wait) && primary && isActiveWait(primary) && special.wait.minutes !== primary.minutes) {
       var lab = /ready/i.test(special.name) ? t("ready") : /fast/i.test(special.name) ? t("fast") : /nexus/i.test(special.name) ? t("nexus") : t("sentri");
       html = '<div class="compact-waits"><span class="compact-pair"><span class="dual-label dual-gen">' + t("gen") + "</span> " + waitHtml(primary) +
@@ -858,7 +879,6 @@
     }
     var clock = displayStampClock(collectSectionAsOf(section, date), timeZone);
     if (clock) html += '<div class="cell-asof">' + escapeHtml(clock) + "</div>";
-    if (open) html += '<div class="open-line">' + open + "</div>";
     return html;
   }
 
@@ -1007,6 +1027,7 @@
         ? "https://maps.apple.com/?q=" + mapsQ
         : "https://www.google.com/maps/search/?api=1&query=" + mapsQ;
       var hoursLabel = formatHoursOfOperation(it.hours);
+      var lanesLine = portLaneTotals(it);
       var portStamp = collectPortAsOf(it);
       var updatedLabel = displayStampClock(portStamp, it.timeZone);
       var hoursHtml =
@@ -1042,6 +1063,7 @@
                 "</svg></a>" +
             "</div>" +
             hoursHtml +
+            (lanesLine ? '<div class="port-hours">' + escapeHtml(lanesLine) + "</div>" : "") +
             updatedHtml +
           "</div>" +
           '<div class="port-grid">' +
