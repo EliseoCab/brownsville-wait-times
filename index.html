@@ -837,6 +837,18 @@
       isolation: isolate;
       transform: translateZ(0);
     }
+    .crowd-center-btn a {
+      width: 30px;
+      height: 30px;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      background: #fff;
+      color: #0b1f3a;
+    }
+    .crowd-center-btn a:hover { background: #f1f5f9; }
+    .crowd-center-btn svg { width: 16px; height: 16px; display: block; }
     .crowd-avg-bridge { font-weight: 800; color: var(--ink); margin-top: 0.45rem; }
     .crowd-avg-line { margin: 0.12rem 0; }
     @media (max-width: 560px) {
@@ -3588,6 +3600,7 @@
         crowdThanksPin: "Pinned · {bridge}",
         crowdLastPin: "Last check-in: {bridge} · {lat}, {lng} · {ago}",
         crowdLastPinEmpty: "No location pins in the last 45 min.",
+        crowdCenterOn: "Center on me",
         crowdNeedPicks: "Choose how you cross, a bridge, and minutes.",
         crowdNeedPin: "Allow location to pin where you are.",
         crowdPinFar: "Too far from a Brownsville bridge to pin.",
@@ -3767,6 +3780,7 @@
         crowdThanksPin: "Ubicación marcada · {bridge}",
         crowdLastPin: "Último registro: {bridge} · {lat}, {lng} · {ago}",
         crowdLastPinEmpty: "No hay ubicaciones en los últimos 45 min.",
+        crowdCenterOn: "Centrar en mí",
         crowdNeedPicks: "Elija cómo cruza, un puente y los minutos.",
         crowdNeedPin: "Permita la ubicación para marcar dónde está.",
         crowdPinFar: "Demasiado lejos de un puente de Brownsville para marcar.",
@@ -5773,12 +5787,71 @@
     }
     let crowdMap = null;
     let crowdHeatLayer = null;
+    let crowdYouMarker = null;
+    let crowdMapPoints = [];
     function crowdDropMap() {
       if (crowdMap) {
         try { crowdMap.remove(); } catch (_) { /* ignore */ }
         crowdMap = null;
         crowdHeatLayer = null;
+        crowdYouMarker = null;
       }
+    }
+    function crowdCenterOnMe() {
+      if (!crowdMap) return;
+      function go(lat, lng) {
+        crowdMap.setView([lat, lng], 15);
+        if (crowdYouMarker) {
+          try { crowdMap.removeLayer(crowdYouMarker); } catch (_) { /* ignore */ }
+        }
+        crowdYouMarker = L.circleMarker([lat, lng], {
+          radius: 9,
+          color: "#1d4ed8",
+          weight: 2,
+          fillColor: "#3b82f6",
+          fillOpacity: 0.95
+        }).addTo(crowdMap);
+        crowdYouMarker.bindPopup(t("crowdCenterOn"));
+      }
+      if (!navigator.geolocation) {
+        if (crowdMapPoints.length) {
+          const last = crowdMapPoints.slice().sort(function (a, b) { return (b.t || 0) - (a.t || 0); })[0];
+          crowdMap.setView([last.lat, last.lng], 14);
+        }
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        function (pos) { go(pos.coords.latitude, pos.coords.longitude); },
+        function () {
+          if (crowdMapPoints.length) {
+            const last = crowdMapPoints.slice().sort(function (a, b) { return (b.t || 0) - (a.t || 0); })[0];
+            crowdMap.setView([last.lat, last.lng], 14);
+          }
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 }
+      );
+    }
+    function crowdAddCenterControl() {
+      if (!crowdMap || !window.L) return;
+      const Ctrl = L.Control.extend({
+        options: { position: "topleft" },
+        onAdd: function () {
+          const bar = L.DomUtil.create("div", "leaflet-bar crowd-center-btn");
+          const btn = L.DomUtil.create("a", "", bar);
+          btn.href = "#";
+          btn.title = t("crowdCenterOn");
+          btn.setAttribute("role", "button");
+          btn.setAttribute("aria-label", t("crowdCenterOn"));
+          btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+          L.DomEvent.disableClickPropagation(bar);
+          L.DomEvent.on(btn, "click", function (e) {
+            L.DomEvent.preventDefault(e);
+            crowdCenterOnMe();
+          });
+          return bar;
+        }
+      });
+      new Ctrl().addTo(crowdMap);
     }
     function crowdEnsureLeaflet(done) {
       if (window.L) {
@@ -5816,7 +5889,9 @@
       const el = document.getElementById("crowdMapEl");
       if (!el || !window.L) return;
       crowdDropMap();
+      crowdMapPoints = points || [];
       crowdMap = L.map(el, { zoomControl: true, attributionControl: true }).setView([25.895, -97.50], 12);
+      crowdAddCenterControl();
       L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
         maxZoom: 19,
         attribution: "Tiles © Esri"
