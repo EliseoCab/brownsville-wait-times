@@ -3526,12 +3526,14 @@
         crowdInQueue: "In queue",
         crowdEnRouteToggle: "En route",
         crowdSubmit: "Check in",
-        crowdThanks: "Thanks · {min} min · {bridge} {lane}",
+        crowdThanks: "Thanks · {wait} · {bridge} {lane}",
+        crowdWaitHr: "{h} hr",
+        crowdWaitHrMin: "{h} hr {m} min",
+        crowdAvgLine: "{lane} {wait} · n={n} · {ago}",
         crowdNeedLoc: "Allow location to pin your spot, or pick a bridge.",
         crowdBusy: "Already reported this lane. Try again in 10 minutes.",
         crowdErr: "Could not send report.",
         crowdAvgs: "Traveler averages (last 45 min)",
-        crowdAvgLine: "{lane} {min} min · n={n} · {ago}",
         crowdAgo: "{n} min ago",
         crowdEmpty: "Not enough traveler reports yet.",
         crowdNoPed: "No pedestrian report at this bridge.",
@@ -3696,12 +3698,14 @@
         crowdInQueue: "En fila",
         crowdEnRouteToggle: "En ruta",
         crowdSubmit: "Registrar",
-        crowdThanks: "Gracias · {min} min · {bridge} {lane}",
+        crowdThanks: "Gracias · {wait} · {bridge} {lane}",
+        crowdWaitHr: "{h} h",
+        crowdWaitHrMin: "{h} h {m} min",
         crowdNeedLoc: "Permita la ubicación para marcar su sitio, o elija un puente.",
         crowdBusy: "Ya reportó este carril. Intente de nuevo en 10 minutos.",
         crowdErr: "No se pudo enviar el reporte.",
         crowdAvgs: "Promedios de viajeros (últimos 45 min)",
-        crowdAvgLine: "{lane} {min} min · n={n} · {ago}",
+        crowdAvgLine: "{lane} {wait} · n={n} · {ago}",
         crowdAgo: "hace {n} min",
         crowdEmpty: "Aún no hay suficientes reportes de viajeros.",
         crowdNoPed: "No hay reporte peatonal en este puente.",
@@ -5192,6 +5196,19 @@
       if (crowdBridge === "veterans" && crowdSentriActive()) lanes.push("vehicle_sentri");
       return lanes;
     }
+    function crowdWaitPhrase(n) {
+      n = Number(n) || 0;
+      if (n <= 90) return n + " min";
+      const h = Math.floor(n / 60);
+      const m = n % 60;
+      if (m === 0) return t("crowdWaitHr").replace("{h}", String(h));
+      return t("crowdWaitHrMin").replace("{h}", String(h)).replace("{m}", String(m));
+    }
+    function crowdWaitChipLabel(n) {
+      n = Number(n) || 0;
+      if (n <= 90) return String(n);
+      return crowdWaitPhrase(n);
+    }
     function crowdLaneLabel(lane) {
       if (lane === "vehicle_sentri" || lane === "ped_ready") {
         return lane === "vehicle_sentri" ? t("sentri") : t("ready");
@@ -5346,7 +5363,7 @@
         ${pedBlocked ? `<p class="crowd-status">${escapeHtml(t("crowdNoPed"))}</p>` : laneRow + `
         <span class="crowd-label">${escapeHtml(t("crowdMinutes"))}</span>
         <div class="crowd-chips">
-          ${crowdChipRow("wait", CROWD_MINS.map(function (n) { return { id: String(n), label: String(n) }; }), String(crowdWait), "wait")}
+          ${crowdChipRow("wait", CROWD_MINS.map(function (n) { return { id: String(n), label: crowdWaitChipLabel(n) }; }), String(crowdWait), "wait")}
         </div>
         <span class="crowd-label">${escapeHtml(t("crowdStatus"))}</span>
         <div class="crowd-chips">
@@ -5379,7 +5396,7 @@
           const agoMin = Math.max(1, Math.round((Date.now() - r.latest) / 60000));
           return `<div class="crowd-avg-line">${escapeHtml(t("crowdAvgLine")
             .replace("{lane}", crowdLaneLabel(r.lane))
-            .replace("{min}", String(r.median))
+            .replace("{wait}", crowdWaitPhrase(r.median))
             .replace("{n}", String(r.n))
             .replace("{ago}", t("crowdAgo").replace("{n}", String(agoMin))))}</div>`;
         }).join("");
@@ -5529,7 +5546,7 @@
           } catch (_) { /* ignore */ }
           if (msg) {
             msg.textContent = t("crowdThanks")
-              .replace("{min}", String(crowdWait))
+              .replace("{wait}", crowdWaitPhrase(crowdWait))
               .replace("{bridge}", crowdBridgeLabel(crowdBridge))
               .replace("{lane}", crowdLaneLabel(crowdLane));
           }
