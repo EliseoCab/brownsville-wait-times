@@ -895,6 +895,14 @@
     }
     var split = genReadySplit(section);
     if (split) html += '<div class="open-line">' + escapeHtml(split) + "</div>";
+    (section.lanes || []).forEach(function (lane) {
+      var w = lane.wait;
+      if (!w || w.na || w.pending) return;
+      var n = w.closed ? 0 : (w.lanesOpenCount != null ? Number(w.lanesOpenCount) : NaN);
+      if (isNaN(n)) return;
+      var lab = /fast/i.test(lane.name) ? t("fast") : /sentri/i.test(lane.name) ? t("sentri") : /nexus/i.test(lane.name) ? t("nexus") : "";
+      if (lab) html += '<div class="open-line">' + escapeHtml(n + " " + lab + " " + t("open")) + "</div>";
+    });
     var ofLine = sectionOfLine(section);
     if (ofLine) html += '<div class="open-line">' + escapeHtml(ofLine) + "</div>";
     var clock = displayStampClock(collectSectionAsOf(section, date), timeZone);
