@@ -5414,7 +5414,7 @@
       });
       const ids = Object.keys(byBridge);
       if (!ids.length) {
-        el.innerHTML = `<div class="crowd-label">${escapeHtml(t("crowdAvgs"))}</div><p>${escapeHtml(t("crowdEmpty"))}</p>`;
+        el.innerHTML = "";
         return;
       }
       el.innerHTML = `<div class="crowd-label">${escapeHtml(t("crowdAvgs"))}</div>` + ids.map(function (id) {
