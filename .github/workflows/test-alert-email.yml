@@ -1,0 +1,50 @@
+name: Test alert email
+
+on:
+  workflow_dispatch:
+
+# Manual SMTP check. Lag alarm only emails when still lagging after
+# auto-refresh, so a self-heal never exercises Gmail. Run this after
+# rotating GMAIL / ALERT_SMTP_PASSWORD to confirm login + send.
+
+permissions:
+  contents: read
+
+jobs:
+  test-alert-email:
+    name: Test alert email
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Send test alert email
+        env:
+          ALERT_SMTP_USER: ${{ secrets.ALERT_SMTP_USER }}
+          ALERT_SMTP_PASSWORD: ${{ secrets.ALERT_SMTP_PASSWORD || secrets.GMAIL }}
+          ALERT_TO: ${{ secrets.ALERT_TO }}
+          ALERT_FROM: ${{ secrets.ALERT_FROM }}
+          ALERT_SUBJECT: BWT alert email test
+        run: |
+          set -euo pipefail
+          stamp=$(TZ=America/Chicago date '+%Y-%m-%d %H:%M:%S %Z')
+          export ALERT_BODY="Manual SMTP test from GitHub Actions (Test alert email). Timestamp: ${stamp} America/Chicago."
+
+          set +e
+          output=$(python3 scripts/send_alert_email.py 2>&1)
+          rc=$?
+          set -e
+          printf '%s\n' "$output"
+
+          if [ "$rc" -ne 0 ]; then
+            echo "::error::send_alert_email.py exited $rc (SMTP did not send)."
+            exit 1
+          fi
+          if printf '%s\n' "$output" | grep -qiE 'skip|expired'; then
+            echo "::error::Alert email skipped or expired; SMTP did not send."
+            exit 1
+          fi
+          if ! printf '%s\n' "$output" | grep -q '^Sent:'; then
+            echo "::error::No Sent confirmation from send_alert_email.py"
+            exit 1
+          fi
