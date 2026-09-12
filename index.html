@@ -6068,7 +6068,7 @@
         html += `<div class="drive-heading">${escapeHtml(t("crowdVehicles"))}</div>` + driveListHtml(vehiclePorts, "vehicle");
       }
       if (walkPorts.length) {
-        html += `<div class="drive-heading">${escapeHtml(t("crowdWalking"))}</div>` + driveListHtml(walkPorts, "ped");
+        html += `<div class="drive-heading">${escapeHtml(t("filterPedestrian"))}</div>` + driveListHtml(walkPorts, "ped");
       }
       grid.innerHTML = html;
       crowdBind();
