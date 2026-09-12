@@ -87,6 +87,12 @@ Alert mail tells employees what to do in plain language (update wait times, or c
 
 Set repo secret **GMAIL** (Gmail app password) so Actions can send from `eliseocab@gmail.com`. Optional: **ALERT_SMTP_USER**, **ALERT_TO**, **ALERT_FROM**. Turn off GitHub Actions failure emails if you only want this custom mail. Alert mail **expires 90 days** after the secret date in `scripts/send_alert_email.py` (currently 2026-09-11 → 2026-12-10); rotate **GMAIL** and bump `SECRET_SET_ON` to extend.
 
+### Manual SMTP test
+
+**Actions → Test alert email → Run workflow**
+
+Sends a one-off mail (does not wait for lag). Use this after rotating **GMAIL** / **ALERT_SMTP_PASSWORD**. The job fails if SMTP skips, the secret is expired, or login/send fails.
+
 > The open page uses the Worker first (`Live · CBP proxy`). A lag email is about the **GitHub backup mirror**, not necessarily a broken page.  
 
 ### Manual lag check

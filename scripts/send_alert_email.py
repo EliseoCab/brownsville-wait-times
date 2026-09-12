@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
-"""Send the concise alert. No-op if ALERT_SMTP_PASSWORD is unset or expired."""
+"""Send the concise alert.
+
+No-op (exit 0) if ALERT_SMTP_PASSWORD is unset. Exit 0 only after a
+successful send when a password is present; exit 1 if that password is
+set but send does not happen (expired, SMTP error, no recipients).
+"""
 
 from __future__ import annotations
 
 import os
 import smtplib
 import sys
+import unicodedata
 from datetime import date, datetime, timedelta
 from email.message import EmailMessage
 from zoneinfo import ZoneInfo
@@ -35,6 +41,19 @@ def recipients(raw: str) -> list[str]:
     return [p.strip() for p in (raw or "").split(",") if p.strip()]
 
 
+def sanitize_secret(value: str | None) -> str:
+    """Replace Unicode spaces (incl. NBSP) with ASCII space, then strip.
+
+    Copy-paste from a browser or password manager can insert \\xa0 / \\u00a0
+    (and other Zs spaces). Those survive str.strip() and break smtp.login
+    with UnicodeEncodeError.
+    """
+    if not value:
+        return ""
+    normalized = [" " if unicodedata.category(ch) == "Zs" else ch for ch in value]
+    return "".join(normalized).strip()
+
+
 def main() -> int:
     subject = (os.environ.get("ALERT_SUBJECT") or "").strip()
     body = (os.environ.get("ALERT_BODY") or "").strip()
@@ -42,8 +61,8 @@ def main() -> int:
         print("No ALERT_SUBJECT/ALERT_BODY; skip send.")
         return 0
 
-    password = (os.environ.get("ALERT_SMTP_PASSWORD") or "").strip()
-    user = (os.environ.get("ALERT_SMTP_USER") or "").strip() or DEFAULT_FROM
+    password = sanitize_secret(os.environ.get("ALERT_SMTP_PASSWORD"))
+    user = sanitize_secret(os.environ.get("ALERT_SMTP_USER")) or DEFAULT_FROM
     if not password:
         print("ALERT_SMTP_PASSWORD unset; skip SMTP (GitHub failure mail only).")
         return 0
@@ -55,13 +74,13 @@ def main() -> int:
             f"({ALERT_TTL_DAYS} days after {SECRET_SET_ON.isoformat()}). "
             "Rotate the GMAIL secret and bump SECRET_SET_ON; skip send."
         )
-        return 0
+        return 1
 
     from_addr = (os.environ.get("ALERT_FROM") or "").strip() or DEFAULT_FROM
     to_list = recipients(os.environ.get("ALERT_TO") or DEFAULT_TO)
     if not to_list:
         print("No ALERT_TO recipients; skip send.")
-        return 0
+        return 1
 
     msg = EmailMessage()
     msg["Subject"] = subject
@@ -69,9 +88,13 @@ def main() -> int:
     msg["To"] = ", ".join(to_list)
     msg.set_content(body)
 
-    with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=20) as smtp:
-        smtp.login(user, password)
-        smtp.send_message(msg)
+    try:
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=20) as smtp:
+            smtp.login(user, password)
+            smtp.send_message(msg)
+    except Exception as exc:
+        print(f"SMTP send failed: {exc}", file=sys.stderr)
+        return 1
     print("Sent:", subject)
     return 0
 
