@@ -5914,8 +5914,15 @@
         );
         bounds.push([p.lat, p.lng]);
       });
-      if (bounds.length === 1) crowdMap.setView(bounds[0], 14);
-      else if (bounds.length > 1) crowdMap.fitBounds(bounds, { padding: [24, 24], maxZoom: 15 });
+      const here = crowdGeo || (userGeo && userGeo !== "denied" ? userGeo : null);
+      if (here && here.lat != null && here.lng != null) {
+        crowdMap.setView([here.lat, here.lng], 15);
+      } else if (bounds.length === 1) {
+        crowdMap.setView(bounds[0], 14);
+      } else if (bounds.length > 1) {
+        crowdMap.fitBounds(bounds, { padding: [24, 24], maxZoom: 15 });
+      }
+      crowdCenterOnMe();
       setTimeout(function () {
         if (crowdMap) crowdMap.invalidateSize();
       }, 250);
