@@ -45,21 +45,6 @@
     setTheme(next);
   }
 
-  function filterAmenities(cat, btn) {
-    document.querySelectorAll(".chip").forEach(function (chip) {
-      chip.classList.toggle("active", chip === btn);
-      chip.setAttribute("aria-pressed", chip === btn ? "true" : "false");
-    });
-    var shown = 0;
-    document.querySelectorAll(".poi").forEach(function (card) {
-      var cats = (card.getAttribute("data-cats") || "").split(/\s+/);
-      var hide = cat !== "all" && cats.indexOf(cat) === -1;
-      card.hidden = hide;
-      if (!hide) shown += 1;
-    });
-    var empty = document.getElementById("filterEmpty");
-    if (empty) empty.hidden = shown > 0;
-  }
 
   function setupPhotoExpand() {
     var lightbox = document.createElement("div");
@@ -164,7 +149,6 @@
 
   window.setLang = setLang;
   window.toggleTheme = toggleTheme;
-  window.filterAmenities = filterAmenities;
 
   applyI18n();
   setupPhotoExpand();
