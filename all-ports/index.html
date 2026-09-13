@@ -407,7 +407,10 @@
       margin: 0.5rem auto 0;
       box-shadow: var(--shadow-sm);
     }
-    .hero-block { margin-bottom: 0.85rem; }
+    .hero-block {
+      margin-bottom: 0.85rem;
+      border-radius: 14px;
+    }
     @media (max-width: 720px) {
       .port-grid { grid-template-columns: 1fr; }
     }
@@ -461,7 +464,7 @@
     html:not([data-theme="dark"]) .hero-block {
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.34));
       border: 1px solid rgba(255, 255, 255, 0.72);
-      border-radius: 22px;
+      border-radius: 14px;
       padding: 1.05rem 1.15rem 1.15rem;
       box-shadow:
         0 1px 0 rgba(255, 255, 255, 0.9) inset,
@@ -595,11 +598,12 @@
     html[data-theme="dark"] .empty {
       background: linear-gradient(180deg, rgba(28, 46, 72, 0.55), rgba(12, 22, 38, 0.42));
       border: 1px solid rgba(125, 211, 252, 0.16);
+      border-radius: 14px;
       box-shadow: 0 1px 0 rgba(186, 230, 253, 0.18) inset, 0 12px 36px rgba(0, 0, 0, 0.28);
       backdrop-filter: blur(22px) saturate(1.45);
       -webkit-backdrop-filter: blur(22px) saturate(1.45);
     }
-    html[data-theme="dark"] .empty { border-radius: 16px; }
+    html[data-theme="dark"] .empty { border-radius: 14px; }
     html[data-theme="dark"] .filter-asof {
       display: flex;
       flex-wrap: wrap;
@@ -636,6 +640,14 @@
     html[data-theme="dark"] .cell:has(.wait-cell.pending),
     html[data-theme="dark"] .cell:has(.wait-cell.na) {
       background: linear-gradient(180deg, rgba(51, 65, 85, 0.5), rgba(16, 28, 46, 0.4));
+    }
+
+    /* Home-screen PWA portrait only — clear Dynamic Island / status bar */
+    @media (display-mode: standalone) and (orientation: portrait) {
+      html:not([data-theme="dark"]) .topbar-inner,
+      html[data-theme="dark"] .topbar-inner {
+        padding-top: max(0.55rem, calc(env(safe-area-inset-top, 0px) + 0.35rem));
+      }
     }
   </style>
 </head>
