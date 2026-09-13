@@ -249,6 +249,33 @@
       white-space: nowrap;
       font-variant-numeric: tabular-nums;
     }
+    footer {
+      background: var(--navy);
+      color: rgba(226, 232, 240, 0.75);
+      padding: 2rem 1.25rem;
+      margin-top: 1rem;
+    }
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .footer-brand {
+      font-family: var(--display);
+      font-size: clamp(1.35rem, 2.5vw, 1.7rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      color: #fff;
+    }
+    .footer-contact {
+      font-size: 0.85rem;
+      color: rgba(226, 232, 240, 0.75);
+      margin: 0.55rem 0 0;
+      max-width: 48ch;
+      line-height: 1.45;
+    }
+    footer a { color: #7dd3fc; text-decoration: none; font-weight: 600; }
+    footer a:hover { text-decoration: underline; color: #fff; }
     .port-hours,
     .port-updated {
       display: block;
@@ -671,7 +698,16 @@
     <button type="button" id="showMoreBtn" hidden>Show more</button>
   </main>
 
+  <footer>
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand" id="footerBrand">All U.S. land ports</div>
+        <p class="footer-contact"><span id="footerContactLead">Questions? Contact</span> <a href="mailto:southtexaswaittimes@icloud.com">southtexaswaittimes@icloud.com</a></p>
+      </div>
+    </div>
+  </footer>
+
   <script src="port-meta.js"></script>
-  <script src="all-ports.js?v=25"></script>
+  <script src="all-ports.js?v=26"></script>
 </body>
 </html>

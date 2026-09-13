@@ -53,7 +53,9 @@
       midnight: "midnight",
       updated: "Updated",
       countLabel: "Showing",
-      lanesOf: "{open} of {total} Open"
+      lanesOf: "{open} of {total} Open",
+      footerBrand: "All U.S. land ports",
+      footerContactLead: "Questions? Contact"
     },
     es: {
       checking: "Cargando todos los puertos…",
@@ -97,7 +99,9 @@
       midnight: "medianoche",
       updated: "Actualizado",
       countLabel: "Mostrando",
-      lanesOf: "{open} de {total} Abiertos"
+      lanesOf: "{open} de {total} Abiertos",
+      footerBrand: "Todos los puertos terrestres de EE. UU.",
+      footerContactLead: "¿Preguntas? Contacte"
     }
   };
 
@@ -149,9 +153,13 @@
     var title = document.getElementById("pageTitle");
     var sub = document.getElementById("pageSub");
     var back = document.getElementById("backLink");
+    var footerBrand = document.getElementById("footerBrand");
+    var footerLead = document.getElementById("footerContactLead");
     if (title) title.textContent = t("title");
     if (sub) sub.textContent = t("sub");
     if (back) back.textContent = t("back");
+    if (footerBrand) footerBrand.textContent = t("footerBrand");
+    if (footerLead) footerLead.textContent = t("footerContactLead");
     document.title = t("title") + " · BWT";
     var en = document.getElementById("langEn");
     var es = document.getElementById("langEs");
