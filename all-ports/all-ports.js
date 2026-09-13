@@ -1153,10 +1153,10 @@
         '<article class="port-card">' +
           '<div class="port-head">' +
             '<div class="port-title">' + escapeHtml(it.title) + "</div>" +
+            mapsBlock +
             '<div class="port-meta">' +
               '<span class="pill">' + escapeHtml(it.state) + "</span>" +
               '<span class="pill">' + (it.border === "mexican" ? "MX" : "CA") + "</span>" +
-              mapsBlock +
             "</div>" +
             hoursHtml +
             updatedHtml +

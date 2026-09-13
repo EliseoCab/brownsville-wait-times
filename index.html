@@ -1382,9 +1382,10 @@
     }
     .wait-table td.bridge .bridge-title,
     .m-row-bridge.bridge-title {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.2rem;
       min-width: 0;
       max-width: 100%;
     }
@@ -5361,7 +5362,7 @@
     function bridgeTitleHtml(port, extraClass) {
       const name = (port && port.meta && port.meta.short) || "";
       const cls = extraClass ? "bridge-title " + extraClass : "bridge-title";
-      return `<span class="${cls}"><span class="bridge-name">${escapeHtml(name)}</span>${mapsLinkHtml(port)}</span>`;
+      return `<span class="${cls}"><span class="bridge-name">${escapeHtml(name)}</span>${mapsLinkHtml(port) || ""}</span>`;
     }
 
     const CROWD_OPEN_KEY = "bwt-crowd-open";
