@@ -1392,6 +1392,20 @@
       min-width: 0;
       overflow-wrap: anywhere;
     }
+    .bridge-map-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.28rem;
+      flex-shrink: 0;
+    }
+    .bridge-dist {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      color: var(--sky-deep);
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
     .bridge-map {
       display: inline-flex;
       align-items: center;
@@ -3762,6 +3776,8 @@
         installOther3: "Confirm. You can open it like any other app.",
         mexicoLabel: "México:",
         openMaps: "Open {name} in maps",
+        distMi: "{n} mi",
+        distKm: "{n} km",
         colBridge: "Bridge",
         na: "N/A",
         closed: "Closed",
@@ -3944,6 +3960,8 @@
         installOther3: "Confirma. Podrás abrirla como cualquier otra app.",
         mexicoLabel: "México:",
         openMaps: "Abrir {name} en mapas",
+        distMi: "{n} mi",
+        distKm: "{n} km",
         colBridge: "Puente",
         na: "N/D",
         closed: "Cerrado",
@@ -4641,11 +4659,17 @@
       navigator.geolocation.getCurrentPosition(
         function (pos) {
           userGeo = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          if (lastData) updateLeaveCard(lastData);
+          if (lastData) {
+            updateLeaveCard(lastData);
+            renderPorts(lastData);
+          }
         },
         function () {
           userGeo = "denied";
-          if (lastData) updateLeaveCard(lastData);
+          if (lastData) {
+            updateLeaveCard(lastData);
+            renderPorts(lastData);
+          }
         },
         { enableHighAccuracy: false, timeout: 8000, maximumAge: 5 * 60 * 1000 }
       );
@@ -5281,17 +5305,39 @@
       return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
     }
 
+    function formatDistanceLabel(miles) {
+      if (miles == null || !isFinite(miles)) return "";
+      if (currentLang === "es") {
+        const km = Math.round(miles * 1.60934 * 10) / 10;
+        return t("distKm").replace("{n}", km.toFixed(1));
+      }
+      const mi = Math.round(miles * 10) / 10;
+      return t("distMi").replace("{n}", mi.toFixed(1));
+    }
+
+    function portDistanceMiles(port) {
+      if (!userGeo || userGeo === "denied") return null;
+      const meta = port && port.meta;
+      if (!meta || meta.lat == null || meta.lng == null) return null;
+      return haversineMiles(userGeo, { lat: meta.lat, lng: meta.lng });
+    }
+
     function mapsLinkHtml(port) {
       const href = mapsHref(port);
       if (!href) return "";
       const name = (port && port.meta && port.meta.short) || "bridge";
       const label = t("openMaps").replace("{name}", name);
+      const dist = formatDistanceLabel(portDistanceMiles(port));
+      const distHtml = dist
+        ? `<span class="bridge-dist">${escapeHtml(dist)}</span>`
+        : "";
       return (
+        `<span class="bridge-map-wrap">` +
         `<a class="bridge-map" href="${escapeHtml(href)}" target="_blank" rel="noopener" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">` +
         `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">` +
         `<path d="M12 21s-6.5-5.8-6.5-10.2a6.5 6.5 0 1 1 13 0C18.5 15.2 12 21 12 21z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>` +
         `<circle cx="12" cy="10.6" r="2.2" fill="currentColor"/>` +
-        `</svg></a>`
+        `</svg></a>${distHtml}</span>`
       );
     }
 

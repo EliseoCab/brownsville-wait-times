@@ -235,9 +235,20 @@
       color: var(--muted);
       border: 1px solid var(--line);
     }
-    .pill.dist { color: var(--sky-deep); border-color: #bae6fd; background: #e0f2fe; }
-    html[data-theme="dark"] .pill.dist { background: #0b2740; border-color: #1e4a66; }
     .pill.tz { color: var(--sky-deep); }
+    .maps-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.28rem;
+    }
+    .maps-dist {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      color: var(--sky-deep);
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
     .port-hours,
     .port-updated {
       display: block;
@@ -661,6 +672,6 @@
   </main>
 
   <script src="port-meta.js"></script>
-  <script src="all-ports.js?v=24"></script>
+  <script src="all-ports.js?v=25"></script>
 </body>
 </html>

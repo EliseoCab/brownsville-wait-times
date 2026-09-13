@@ -20,6 +20,9 @@
       showMore: "Show more",
       showLess: "Show fewer",
       mi: "mi",
+      km: "km",
+      distMi: "{n} mi",
+      distKm: "{n} km",
       gen: "Gen",
       ready: "Ready",
       sentri: "SENTRI",
@@ -61,6 +64,9 @@
       showMore: "Mostrar más",
       showLess: "Mostrar menos",
       mi: "mi",
+      km: "km",
+      distMi: "{n} mi",
+      distKm: "{n} km",
       gen: "Gen",
       ready: "Ready",
       sentri: "SENTRI",
@@ -163,6 +169,16 @@
       Math.cos(lat1 * toRad) * Math.cos(lat2 * toRad) *
       Math.sin(dLon / 2) * Math.sin(dLon / 2);
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function formatDistanceLabel(miles) {
+    if (miles == null || !isFinite(miles)) return "";
+    if (state.lang === "es") {
+      var km = Math.round(miles * 1.60934 * 10) / 10;
+      return t("distKm").replace("{n}", km.toFixed(1));
+    }
+    var mi = Math.round(miles * 10) / 10;
+    return t("distMi").replace("{n}", mi.toFixed(1));
   }
 
   function textOf(el, tag) {
@@ -1089,11 +1105,21 @@
       var pass = it.sections.find(function (s) { return s.key === "passenger"; });
       var ped = it.sections.find(function (s) { return s.key === "pedestrian"; });
       var comm = it.sections.find(function (s) { return s.key === "commercial"; });
-      var dist = it.distanceMi != null ? ("~" + Math.round(it.distanceMi) + " " + t("mi")) : "";
+      var distLabel = formatDistanceLabel(it.distanceMi);
       var mapsQ = encodeURIComponent(it.meta.mapsQuery || it.title);
       var mapsHref = /iPhone|iPad|iPod/i.test(navigator.userAgent || "")
         ? "https://maps.apple.com/?q=" + mapsQ
         : "https://www.google.com/maps/search/?api=1&query=" + mapsQ;
+      var mapsBlock =
+        '<span class="maps-wrap">' +
+        '<a class="maps" href="' + mapsHref + '" target="_blank" rel="noopener" aria-label="' +
+          escapeHtml(t("maps")) + '" title="' + escapeHtml(t("maps")) + '">' +
+          '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+          '<path d="M12 21s-6.5-5.8-6.5-10.2a6.5 6.5 0 1 1 13 0C18.5 15.2 12 21 12 21z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' +
+          '<circle cx="12" cy="10.6" r="2.2" fill="currentColor"/>' +
+          "</svg></a>" +
+        (distLabel ? '<span class="maps-dist">' + escapeHtml(distLabel) + "</span>" : "") +
+        "</span>";
       var hoursLabel = formatHoursOfOperation(it.hours);
       var portStamp = collectPortAsOf(it);
       var updatedLabel = displayStampClock(portStamp, it.timeZone);
@@ -1122,13 +1148,7 @@
             '<div class="port-meta">' +
               '<span class="pill">' + escapeHtml(it.state) + "</span>" +
               '<span class="pill">' + (it.border === "mexican" ? "MX" : "CA") + "</span>" +
-              (dist ? '<span class="pill dist">' + dist + "</span>" : "") +
-              '<a class="maps" href="' + mapsHref + '" target="_blank" rel="noopener" aria-label="' +
-                escapeHtml(t("maps")) + '" title="' + escapeHtml(t("maps")) + '">' +
-                '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
-                '<path d="M12 21s-6.5-5.8-6.5-10.2a6.5 6.5 0 1 1 13 0C18.5 15.2 12 21 12 21z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' +
-                '<circle cx="12" cy="10.6" r="2.2" fill="currentColor"/>' +
-                "</svg></a>" +
+              mapsBlock +
             "</div>" +
             hoursHtml +
             updatedHtml +
