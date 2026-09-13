@@ -700,7 +700,61 @@
   }
 
   function isActiveWait(w) {
-    return w && !w.pending && !w.closed && w.minutes != null;
+    return w && w.minutes != null && !w.pending && !w.closed;
+  }
+
+  function waitClass(minutes) {
+    if (minutes == null) return "na";
+    if (minutes <= 15) return "low";
+    if (minutes <= 30) return "med";
+    if (minutes <= 60) return "high";
+    return "severe";
+  }
+
+  /** Attach homepage-style num/label/cls for wait rendering. */
+  function decorateWait(w) {
+    if (!w || w.na) {
+      return { minutes: null, num: t("na"), label: t("na"), cls: "na", pending: false, closed: false };
+    }
+    if (w.closed) {
+      return { minutes: null, num: t("closed"), label: t("closed"), cls: "na", pending: false, closed: true };
+    }
+    if (w.pending || w.minutes == null) {
+      return { minutes: null, num: t("pending"), label: t("pending"), cls: "pending", pending: true, closed: false };
+    }
+    return {
+      minutes: w.minutes,
+      num: String(w.minutes),
+      label: w.minutes + " min",
+      cls: waitClass(w.minutes),
+      pending: false,
+      closed: false,
+      lanesOpenCount: w.lanesOpenCount
+    };
+  }
+
+  function waitCellHtml(w) {
+    var d = decorateWait(w);
+    if (d.minutes == null) {
+      return '<span class="wait-cell ' + d.cls + '" aria-label="' + escapeHtml(d.label) + '"><span class="num">' +
+        escapeHtml(d.num) + "</span></span>";
+    }
+    return '<span class="wait-cell ' + d.cls + '" aria-label="' + escapeHtml(d.label) + ' wait"><span class="num">' +
+      escapeHtml(d.num) + '</span><span class="unit">min</span></span>';
+  }
+
+  function laneTypeLabel(name) {
+    var n = String(name || "").toLowerCase();
+    if (/ready/.test(n)) return t("ready");
+    if (/nexus/.test(n)) return t("nexus");
+    if (/sentri/.test(n)) return t("sentri");
+    if (/fast/.test(n)) return t("fast");
+    if (/general/.test(n)) return t("gen");
+    return name || "";
+  }
+
+  function sectionHasData(section) {
+    return !!(section && (section.lanes || []).some(function (l) { return isShowableWait(l.wait); }));
   }
 
   /** Newest CBP lane stamp for one crossing. */
@@ -803,20 +857,7 @@
   }
 
   function isShowableWait(w) {
-    return w && !w.na && (isActiveWait(w) || w.pending || w.closed);
-  }
-
-  function waitHtml(w) {
-    if (!w || w.na || (!isShowableWait(w) && w.minutes == null && !w.pending && !w.closed)) {
-      return '<span class="wait-empty">' + t("na") + "</span>";
-    }
-    if (w.closed) return '<span class="wait closed">' + t("closed") + "</span>";
-    if (w.pending || w.minutes == null) return '<span class="wait pending">' + t("pending") + "</span>";
-    var cls = "wait";
-    if (w.minutes <= 15) cls += " good";
-    else if (w.minutes <= 45) cls += " warn";
-    else cls += " bad";
-    return '<span class="' + cls + '">' + w.minutes + " min</span>";
+    return w && !w.na && (w.minutes != null || w.pending || w.closed);
   }
 
   function laneSortRank(name) {
@@ -861,6 +902,7 @@
   function genReadySplit(section) {
     if (!section) return "";
     var parts = [];
+    var commercial = section.key === "commercial";
     sortLanes(section.lanes || []).forEach(function (lane) {
       var w = lane.wait;
       if (!w || w.na || w.pending) return;
@@ -868,45 +910,39 @@
       if (isNaN(n)) return;
       if (/general/i.test(lane.name) && !/ready|sentri|fast|nexus/i.test(lane.name)) {
         parts.push(n + " " + t("gen"));
-      } else if (/ready/i.test(lane.name)) {
-        parts.push(n + " " + t("ready"));
-      } else if (/fast/i.test(lane.name)) {
+      } else if (commercial && /fast/i.test(lane.name)) {
         parts.push(n + " " + t("fast"));
+      } else if (!commercial && /ready/i.test(lane.name)) {
+        if (n === 0) return;
+        parts.push(n + " " + t("ready"));
+      } else if (/nexus/i.test(lane.name)) {
+        parts.push(n + " " + t("nexus"));
+      } else if (/sentri/i.test(lane.name)) {
+        parts.push(n + " " + t("sentri"));
       }
     });
     return parts.join(", ");
   }
 
+  /** Homepage-style lane rows + open totals for one traffic section. */
   function modeCell(section, border, date, timeZone) {
-    if (!section) return '<span class="wait-empty">' + t("na") + "</span>";
-    var general = section.lanes.find(function (l) { return /general/i.test(l.name); });
-    var primary = general && isShowableWait(general.wait) ? general.wait : null;
-    if (!primary) {
-      var anyShowable = section.lanes.find(function (l) { return isShowableWait(l.wait); });
-      primary = anyShowable ? anyShowable.wait : (general && general.wait);
+    if (!sectionHasData(section)) {
+      return '<span class="wait-empty">' + t("na") + "</span>";
     }
-    var special = sortLanes(section.lanes).find(function (l) {
-      if (!/ready|sentri|nexus|fast/i.test(l.name) || !isShowableWait(l.wait)) return false;
-      if (!primary || !isActiveWait(l.wait) || !isActiveWait(primary)) return false;
-      if (/fast/i.test(l.name)) return true;
-      return primary.minutes !== l.wait.minutes;
+    var rows = [];
+    sortLanes(section.lanes || []).forEach(function (lane) {
+      if (!isShowableWait(lane.wait)) return;
+      rows.push(
+        '<div class="lane-row"><span class="dual-label">' + escapeHtml(laneTypeLabel(lane.name)) +
+        "</span> " + waitCellHtml(lane.wait) + "</div>"
+      );
     });
-    var html = waitHtml(primary);
-    if (special && special !== general && isActiveWait(special.wait) && primary && isActiveWait(primary) && special.wait.minutes !== primary.minutes) {
-      var lab = /ready/i.test(special.name) ? t("ready") : /fast/i.test(special.name) ? t("fast") : /nexus/i.test(special.name) ? t("nexus") : t("sentri");
-      html = '<div class="compact-waits"><span class="compact-pair"><span class="dual-label dual-gen">' + t("gen") + "</span> " + waitHtml(primary) +
-        '</span><span class="compact-pair"><span class="dual-label">' + lab + "</span> " + waitHtml(special.wait) + "</span></div>";
+    if (!rows.length) {
+      return '<span class="wait-empty">' + t("na") + "</span>";
     }
+    var html = '<div class="wait-stack">' + rows.join("") + "</div>";
     var split = genReadySplit(section);
     if (split) html += '<div class="open-line">' + escapeHtml(split) + "</div>";
-    (section.lanes || []).forEach(function (lane) {
-      var w = lane.wait;
-      if (!w || w.na || w.pending) return;
-      var n = w.closed ? 0 : (w.lanesOpenCount != null ? Number(w.lanesOpenCount) : NaN);
-      if (isNaN(n)) return;
-      var lab = /sentri/i.test(lane.name) ? t("sentri") : /nexus/i.test(lane.name) ? t("nexus") : "";
-      if (lab) html += '<div class="open-line">' + escapeHtml(n + " " + lab + " " + t("open")) + "</div>";
-    });
     var ofLine = sectionOfLine(section);
     if (ofLine) html += '<div class="open-line">' + escapeHtml(ofLine) + "</div>";
     var clock = displayStampClock(collectSectionAsOf(section, date), timeZone);
@@ -1073,6 +1109,7 @@
         : "";
       function col(section, key) {
         if (traffic !== "all" && traffic !== key) return "";
+        if (!sectionHasData(section)) return "";
         return '<div class="cell"><div class="cell-kicker">' +
           (key === "passenger" ? t("trafficVeh") : key === "pedestrian" ? t("trafficPed") : t("trafficComm")) +
           "</div>" + modeCell(section, it.border, it.date, it.timeZone) + "</div>";
