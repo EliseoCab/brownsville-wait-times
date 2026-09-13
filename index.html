@@ -634,6 +634,9 @@
     html[data-view="drive"] .nearby-footer {
       display: none !important;
     }
+    html[data-view="commercial"] .live-cams {
+      display: none !important;
+    }
     html[data-view="drive"] .summary {
       margin-top: 0.85rem;
       margin-bottom: 0.75rem;
@@ -654,25 +657,47 @@
     .drive-heading + .drive-list { margin-bottom: 0.15rem; }
     .drive-list + .drive-heading { margin-top: 0.85rem; }
     .drive-dual {
-      font-size: 0.92rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1.25;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.12rem;
       text-align: right;
       font-variant-numeric: tabular-nums;
     }
-    .drive-dual .unit {
-      font-size: 0.68rem;
+    .drive-dual-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      gap: 0.35rem;
+    }
+    .drive-dual-lab {
+      font-size: 0.92rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      color: var(--muted);
+    }
+    .drive-dual-num {
+      font-size: 2.35rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 0.95;
+    }
+    .drive-dual-num .unit,
+    .drive-wait .unit,
+    .drive-sentri .unit {
+      font-size: 0.8rem;
       font-weight: 700;
       opacity: 0.75;
+      letter-spacing: 0.08em;
     }
-    .drive-dual .good { color: var(--green); }
-    .drive-dual .warn { color: var(--orange); }
-    .drive-dual .bad { color: var(--red); }
+    .drive-dual-num.good { color: var(--green); }
+    .drive-dual-num.warn { color: var(--orange); }
+    .drive-dual-num.bad { color: var(--red); }
     .drive-card {
       display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 0.15rem 0.75rem;
+      grid-template-columns: auto auto;
+      justify-content: start;
+      gap: 0.15rem 0.45rem;
       align-items: center;
       background: var(--white);
       border: 1px solid var(--line);
@@ -697,15 +722,20 @@
     .drive-wait {
       font-size: 2.35rem;
       font-weight: 800;
-      letter-spacing: -0.05em;
+      letter-spacing: -0.04em;
       line-height: 0.95;
       text-align: right;
       font-variant-numeric: tabular-nums;
     }
-    .drive-wait .unit {
-      font-size: 0.8rem;
-      font-weight: 700;
-      opacity: 0.75;
+    .drive-wait.is-dual {
+      font-size: inherit;
+      letter-spacing: 0;
+      font-weight: 400;
+    }
+    .drive-updated {
+      font-size: 0.68rem;
+      font-weight: 650;
+      color: var(--muted);
     }
     .drive-wait.good { color: var(--green); }
     .drive-wait.warn { color: var(--orange); }
@@ -3587,6 +3617,7 @@
         crowdNo: "No",
         crowdMode: "How you are crossing",
         crowdVehicles: "Vehicles",
+        driveGen: "General",
         crowdWalking: "Walking",
         crowdBridge: "Bridge",
         crowdLane: "Lane",
@@ -3595,7 +3626,7 @@
         crowdCheckIn: "Check in",
         crowdWaitBlock: "Wait time",
         crowdPinBlock: "Check in · line map",
-        crowdPinHint: "Independent of wait times. Uses your location so others can see where the line starts.",
+        crowdPinHint: "Anonymous. Independent of wait times. Uses your location so others can see where the line starts.",
         crowdThanks: "Thanks · {wait} · {bridge} {lane}",
         crowdThanksPin: "Pinned · {bridge}",
         crowdLastPin: "Last check-in: {bridge} · {lat}, {lng} · {ago}",
@@ -3767,6 +3798,7 @@
         crowdNo: "No",
         crowdMode: "Cómo cruza",
         crowdVehicles: "Vehículos",
+        driveGen: "General",
         crowdWalking: "A pie",
         crowdBridge: "Puente",
         crowdLane: "Carril",
@@ -3775,7 +3807,7 @@
         crowdCheckIn: "Registrar ubicación",
         crowdWaitBlock: "Tiempo de espera",
         crowdPinBlock: "Registro · mapa de la fila",
-        crowdPinHint: "Independiente de los minutos. Usa su ubicación para que otros vean dónde empieza la fila.",
+        crowdPinHint: "Anónimo. Independiente de los minutos. Usa su ubicación para que otros vean dónde empieza la fila.",
         crowdThanks: "Gracias · {wait} · {bridge} {lane}",
         crowdThanksPin: "Ubicación marcada · {bridge}",
         crowdLastPin: "Último registro: {bridge} · {lat}, {lng} · {ago}",
@@ -4402,7 +4434,10 @@
       document.querySelectorAll(".filter-btn").forEach(function (b) {
         b.classList.toggle("active", b.getAttribute("data-filter") === currentFilter);
       });
-      document.documentElement.setAttribute("data-view", currentFilter === "drive" ? "drive" : "");
+      document.documentElement.setAttribute(
+        "data-view",
+        currentFilter === "drive" ? "drive" : currentFilter === "commercial" ? "commercial" : ""
+      );
     }
 
     function filterGeneralMode() {
@@ -5404,8 +5439,6 @@
       if (!line) return;
       if (near && near.miles <= 1.5) {
         line.textContent = t("crowdNear").replace("{bridge}", near.short);
-      } else if (near && near.miles <= 8) {
-        line.textContent = t("crowdEnRoute").replace("{bridge}", near.short);
       } else {
         line.textContent = "";
       }
@@ -5996,10 +6029,10 @@
         const rTone = driveWaitTone(ready.wait.minutes);
         return {
           html: `<div class="drive-dual">
-            <div>${escapeHtml(t("gen"))} <span class="${gTone}">${escapeHtml(String(w.minutes))}<span class="unit"> min</span></span></div>
-            <div>${escapeHtml(t("ready"))} <span class="${rTone}">${escapeHtml(String(ready.wait.minutes))}<span class="unit"> min</span></span></div>
+            <div class="drive-dual-row"><span class="drive-dual-lab">${escapeHtml(t("driveGen"))}</span><span class="drive-dual-num ${gTone}">${escapeHtml(String(w.minutes))}<span class="unit"> min</span></span></div>
+            <div class="drive-dual-row"><span class="drive-dual-lab">${escapeHtml(t("ready"))}</span><span class="drive-dual-num ${rTone}">${escapeHtml(String(ready.wait.minutes))}<span class="unit"> min</span></span></div>
           </div>`,
-          cls: "",
+          cls: "is-dual",
           openBits: openBits
         };
       }
@@ -6012,6 +6045,11 @@
     }
     function driveCardHtml(port, kind) {
       const hoursLabel = formatHoursOfOperation(port.hours);
+      const portStamp = collectPortAsOf(port);
+      const updatedLabel = formatBridgeUpdated(portStamp);
+      const updatedHtml = updatedLabel
+        ? `<div class="drive-updated">${escapeHtml(t("bridgeUpdated"))} ${escapeHtml(updatedLabel)}</div>`
+        : "";
       let extra = "";
       let waitHtml;
       let waitCls;
@@ -6028,7 +6066,7 @@
         const ofLine = sectionOfLine(pass);
         const sentriWait = isVeteransPort(port) ? laneWaitForShare(port, "sentri") : null;
         extra = sentriWait && isActiveWait(sentriWait)
-          ? `<div class="drive-sentri">${escapeHtml(t("sentri"))} ${sentriWait.minutes} min</div>`
+          ? `<div class="drive-sentri">${escapeHtml(t("sentri"))} ${sentriWait.minutes}<span class="unit"> min</span></div>`
           : "";
         waitCls = driveWaitTone(wait);
         waitHtml = wait == null ? "—" : wait + '<span class="unit"> min</span>';
@@ -6038,6 +6076,7 @@
         <div>
           ${bridgeTitleHtml(port, "drive-name")}
           <div class="drive-hours">${escapeHtml(hoursLabel)}</div>
+          ${updatedHtml}
           ${extra}
         </div>
         <div class="drive-wait ${waitCls}">${waitHtml}</div>
