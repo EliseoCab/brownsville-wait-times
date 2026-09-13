@@ -109,6 +109,27 @@ class HoursParsingTests(unittest.TestCase):
         self.assertEqual((w.open_min, w.close_min), (6 * 60, 22 * 60))
 
 
+class PendingReadyHelperTests(unittest.TestCase):
+    def test_24h_no_stamp_early_hour_is_ready(self):
+        w = c.parse_hours("24 hrs/day")
+        now = chicago(2026, 9, 11, 1, 0)
+        self.assertTrue(c.pending_ready(w, now, None, last_stamp=None))
+        self.assertFalse(c.waiting_for_new_hourly_post(now, None))
+
+    def test_24h_previous_hour_stamp_keeps_grace(self):
+        w = c.parse_hours("24 hrs/day")
+        now = chicago(2026, 9, 11, 1, 5)
+        stamp = chicago(2026, 9, 11, 0, 0)
+        self.assertFalse(c.pending_ready(w, now, None, last_stamp=stamp))
+        self.assertTrue(c.waiting_for_new_hourly_post(now, stamp))
+
+    def test_24h_after_15_is_ready_even_with_previous_stamp(self):
+        w = c.parse_hours("24 hrs/day")
+        now = chicago(2026, 9, 11, 1, 15)
+        stamp = chicago(2026, 9, 11, 0, 0)
+        self.assertTrue(c.pending_ready(w, now, None, last_stamp=stamp))
+
+
 class StampAndPendingTests(unittest.TestCase):
     def test_noon_and_numeric_stamps(self):
         xml = four_bridges(bm=NOON, date="9/10/2026")
@@ -204,8 +225,8 @@ class PerBridgeEvaluateTests(unittest.TestCase):
         self.assertEqual(by["bm"].status, "open")
         self.assertFalse(by["bm"].problems)
         self.assertEqual(by["gateway"].status, "open")
-        # 2:00am is still inside the 15-minute 24h pending grace
-        self.assertFalse(by["gateway"].problems)
+        # No current-hour stamp: overnight Pending is stale at :00, not re-graced.
+        self.assertIn("cbp_pending", by["gateway"].problems)
 
     def test_post_close_grace_skips_frozen_stamp(self):
         # Last-open 10pm stamp, now 10:20pm — would look stale if still "open".
@@ -301,16 +322,68 @@ class PerBridgeEvaluateTests(unittest.TestCase):
         self.assertIn("cbp_pending", by["veterans"].problems)
         self.assertIn("cbp_pending", by["los_indios"].problems)
 
-    def test_24h_pending_before_hour_grace_is_ok(self):
+    def test_24h_pending_carryover_at_1am_is_stale(self):
+        """1:00 AM + Update Pending with no current-hour stamp is carry-over."""
+        xml = four_bridges(bm=PENDING, gw=PENDING, date="9/11/2026")
+        now = chicago(2026, 9, 11, 1, 0)
+        ordered = self.checks(xml, xml, now)
+        by = self.by_id(ordered)
+        self.assertIn("cbp_pending", by["bm"].problems)
+        self.assertIn("cbp_pending", by["gateway"].problems)
+        self.assertIn("site_pending", by["bm"].problems)
+        self.assertIn("site_pending", by["gateway"].problems)
+        lagging, reason, _, names = c.summarize(ordered)
+        self.assertTrue(lagging)
+        self.assertIn("cbp_pending", reason)
+        self.assertIn("B&M", names)
+        self.assertIn("Gateway", names)
+
+    def test_24h_pending_no_stamp_early_in_hour_is_stale(self):
+        """Grace no longer resets every clock hour when there is no usable stamp."""
         xml = four_bridges(bm=PENDING, gw=PENDING, date="9/11/2026")
         now = chicago(2026, 9, 11, 2, 5)
         ordered = self.checks(xml, xml, now)
         by = self.by_id(ordered)
+        self.assertIn("cbp_pending", by["bm"].problems)
+        self.assertIn("cbp_pending", by["gateway"].problems)
+        lagging, reason, _, _ = c.summarize(ordered)
+        self.assertTrue(lagging)
+        self.assertIn("cbp_pending", reason)
+
+    def test_24h_pending_after_fresh_previous_hour_stamp_keeps_grace(self):
+        """Just after the hour: last post was last hour, waiting for this hour's post."""
+        prev = "General Lanes: At 12:00 am CDT Update Pending"
+        xml = four_bridges(bm=prev, gw=prev, date="9/11/2026")
+        now = chicago(2026, 9, 11, 1, 5)
+        ordered = self.checks(xml, xml, now)
+        by = self.by_id(ordered)
+        self.assertTrue(by["bm"].cbp_pending)
+        self.assertIsNotNone(by["bm"].cbp_stamp)
+        self.assertEqual(by["bm"].cbp_stamp.astimezone(CHICAGO).hour, 0)
         self.assertFalse(by["bm"].problems)
         self.assertFalse(by["gateway"].problems)
         lagging, reason, _, _ = c.summarize(ordered)
         self.assertFalse(lagging)
         self.assertEqual(reason, "fresh")
+
+    def test_24h_pending_current_hour_stamp_keeps_grace(self):
+        """Current-hour stamp + Pending at :05 is still waiting for this hour's post."""
+        cur = "General Lanes: At 1:00 am CDT Update Pending"
+        xml = four_bridges(gw=cur, date="9/11/2026")
+        now = chicago(2026, 9, 11, 1, 5)
+        gw = self.by_id(self.checks(xml, xml, now))["gateway"]
+        self.assertTrue(gw.cbp_pending)
+        self.assertEqual(gw.cbp_stamp.astimezone(CHICAGO).hour, 1)
+        self.assertFalse(gw.problems)
+
+    def test_24h_pending_older_than_previous_hour_is_stale_in_grace(self):
+        """Stamp from two hours ago is carry-over, not a wait for this hour's post."""
+        older = "General Lanes: At 11:00 pm CDT Update Pending"
+        xml = four_bridges(gw=older, date="9/10/2026")
+        now = chicago(2026, 9, 11, 1, 5)
+        gw = self.by_id(self.checks(xml, xml, now))["gateway"]
+        self.assertTrue(gw.cbp_pending)
+        self.assertIn("cbp_pending", gw.problems)
 
     def test_24h_pending_after_hour_grace_is_stale(self):
         xml = four_bridges(bm=PENDING, gw=PENDING, date="9/11/2026")
@@ -330,6 +403,15 @@ class PerBridgeEvaluateTests(unittest.TestCase):
         xml = four_bridges(gw=PENDING, date="9/11/2026")
         now = chicago(2026, 9, 11, 2, 15)
         gw = self.by_id(self.checks(xml, xml, now))["gateway"]
+        self.assertIn("cbp_pending", gw.problems)
+
+    def test_24h_pending_after_15_with_previous_hour_stamp_is_stale(self):
+        """After :15, even a fresh previous-hour stamp no longer gets grace."""
+        prev = "General Lanes: At 1:00 am CDT Update Pending"
+        xml = four_bridges(gw=prev, date="9/11/2026")
+        now = chicago(2026, 9, 11, 2, 15)
+        gw = self.by_id(self.checks(xml, xml, now))["gateway"]
+        self.assertTrue(gw.cbp_pending)
         self.assertIn("cbp_pending", gw.problems)
 
     def test_24h_site_pending_while_cbp_has_times_is_stale_in_hour_grace(self):
