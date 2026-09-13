@@ -656,14 +656,16 @@
     }
     .drive-heading + .drive-list { margin-bottom: 0.15rem; }
     .drive-list + .drive-heading { margin-top: 0.85rem; }
-    /* One wait tile per bridge; indented right, min tight to the number */
+    /* One wait tile per bridge; shared left edge + uniform height */
     .drive-wait-tile {
       display: flex;
       flex-direction: column;
+      justify-content: center;
       align-items: stretch;
-      gap: 0.2rem;
-      min-width: 7.5rem;
-      margin-left: 0.85rem;
+      gap: 0.18rem;
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 4.85rem;
       padding: 0.4rem 0.55rem;
       border-radius: 12px;
       border: 1px solid var(--line);
@@ -675,25 +677,25 @@
       flex-wrap: nowrap;
       justify-content: flex-start;
       align-items: baseline;
-      gap: 0.45rem;
+      gap: 0.4rem;
       font-variant-numeric: tabular-nums;
       font-feature-settings: "tnum" 1, "lnum" 1;
     }
     .drive-wait-time {
       display: inline-flex;
       align-items: baseline;
-      gap: 0.12rem;
+      gap: 0.1rem;
       flex: 0 0 auto;
     }
     .drive-wait-val {
-      font-size: 1.55rem;
+      font-size: 2.15rem;
       font-weight: 800;
       letter-spacing: 0;
-      line-height: 1;
+      line-height: 0.95;
       text-align: left;
     }
     .drive-wait-unit {
-      font-size: 0.72rem;
+      font-size: 0.78rem;
       font-weight: 700;
       letter-spacing: 0.06em;
       opacity: 0.75;
@@ -725,6 +727,7 @@
       letter-spacing: 0;
       font-weight: 400;
       text-align: left;
+      width: 100%;
     }
     html:not([data-theme="dark"]) .drive-wait-tile {
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.55));
@@ -737,7 +740,7 @@
     }
     .drive-card {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr) 9.25rem;
       justify-content: stretch;
       gap: 0.15rem 0.75rem;
       align-items: center;
