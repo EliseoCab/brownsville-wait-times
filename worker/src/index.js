@@ -3,10 +3,17 @@
  *
  * Deploy:  cd worker && npx wrangler deploy
  * Secret:  npx wrangler secret put X_BEARER_TOKEN
- * Cron:    every 5 minutes warms the CBP cache
+ * Secret:  npx wrangler secret put GITHUB_DISPATCH_TOKEN  (lag-alarm backup kick)
+ * Cron:    every 5 minutes warms the CBP cache; :17/:47 UTC kick the lag alarm
  *
  * Security: CORS allowlist, security headers, per-IP rate limits (Cache API).
  */
+
+import {
+  LAG_ALARM_KICK_CRONS,
+  isLagAlarmKickCron,
+  kickLagAlarmWorkflow,
+} from "./lag-kick.js";
 
 const CBP_URL =
   "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43";
@@ -713,6 +720,8 @@ export default {
               all: "/all",
               x: "/x/dfolaredo",
               hasXBearer: !!(env && env.X_BEARER_TOKEN),
+              hasGithubDispatchToken: !!(env && env.GITHUB_DISPATCH_TOKEN),
+              lagAlarmKickCrons: LAG_ALARM_KICK_CRONS,
               cacheTtlSeconds: CACHE_TTL_SECONDS,
               rateLimits: {
                 x: RATE_LIMITS.x,
@@ -784,6 +793,23 @@ export default {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(
       (async function () {
+        if (isLagAlarmKickCron(event && event.cron)) {
+          try {
+            const kick = await kickLagAlarmWorkflow(env);
+            if (kick.skipped) {
+              console.log("lag-kick skipped:", kick.reason);
+            } else if (!kick.ok) {
+              console.log("lag-kick failed:", kick.status, kick.error);
+            } else {
+              console.log("lag-kick dispatched check-data-freshness.yml");
+            }
+          } catch (kickErr) {
+            console.log(
+              "lag-kick error:",
+              kickErr && kickErr.message ? kickErr.message : kickErr
+            );
+          }
+        }
         try {
           const text = await fetchCbpFeed();
           await putCachedFeed(text, "cbp-cron");

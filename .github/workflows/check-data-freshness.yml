@@ -4,6 +4,8 @@ on:
   schedule:
     # Every 15 minutes (GitHub cron can lag a few minutes)
     - cron: "7,22,37,52 * * * *"
+  # Cloudflare Worker also POSTs workflow_dispatch at :17 and :47 UTC when
+  # GITHUB_DISPATCH_TOKEN is set (backup if this Actions schedule stalls).
   workflow_dispatch:
 
 # Compares live CBP vs GitHub Pages mirror (backup) PER Brownsville bridge.
