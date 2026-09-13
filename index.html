@@ -4797,6 +4797,7 @@
         } else if (commercial && /fast/i.test(lane.name)) {
           parts.push(n + " " + t("fast"));
         } else if (!commercial && /ready/i.test(lane.name)) {
+          if (n === 0) continue;
           parts.push(n + " " + t("ready"));
         }
       }
@@ -4811,6 +4812,7 @@
         if (!w || w.na || w.pending) return "";
         const n = w.closed ? 0 : (w.lanesOpenCount != null ? Number(w.lanesOpenCount) : NaN);
         if (isNaN(n)) return "";
+        if (n === 0 && /ready/i.test(lane.name)) return "";
         return n + " " + label + " " + t("open");
       }
       return "";
