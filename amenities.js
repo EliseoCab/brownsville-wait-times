@@ -62,15 +62,17 @@
   }
 
   function setupPhotoExpand() {
-    var lightbox = document.createElement("div");
+    var lightbox = document.createElement("dialog");
     lightbox.className = "photo-lightbox";
-    lightbox.setAttribute("hidden", "");
+    lightbox.setAttribute("closedby", "any");
+    lightbox.setAttribute("aria-label", currentLang() === "es" ? "Foto ampliada" : "Expanded photo");
     lightbox.innerHTML =
-      '<button type="button" class="photo-lightbox-close" aria-label="Close">×</button>' +
+      '<form method="dialog">' +
+        '<button type="submit" value="close" class="photo-lightbox-close" aria-label="Close">×</button>' +
+      "</form>" +
       '<img alt="" />';
     document.body.appendChild(lightbox);
     var lightImg = lightbox.querySelector("img");
-    var closeBtn = lightbox.querySelector(".photo-lightbox-close");
 
     function fullSrc(thumb) {
       var raw = thumb.getAttribute("data-full-src") || thumb.getAttribute("src") || "";
@@ -86,32 +88,42 @@
       if (!src) return;
       lightImg.src = src;
       lightImg.alt = thumb.getAttribute("alt") || "";
-      lightbox.removeAttribute("hidden");
-      // Force reflow so opacity transition runs even on stubborn mobile WebKits
-      void lightbox.offsetWidth;
-      lightbox.classList.add("is-open");
-      document.documentElement.style.overflow = "hidden";
+      lightbox.setAttribute(
+        "aria-label",
+        currentLang() === "es" ? "Foto ampliada" : "Expanded photo"
+      );
+      if (typeof lightbox.showModal === "function") {
+        if (!lightbox.open) lightbox.showModal();
+      }
     }
 
     function closeLightbox() {
-      lightbox.classList.remove("is-open");
-      document.documentElement.style.overflow = "";
-      setTimeout(function () {
-        if (!lightbox.classList.contains("is-open")) {
-          lightbox.setAttribute("hidden", "");
-          lightImg.removeAttribute("src");
-        }
-      }, 200);
+      if (lightbox.open && typeof lightbox.close === "function") lightbox.close();
     }
 
-    lightbox.addEventListener("click", function (e) {
-      if (e.target === lightbox || e.target === lightImg || e.target === closeBtn) {
+    lightbox.addEventListener("close", function () {
+      lightImg.removeAttribute("src");
+      lightImg.alt = "";
+    });
+
+    lightImg.addEventListener("click", function () {
+      closeLightbox();
+    });
+
+    // closedby is not Baseline widely available (Safari). Light-dismiss fallback.
+    if (!("closedBy" in HTMLDialogElement.prototype)) {
+      lightbox.addEventListener("click", function (event) {
+        if (event.target !== lightbox) return;
+        var rect = lightbox.getBoundingClientRect();
+        var isDialogContent =
+          rect.top <= event.clientY &&
+          event.clientY <= rect.top + rect.height &&
+          rect.left <= event.clientX &&
+          event.clientX <= rect.left + rect.width;
+        if (isDialogContent) return;
         closeLightbox();
-      }
-    });
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && lightbox.classList.contains("is-open")) closeLightbox();
-    });
+      });
+    }
 
     document.querySelectorAll(".poi-photo").forEach(function (photo) {
       var img = photo.querySelector("img");
@@ -126,7 +138,7 @@
       photo.addEventListener("click", function (e) {
         if (e.target && e.target.closest && e.target.closest("a")) return;
         e.preventDefault();
-        if (lightbox.classList.contains("is-open")) closeLightbox();
+        if (lightbox.open) closeLightbox();
         else openLightbox(img);
       });
       photo.addEventListener("keydown", function (e) {
@@ -136,7 +148,6 @@
         }
       });
     });
-
   }
 
   function isAppleMobile() {

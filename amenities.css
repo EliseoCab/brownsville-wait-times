@@ -70,6 +70,38 @@ a { color: var(--sky-deep); text-underline-offset: 2px; }
 a:hover { color: var(--navy); }
 html[data-theme="dark"] a:hover { color: #e0f2fe; }
 
+:where(a, button):focus-visible {
+  outline: 3px solid var(--sky);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.75rem;
+  z-index: 10000;
+  padding: 0.5rem 0.85rem;
+  background: var(--navy);
+  color: #fff;
+  font-weight: 700;
+  border-radius: 8px;
+  text-decoration: none;
+}
+.skip-link:not(:focus-visible) {
+  position: absolute !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
+.skip-link:focus-visible {
+  color: #fff;
+}
+
 .lang-es { display: none; }
 html[lang="es"] .lang-en { display: none; }
 html[lang="es"] .lang-es { display: inline; }
@@ -338,26 +370,21 @@ html[data-theme="dark"] .poi-has-thumb.poi-contain .poi-photo {
   background: var(--line-soft);
 }
 
-/* Fixed lightbox — avoids overflow clipping from card/grid */
+/* Native dialog lightbox — size the dialog to the photo so backdrop light-dismiss works */
 .photo-lightbox {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.25rem;
+  width: auto;
+  max-width: min(960px, 94vw);
+  max-height: 88vh;
+  margin: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  overflow: visible;
+}
+.photo-lightbox::backdrop {
   background: rgba(7, 16, 28, 0.82);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  cursor: zoom-out;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-}
-.photo-lightbox.is-open {
-  opacity: 1;
-  pointer-events: auto;
 }
 .photo-lightbox img {
   display: block;
@@ -494,7 +521,6 @@ html[data-theme="dark"] .callout {
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .photo-lightbox { transition: none; }
 }
 
 html:not([data-theme="dark"]) body {

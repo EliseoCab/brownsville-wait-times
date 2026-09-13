@@ -45,7 +45,6 @@
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1f3a'/%3E%3Ccircle cx='16' cy='16' r='5.5' fill='%230ea5e9'/%3E%3C/svg%3E" />
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
   <title>Brownsville Bridge Wait Times · Live CBP Estimates</title>
   <script type="application/ld+json">
   {
@@ -158,6 +157,38 @@
 
     a { color: var(--sky-deep); text-underline-offset: 2px; }
     a:hover { color: var(--navy); }
+
+    :where(a, button):focus-visible {
+      outline: 3px solid var(--sky);
+      outline-offset: 3px;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: 0.75rem;
+      top: 0.75rem;
+      z-index: 10000;
+      padding: 0.5rem 0.85rem;
+      background: var(--navy);
+      color: #fff;
+      font-weight: 700;
+      border-radius: 8px;
+      text-decoration: none;
+    }
+    .skip-link:not(:focus-visible) {
+      position: absolute !important;
+      clip-path: inset(50%) !important;
+      overflow: hidden !important;
+      width: 1px !important;
+      height: 1px !important;
+      margin: -1px !important;
+      padding: 0 !important;
+      border: 0 !important;
+      white-space: nowrap !important;
+    }
+    .skip-link:focus-visible {
+      color: #fff;
+    }
     html[data-theme="dark"] a:hover { color: #e0f2fe; }
     html[data-theme="dark"] body {
       font-weight: 500;
@@ -607,11 +638,26 @@
       max-width: 16ch;
     }
     .stat-card.leave-card {
+      position: relative;
       min-width: min(100%, 12.5rem);
       cursor: default;
     }
     .stat-card.leave-card.is-action {
       cursor: pointer;
+    }
+    .leave-now-btn {
+      appearance: none;
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      border: 0;
+      border-radius: inherit;
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+    }
+    .leave-now-btn[hidden] {
+      display: none;
     }
     .stat-card.leave-card .kicker {
       white-space: normal;
@@ -1369,7 +1415,6 @@
     .bridge-map:focus-visible {
       background: var(--line-soft);
       color: var(--ink);
-      outline: none;
     }
     .bridge-map svg {
       width: 0.95rem;
@@ -3292,6 +3337,7 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#ports" data-i18n="skipToTimes">Skip to crossing times</a>
   <div class="topbar">
     <div class="topbar-inner">
       <div class="topbar-live">
@@ -3348,9 +3394,10 @@
         <div class="hint" id="statTrustedHint" data-i18n="statTrustedHint">SENTRI lanes only</div>
       </div>
       <div class="stat-card leave-card" id="leaveCard">
-        <div class="kicker" data-i18n="statLeave">Leave Now (Vehicles)</div>
+        <div class="kicker" id="statLeaveKicker" data-i18n="statLeave">Leave Now (Vehicles)</div>
         <div class="stat" id="statLeave">—</div>
         <div class="hint" id="statLeaveHint" data-i18n="statLeaveHint">Nearest vehicle bridge</div>
+        <button type="button" class="leave-now-btn" id="leaveNowBtn" hidden aria-labelledby="statLeaveKicker statLeaveHint"></button>
       </div>
     </section>
 
@@ -3454,7 +3501,7 @@
       </p>
     </section>
 
-    <div class="toolbar" id="ports">
+    <div class="toolbar" id="ports" tabindex="-1">
       <h2 class="section-title">
         <span data-i18n="crossingTimes">Crossing times</span>
         <span class="section-sub" data-i18n="crossingTimesSub">Estimates to primary inspection booth · CBP updates about hourly</span>
@@ -3462,14 +3509,14 @@
       </h2>
       <div class="toolbar-controls">
         <div class="filter-asof">
-          <div class="filters" role="tablist" aria-label="Filter by traffic type" data-i18n-aria="filterAria">
-            <button type="button" class="filter-btn active" data-filter="all" data-i18n="filterAll" onclick="setFilter('all', this)">All</button>
-            <button type="button" class="filter-btn" data-filter="passenger" data-i18n="filterVehicles" onclick="setFilter('passenger', this)">Vehicles</button>
-            <button type="button" class="filter-btn" data-filter="pedestrian" data-i18n="filterPedestrian" onclick="setFilter('pedestrian', this)">Pedestrian</button>
-            <button type="button" class="filter-btn" data-filter="commercial" data-i18n="filterCommercial" onclick="setFilter('commercial', this)">Commercial</button>
-            <button type="button" class="filter-btn" data-filter="drive" data-i18n="filterDrive" onclick="setFilter('drive', this)">Drive/Walking</button>
+          <div class="filters" role="group" aria-label="Filter by traffic type" data-i18n-aria="filterAria">
+            <button type="button" class="filter-btn active" data-filter="all" aria-pressed="true" data-i18n="filterAll" onclick="setFilter('all', this)">All</button>
+            <button type="button" class="filter-btn" data-filter="passenger" aria-pressed="false" data-i18n="filterVehicles" onclick="setFilter('passenger', this)">Vehicles</button>
+            <button type="button" class="filter-btn" data-filter="pedestrian" aria-pressed="false" data-i18n="filterPedestrian" onclick="setFilter('pedestrian', this)">Pedestrian</button>
+            <button type="button" class="filter-btn" data-filter="commercial" aria-pressed="false" data-i18n="filterCommercial" onclick="setFilter('commercial', this)">Commercial</button>
+            <button type="button" class="filter-btn" data-filter="drive" aria-pressed="false" data-i18n="filterDrive" onclick="setFilter('drive', this)">Drive/Walking</button>
           </div>
-          <div class="asof-bar" id="asofBar" aria-live="polite">
+          <div class="asof-bar" id="asofBar">
             <span data-i18n="latestReport">Latest report:</span>
             <strong id="asofStamp">—</strong>
           </div>
@@ -3507,7 +3554,7 @@
       <ol id="installHelpSteps"></ol>
       <button type="button" class="btn btn-primary" onclick="closeInstallHelp()" data-i18n="installHelpOk">Got it</button>
     </div>
-    <div class="ports" id="portGrid" aria-live="polite"></div>
+    <div class="ports" id="portGrid"></div>
 
     <section class="x-updates" aria-label="CBP Laredo Field Office updates on X">
       <div class="x-updates-head">
@@ -3517,7 +3564,7 @@
         </div>
         <a href="https://x.com/DFOLaredo" target="_blank" rel="noopener">@DFOLaredo</a>
       </div>
-      <div id="dfoTimeline" class="x-carousel" aria-live="polite">
+      <div id="dfoTimeline" class="x-carousel">
         <p class="x-timeline-fallback" data-i18n="xUpdatesLoading">Loading posts…</p>
       </div>
     </section>
@@ -3546,7 +3593,6 @@
     </div>
   </footer>
 
-  <script src="vendor/leaflet/leaflet.js"></script>
   <script>
     const FEED_URL = "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43";
     // Same-origin mirror updated by GitHub Actions (backup if the Worker is down)
@@ -3582,6 +3628,7 @@
         statTrusted: "Best SENTRI",
         statTrustedReady: "Best Ready",
         statTrustedFast: "Best FAST",
+        skipToTimes: "Skip to crossing times",
         statLeave: "Leave Now (Vehicles)",
         statLeaveHint: "Nearest vehicle bridge",
         statLeaveNeedLoc: "Allow location for nearest-bridge leave time",
@@ -3763,6 +3810,7 @@
         statTrusted: "Mejor SENTRI",
         statTrustedReady: "Mejor carril Ready",
         statTrustedFast: "Mejor FAST",
+        skipToTimes: "Saltar a tiempos de cruce",
         statLeave: "Salga ahora (Vehículos)",
         statLeaveHint: "Puente vehicular más cercano",
         statLeaveNeedLoc: "Permita la ubicación para la hora de salida",
@@ -4432,7 +4480,9 @@
 
     function syncFilterUi() {
       document.querySelectorAll(".filter-btn").forEach(function (b) {
-        b.classList.toggle("active", b.getAttribute("data-filter") === currentFilter);
+        const on = b.getAttribute("data-filter") === currentFilter;
+        b.classList.toggle("active", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
       });
       document.documentElement.setAttribute(
         "data-view",
@@ -4550,6 +4600,7 @@
       const stat = document.getElementById("statLeave");
       const hint = document.getElementById("statLeaveHint");
       const kicker = card ? card.querySelector(".kicker") : null;
+      const leaveBtn = document.getElementById("leaveNowBtn");
       if (!card || !stat || !hint) return;
 
       function setLeave(statText, hintText, actionable, kickerText) {
@@ -4558,6 +4609,7 @@
         hint.textContent = hintText;
         if (kicker) kicker.textContent = kickerText || t("statLeave");
         card.classList.toggle("is-action", !!actionable);
+        if (leaveBtn) leaveBtn.hidden = !actionable;
       }
 
       if (userGeo === "denied") {
@@ -4587,6 +4639,7 @@
         " · " +
         t("leaveAtBooth").replace("{leave}", leaveStr).replace("{booth}", boothStr);
       card.classList.remove("is-action");
+      if (leaveBtn) leaveBtn.hidden = true;
     }
 
     function requestUserGeo(forcePrompt) {
@@ -5896,6 +5949,13 @@
       if (window.L) {
         done();
         return;
+      }
+      if (!document.getElementById("crowdLeafletCss")) {
+        const css = document.createElement("link");
+        css.id = "crowdLeafletCss";
+        css.rel = "stylesheet";
+        css.href = "vendor/leaflet/leaflet.css";
+        document.head.appendChild(css);
       }
       const js = document.getElementById("crowdLeafletJs") || document.createElement("script");
       if (!js.id) {
@@ -7307,10 +7367,10 @@
     loadDfoTimeline();
     loadData(true);
     requestUserGeo(false);
-    const leaveCard = document.getElementById("leaveCard");
-    if (leaveCard) {
-      leaveCard.addEventListener("click", function () {
-        if (leaveCard.classList.contains("is-action")) requestUserGeo(true);
+    const leaveNowBtn = document.getElementById("leaveNowBtn");
+    if (leaveNowBtn) {
+      leaveNowBtn.addEventListener("click", function () {
+        requestUserGeo(true);
       });
     }
   </script>
