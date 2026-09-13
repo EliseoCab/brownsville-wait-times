@@ -3608,7 +3608,7 @@
         filterDrive: "Drive/Walking",
         crowdTitle: "Crowd source",
         crowdSub: "Traveler reports · not CBP",
-        crowdPrivacy: "Anonymous. Used to show where the line starts and a traveler average. Not sent to CBP. Location is rounded and dropped after 24 hours.",
+        crowdPrivacy: "Anonymous. Used to show where the line starts and a traveler average. Not sent to CBP. All information is deleted after 24 hours.",
         crowdNear: "Near {bridge}",
         crowdEnRoute: "En route to {bridge}",
         crowdHaveSentri: "I have SENTRI",
@@ -3626,14 +3626,14 @@
         crowdCheckIn: "Check in",
         crowdWaitBlock: "Wait time",
         crowdPinBlock: "Check in · line map",
-        crowdPinHint: "Anonymous. Independent of wait times. Uses your location so others can see where the line starts.",
+        crowdPinHint: "Anonymous. Independent of wait times. Uses your location so others can see where the line starts. Information is deleted after 24 hours.",
         crowdThanks: "Thanks · {wait} · {bridge} {lane}",
         crowdThanksPin: "Pinned · {bridge}",
         crowdLastPin: "Last check-in: {bridge} · {lat}, {lng} · {ago}",
         crowdLastPinEmpty: "No location pins in the last 45 min.",
         crowdCenterOn: "Center on me",
         crowdNeedPicks: "Choose how you cross, a bridge, and minutes.",
-        crowdNeedPin: "Allow location to pin where you are.",
+        crowdNeedPin: "Select Vehicles or Walking, then allow location.",
         crowdPinFar: "Too far from a Brownsville bridge to pin.",
         crowdWaitHr: "{h} hr",
         crowdWaitHrMin: "{h} hr {m} min",
@@ -3789,7 +3789,7 @@
         filterDrive: "En ruta/A pie",
         crowdTitle: "Reportes de viajeros",
         crowdSub: "Reportes de viajeros · no CBP",
-        crowdPrivacy: "Anónimo. Sirve para mostrar dónde empieza la fila y un promedio de viajeros. No se envía a CBP. La ubicación se redondea y se borra a las 24 horas.",
+        crowdPrivacy: "Anónimo. Sirve para mostrar dónde empieza la fila y un promedio de viajeros. No se envía a CBP. Toda la información se borra a las 24 horas.",
         crowdNear: "Cerca de {bridge}",
         crowdEnRoute: "En ruta a {bridge}",
         crowdHaveSentri: "Tengo SENTRI",
@@ -3807,14 +3807,14 @@
         crowdCheckIn: "Registrar ubicación",
         crowdWaitBlock: "Tiempo de espera",
         crowdPinBlock: "Registro · mapa de la fila",
-        crowdPinHint: "Anónimo. Independiente de los minutos. Usa su ubicación para que otros vean dónde empieza la fila.",
+        crowdPinHint: "Anónimo. Independiente de los minutos. Usa su ubicación para que otros vean dónde empieza la fila. La información se borra a las 24 horas.",
         crowdThanks: "Gracias · {wait} · {bridge} {lane}",
         crowdThanksPin: "Ubicación marcada · {bridge}",
         crowdLastPin: "Último registro: {bridge} · {lat}, {lng} · {ago}",
         crowdLastPinEmpty: "No hay ubicaciones en los últimos 45 min.",
         crowdCenterOn: "Centrar en mí",
         crowdNeedPicks: "Elija cómo cruza, un puente y los minutos.",
-        crowdNeedPin: "Permita la ubicación para marcar dónde está.",
+        crowdNeedPin: "Elija Vehículos o A pie, y permita la ubicación.",
         crowdPinFar: "Demasiado lejos de un puente de Brownsville para marcar.",
         crowdWaitHr: "{h} h",
         crowdWaitHrMin: "{h} h {m} min",
@@ -5454,10 +5454,12 @@
       if (lanes.length > 1 && !crowdLane) return false;
       return true;
     }
+    function crowdPinModePicked() {
+      return crowdPinMode === "vehicle" || crowdPinMode === "ped";
+    }
     function crowdPinLaneFor(bridge) {
       if (crowdPinMode === "ped") {
         if (bridge === "los-indios") return "vehicle_gen";
-        if (bridge === "gateway") return "ped_gen";
         return "ped_gen";
       }
       return "vehicle_gen";
@@ -5515,7 +5517,7 @@
           <div class="crowd-chips">
             ${crowdChipRow("pin-mode", [{ id: "vehicle", label: t("crowdVehicles") }, { id: "ped", label: t("crowdWalking") }], crowdPinMode, "pin-mode")}
           </div>
-          <button type="button" class="crowd-submit" id="crowdSubmitPin">${escapeHtml(t("crowdCheckIn"))}</button>
+          <button type="button" class="crowd-submit" id="crowdSubmitPin"${crowdPinModePicked() ? "" : " disabled"}>${escapeHtml(t("crowdCheckIn"))}</button>
           <p class="crowd-status" id="crowdPinMsg"></p>
           <p class="crowd-status" id="crowdLastPin"></p>
           <div class="crowd-map" id="crowdMapEl"></div>
@@ -5739,6 +5741,10 @@
     function crowdSubmitPin() {
       const msg = document.getElementById("crowdPinMsg");
       const submit = document.getElementById("crowdSubmitPin");
+      if (!crowdPinModePicked()) {
+        if (msg) msg.textContent = t("crowdNeedPin");
+        return;
+      }
       const base = crowdProxyBase();
       if (!base) {
         if (msg) msg.textContent = t("crowdErr");
