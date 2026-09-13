@@ -658,21 +658,29 @@
     .drive-list + .drive-heading { margin-top: 0.85rem; }
     .drive-dual {
       display: grid;
-      grid-template-columns: max-content max-content;
+      grid-template-columns: max-content max-content max-content;
       justify-content: end;
       align-items: baseline;
-      column-gap: 0.4rem;
+      column-gap: 0.28rem;
       row-gap: 0.12rem;
       font-variant-numeric: tabular-nums;
     }
-    .drive-dual-num {
+    .drive-dual-val {
       font-size: 2.35rem;
       font-weight: 800;
       letter-spacing: -0.04em;
       line-height: 0.95;
       text-align: right;
       justify-self: end;
-      min-width: 3.5ch;
+      min-width: 3ch;
+    }
+    .drive-dual-unit {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      opacity: 0.75;
+      text-align: left;
+      justify-self: start;
     }
     .drive-dual-lab {
       font-size: 0.92rem;
@@ -681,8 +689,8 @@
       color: var(--muted);
       text-align: left;
       justify-self: start;
+      margin-left: 0.12rem;
     }
-    .drive-dual-num .unit,
     .drive-wait .unit,
     .drive-sentri .unit {
       font-size: 0.8rem;
@@ -690,9 +698,12 @@
       opacity: 0.75;
       letter-spacing: 0.08em;
     }
-    .drive-dual-num.good { color: var(--green); }
-    .drive-dual-num.warn { color: var(--orange); }
-    .drive-dual-num.bad { color: var(--red); }
+    .drive-dual-val.good,
+    .drive-dual-unit.good { color: var(--green); }
+    .drive-dual-val.warn,
+    .drive-dual-unit.warn { color: var(--orange); }
+    .drive-dual-val.bad,
+    .drive-dual-unit.bad { color: var(--red); }
     .drive-card {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -6018,7 +6029,8 @@
       return summary.primary.minutes;
     }
     function driveDualRow(lab, mins, tone) {
-      return `<span class="drive-dual-num ${tone}">${escapeHtml(String(mins))}<span class="unit"> min</span></span><span class="drive-dual-lab">${escapeHtml(lab)}</span>`;
+      const toneCls = tone ? " " + tone : "";
+      return `<span class="drive-dual-val${toneCls}">${escapeHtml(String(mins))}</span><span class="drive-dual-unit${toneCls}">min</span><span class="drive-dual-lab">${escapeHtml(lab)}</span>`;
     }
     function driveLaneOpenCount(lane) {
       const w = lane && lane.wait;
