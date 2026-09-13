@@ -656,13 +656,14 @@
     }
     .drive-heading + .drive-list { margin-bottom: 0.15rem; }
     .drive-list + .drive-heading { margin-top: 0.85rem; }
-    /* One wait tile per bridge; rows left-aligned inside */
+    /* One wait tile per bridge; indented right, min tight to the number */
     .drive-wait-tile {
       display: flex;
       flex-direction: column;
       align-items: stretch;
       gap: 0.2rem;
       min-width: 7.5rem;
+      margin-left: 0.85rem;
       padding: 0.4rem 0.55rem;
       border-radius: 12px;
       border: 1px solid var(--line);
@@ -670,13 +671,19 @@
       box-shadow: var(--shadow-sm);
     }
     .drive-wait-row {
-      display: grid;
-      grid-template-columns: 3.25rem auto auto;
-      justify-content: start;
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: flex-start;
       align-items: baseline;
-      column-gap: 0.25rem;
+      gap: 0.45rem;
       font-variant-numeric: tabular-nums;
       font-feature-settings: "tnum" 1, "lnum" 1;
+    }
+    .drive-wait-time {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.12rem;
+      flex: 0 0 auto;
     }
     .drive-wait-val {
       font-size: 1.55rem;
@@ -688,7 +695,7 @@
     .drive-wait-unit {
       font-size: 0.72rem;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
       opacity: 0.75;
       text-align: left;
     }
@@ -730,9 +737,9 @@
     }
     .drive-card {
       display: grid;
-      grid-template-columns: auto auto;
-      justify-content: start;
-      gap: 0.15rem 0.55rem;
+      grid-template-columns: minmax(0, 1fr) auto;
+      justify-content: stretch;
+      gap: 0.15rem 0.75rem;
       align-items: center;
       background: var(--white);
       border: 1px solid var(--line);
@@ -6052,7 +6059,7 @@
       const labHtml = lab
         ? `<span class="drive-wait-lab">${escapeHtml(lab)}</span>`
         : "";
-      return `<div class="drive-wait-row${toneCls}"><span class="drive-wait-val">${escapeHtml(String(mins))}</span><span class="drive-wait-unit">min</span>${labHtml}</div>`;
+      return `<div class="drive-wait-row${toneCls}"><span class="drive-wait-time"><span class="drive-wait-val">${escapeHtml(String(mins))}</span><span class="drive-wait-unit">min</span></span>${labHtml}</div>`;
     }
     function driveWaitTileHtml(rowsHtml) {
       return `<div class="drive-wait-tile">${rowsHtml}</div>`;
