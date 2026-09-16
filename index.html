@@ -2106,20 +2106,26 @@
         border-radius: 0 10px 10px 0;
         padding-right: 0.2rem;
       }
-      /* Commercial mobile: pull Gen and FAST chips closer (desktop unchanged) */
+      /* Commercial mobile: shrink wait cols to chip width so Bridge/Gen/FAST pack closer */
+      html[data-view="commercial"] .table-wrap.table-cards .wait-table {
+        table-layout: auto;
+      }
+      html[data-view="commercial"] .table-wrap.table-cards .wait-table col.c-bridge {
+        width: auto !important;
+      }
+      html[data-view="commercial"] .table-wrap.table-cards .wait-table col.c-wait {
+        width: 1% !important;
+      }
       html[data-view="commercial"] .table-wrap.table-cards .wait-table thead th:nth-child(2),
-      html[data-view="commercial"] .table-wrap.table-cards .wait-table tbody td.wait-col:nth-child(2) {
-        text-align: right;
-        padding-right: 0;
-      }
       html[data-view="commercial"] .table-wrap.table-cards .wait-table thead th:nth-child(3),
-      html[data-view="commercial"] .table-wrap.table-cards .wait-table tbody td.wait-col:nth-child(3) {
-        text-align: left;
-        padding-left: 0;
+      html[data-view="commercial"] .table-wrap.table-cards .wait-table tbody td.wait-col {
+        width: 1%;
+        padding-left: 2px;
+        padding-right: 2px;
+        white-space: nowrap;
       }
-      html[data-view="commercial"] .table-wrap.table-cards .wait-table tbody td.wait-col:nth-child(2) .wait-col-inner,
-      html[data-view="commercial"] .table-wrap.table-cards .wait-table tbody td.wait-col:nth-child(3) .wait-col-inner {
-        width: auto;
+      html[data-view="commercial"] .table-wrap.table-cards .wait-table tbody td.bridge {
+        padding-right: 0.2rem;
       }
       /* Desktop/tablet narrow: JS still equalizes chip width from content */
       .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
