@@ -1558,6 +1558,15 @@
       gap: 0.1rem;
       text-align: center;
     }
+    .compact-pair.combined-lanes {
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: baseline;
+      justify-content: center;
+      gap: 0.25rem;
+      width: max-content;
+      white-space: nowrap;
+    }
     .dual-label {
       font-size: 0.62rem;
       font-weight: 800;
@@ -3619,7 +3628,7 @@
         crowdMode: "How you are crossing",
         crowdVehicles: "Vehicles",
         driveGen: "General",
-        driveGenReady: "Gen/Ready",
+        driveGenReady: "Gen / Ready",
         crowdWalking: "Walking",
         crowdBridge: "Bridge",
         crowdLane: "Lane",
@@ -3805,7 +3814,7 @@
         crowdMode: "Cómo cruza",
         crowdVehicles: "Vehículos",
         driveGen: "General",
-        driveGenReady: "Gen/Ready",
+        driveGenReady: "Gen / Ready",
         crowdWalking: "A pie",
         crowdBridge: "Puente",
         crowdLane: "Carril",
@@ -4872,11 +4881,27 @@
       return sectionOfLine(sectionByKey(port, modeKey === "trusted" ? "passenger" : modeKey));
     }
 
+    /** "Gen / Ready" or "Gen / FAST" from existing lane-type strings. */
+    function combinedLaneLabel(kind) {
+      return t("gen") + " / " + t(kind === "fast" ? "fast" : "ready");
+    }
+
+    function labeledWaitHtml(label, wait) {
+      return `<span class="compact-pair combined-lanes"><span class="dual-label">${escapeHtml(label)}</span> ${waitCellHtml(wait)}</span>`;
+    }
+
+    function dualWaitHtml(secondLabel, primaryWait, secondWait) {
+      return `<div class="compact-waits">
+          <span class="compact-pair"><span class="dual-label dual-gen">${escapeHtml(t("gen"))}</span> ${waitCellHtml(primaryWait)}</span>
+          <span class="compact-pair"><span class="dual-label">${escapeHtml(secondLabel)}</span> ${waitCellHtml(secondWait)}</span>
+        </div>`;
+    }
+
     /**
      * Concise wait cell:
-     *  - Same wait: "60 min" + open line
-     *  - All / Pedestrian, Gateway when Gen ≠ Ready: "Gen 15 · Ready 30" + open line
-     *  - All filter, Commercial when Gen ≠ FAST: "Gen 15 · FAST 5" + open line
+     *  - Gen and Ready (or FAST) equal: "Gen / Ready 5 min" (or "Gen / FAST") + open line
+     *  - All / Pedestrian, Gateway when Gen ≠ Ready: stacked dual + open line
+     *  - All filter, Commercial when Gen ≠ FAST: stacked dual + open line
      */
     function waitCellBlock(summary, modeKey, port) {
       if (!summary) {
@@ -4889,36 +4914,43 @@
       const fastActive = (summary.extras || []).find(
         (l) => /fast/i.test(l.name) && isShowableWait(l.wait)
       );
+      const readyPair = !!(readyActive && isActiveWait(w) && isActiveWait(readyActive.wait));
+      const fastPair = !!(fastActive && isActiveWait(w) && isActiveWait(fastActive.wait));
 
       const gatewayPedDual =
         (currentFilter === "all" || currentFilter === "pedestrian") &&
         port &&
         isGatewayPort(port) &&
         modeKey === "pedestrian" &&
-        readyActive &&
-        isActiveWait(w) &&
-        isActiveWait(readyActive.wait) &&
+        readyPair &&
         w.minutes !== readyActive.wait.minutes;
 
       const commercialFastDual =
         currentFilter === "all" &&
         modeKey === "commercial" &&
-        fastActive &&
-        isActiveWait(w) &&
-        isActiveWait(fastActive.wait);
+        fastPair &&
+        w.minutes !== fastActive.wait.minutes;
 
-      const dual = gatewayPedDual
-        ? { label: t("ready"), wait: readyActive.wait }
-        : commercialFastDual
-          ? { label: t("fast"), wait: fastActive.wait }
-          : null;
+      const combinedReady =
+        readyPair &&
+        w.minutes === readyActive.wait.minutes &&
+        (modeKey === "pedestrian" || modeKey === "passenger");
+
+      const combinedFast =
+        currentFilter === "all" &&
+        modeKey === "commercial" &&
+        fastPair &&
+        w.minutes === fastActive.wait.minutes;
 
       let mainHtml;
-      if (dual) {
-        mainHtml = `<div class="compact-waits">
-          <span class="compact-pair"><span class="dual-label dual-gen">${escapeHtml(t("gen"))}</span> ${waitCellHtml(w)}</span>
-          <span class="compact-pair"><span class="dual-label">${escapeHtml(dual.label)}</span> ${waitCellHtml(dual.wait)}</span>
-        </div>`;
+      if (gatewayPedDual) {
+        mainHtml = dualWaitHtml(t("ready"), w, readyActive.wait);
+      } else if (commercialFastDual) {
+        mainHtml = dualWaitHtml(t("fast"), w, fastActive.wait);
+      } else if (combinedReady) {
+        mainHtml = labeledWaitHtml(combinedLaneLabel("ready"), w);
+      } else if (combinedFast) {
+        mainHtml = labeledWaitHtml(combinedLaneLabel("fast"), w);
       } else {
         mainHtml = waitCellHtml(w);
       }
@@ -4931,7 +4963,7 @@
       return {
         html: `<div class="wait-stack">${mainHtml}</div>`,
         openLine: tileOpenText(sec, withSplit, splitIncludesFast),
-        cls: (dual ? "has-dual " : "") + "has-" + w.cls
+        cls: ((gatewayPedDual || commercialFastDual) ? "has-dual " : "") + "has-" + w.cls
       };
     }
 
@@ -6121,6 +6153,8 @@
         rows =
           driveWaitRow(t("driveGen"), mins, driveWaitTone(mins)) +
           driveWaitRow(t("ready"), ready.wait.minutes, driveWaitTone(ready.wait.minutes));
+      } else if (ready && isActiveWait(ready.wait) && ready.wait.minutes === mins) {
+        rows = driveWaitRow(combinedLaneLabel("ready"), mins, driveWaitTone(mins));
       } else {
         rows = driveWaitRow("", mins, driveWaitTone(mins));
       }
@@ -6151,12 +6185,14 @@
       let rows = "";
       if (isVeteransPort(port) && wait != null && sentriMins != null) {
         rows =
-          driveWaitRow(t("driveGenReady"), wait, driveWaitTone(wait)) +
+          driveWaitRow(combinedLaneLabel("ready"), wait, driveWaitTone(wait)) +
           driveWaitRow(t("sentri"), sentriMins, driveWaitTone(sentriMins));
       } else if (wait != null && ready && isActiveWait(ready.wait) && ready.wait.minutes !== wait) {
         rows =
           driveWaitRow(t("driveGen"), wait, driveWaitTone(wait)) +
           driveWaitRow(t("ready"), ready.wait.minutes, driveWaitTone(ready.wait.minutes));
+      } else if (wait != null && ready && isActiveWait(ready.wait) && ready.wait.minutes === wait) {
+        rows = driveWaitRow(combinedLaneLabel("ready"), wait, driveWaitTone(wait));
       } else if (wait != null) {
         rows = driveWaitRow("", wait, driveWaitTone(wait));
       } else {
@@ -7140,6 +7176,13 @@
           " min / " + t("ready") + " " +
           readyActive.wait.minutes +
           " min";
+      } else if (
+        readyActive &&
+        isActiveWait(summary.primary) &&
+        isActiveWait(readyActive.wait) &&
+        summary.primary.minutes === readyActive.wait.minutes
+      ) {
+        head = label + " " + combinedLaneLabel("ready") + " " + summary.primary.minutes + " min";
       } else {
         const cell = formatShareCell(summary.primary);
         if (!cell) return null;
