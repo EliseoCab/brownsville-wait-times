@@ -684,9 +684,21 @@
       line-height: 0.95;
       font-variant-numeric: tabular-nums;
     }
+    .drive-wait-top .unit {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      opacity: 0.75;
+    }
     .drive-wait-top.good { color: var(--green); }
     .drive-wait-top.warn { color: var(--orange); }
     .drive-wait-top.bad { color: var(--red); }
+    .drive-wait-top-dual .val .unit {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      opacity: 0.75;
+    }
     .drive-wait-top-dual {
       display: flex;
       flex-wrap: wrap;
@@ -4250,7 +4262,7 @@
       if (w.minutes == null) {
         return `<span class="wait-cell ${w.cls}" aria-label="${escapeHtml(w.label)}"><span class="num">${escapeHtml(w.num)}</span></span>`;
       }
-      return `<span class="wait-cell ${w.cls}" aria-label="${escapeHtml(w.label)} wait"><span class="num">${escapeHtml(w.num)}</span><span class="unit">min</span></span>`;
+      return `<span class="wait-cell ${w.cls}" aria-label="${escapeHtml(w.label)} wait"><span class="num">${escapeHtml(w.num)}</span><span class="unit">Min</span></span>`;
     }
 
     function modeKey(title) {
@@ -4921,9 +4933,9 @@
       if (genMins != null && specialMins != null && genMins !== specialMins) {
         return {
           html: `<div class="compact-waits compact-waits-inline">
-            <span class="compact-pair"><span class="dual-label dual-gen">${escapeHtml(t("gen"))}</span> <span class="wait-cell ${waitClass(genMins)}"><span class="num">${genMins}</span></span></span>
+            <span class="compact-pair"><span class="dual-label dual-gen">${escapeHtml(t("gen"))}</span> <span class="wait-cell ${waitClass(genMins)}"><span class="num">${genMins}</span><span class="unit">Min</span></span></span>
             <span class="compact-sep">·</span>
-            <span class="compact-pair"><span class="dual-label">${escapeHtml(specialLab)}</span> <span class="wait-cell ${waitClass(specialMins)}"><span class="num">${specialMins}</span></span></span>
+            <span class="compact-pair"><span class="dual-label">${escapeHtml(specialLab)}</span> <span class="wait-cell ${waitClass(specialMins)}"><span class="num">${specialMins}</span><span class="unit">Min</span></span></span>
           </div>`,
           cls: "has-dual has-" + waitClass(Math.max(genMins, specialMins)),
           dual: true
@@ -4932,7 +4944,7 @@
       const mins = genMins != null ? genMins : specialMins;
       if (mins == null) return { html: "", cls: "", dual: false };
       return {
-        html: `<span class="wait-cell ${waitClass(mins)}"><span class="num">${mins}</span></span>`,
+        html: `<span class="wait-cell ${waitClass(mins)}"><span class="num">${mins}</span><span class="unit">Min</span></span>`,
         cls: "has-" + waitClass(mins),
         dual: false
       };
@@ -6105,9 +6117,9 @@
       if (genMins != null && specialMins != null && genMins !== specialMins) {
         return {
           html: `<div class="drive-wait-top-dual">
-            <span><span class="lab">${escapeHtml(t("gen"))}</span> <span class="val ${driveWaitTone(genMins)}">${genMins}</span></span>
+            <span><span class="lab">${escapeHtml(t("gen"))}</span> <span class="val ${driveWaitTone(genMins)}">${genMins}<span class="unit"> Min</span></span></span>
             <span class="sep">·</span>
-            <span><span class="lab">${escapeHtml(specialLab)}</span> <span class="val ${driveWaitTone(specialMins)}">${specialMins}</span></span>
+            <span><span class="lab">${escapeHtml(specialLab)}</span> <span class="val ${driveWaitTone(specialMins)}">${specialMins}<span class="unit"> Min</span></span></span>
           </div>`,
           tone: driveWaitTone(Math.max(genMins, specialMins))
         };
@@ -6115,7 +6127,7 @@
       const mins = genMins != null ? genMins : specialMins;
       if (mins == null) return { html: "", tone: "" };
       return {
-        html: `<div class="drive-wait-top ${driveWaitTone(mins)}">${mins}</div>`,
+        html: `<div class="drive-wait-top ${driveWaitTone(mins)}">${mins}<span class="unit"> Min</span></div>`,
         tone: driveWaitTone(mins)
       };
     }
