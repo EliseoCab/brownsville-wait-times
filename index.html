@@ -2106,6 +2106,21 @@
         border-radius: 0 10px 10px 0;
         padding-right: 0.2rem;
       }
+      /* Commercial mobile: pull Gen and FAST chips closer (desktop unchanged) */
+      html[data-view="commercial"] .table-wrap.table-cards .wait-table thead th:nth-child(2),
+      html[data-view="commercial"] .table-wrap.table-cards .wait-table tbody td.wait-col:nth-child(2) {
+        text-align: right;
+        padding-right: 0;
+      }
+      html[data-view="commercial"] .table-wrap.table-cards .wait-table thead th:nth-child(3),
+      html[data-view="commercial"] .table-wrap.table-cards .wait-table tbody td.wait-col:nth-child(3) {
+        text-align: left;
+        padding-left: 0;
+      }
+      html[data-view="commercial"] .table-wrap.table-cards .wait-table tbody td.wait-col:nth-child(2) .wait-col-inner,
+      html[data-view="commercial"] .table-wrap.table-cards .wait-table tbody td.wait-col:nth-child(3) .wait-col-inner {
+        width: auto;
+      }
       /* Desktop/tablet narrow: JS still equalizes chip width from content */
       .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
         width: max-content;
