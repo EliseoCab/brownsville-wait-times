@@ -661,12 +661,12 @@
     }
     .drive-heading + .drive-list { margin-bottom: 0.15rem; }
     .drive-list + .drive-heading { margin-top: 0.85rem; }
-    /* One wait tile per bridge; shared left edge + uniform height */
+    /* One wait pill per bridge: top minutes, mid lane counts, bottom of-total */
     .drive-wait-tile {
       display: flex;
       flex-direction: column;
       justify-content: center;
-      align-items: stretch;
+      align-items: flex-start;
       gap: 0.18rem;
       box-sizing: border-box;
       width: 100%;
@@ -677,49 +677,42 @@
       background: var(--white);
       box-shadow: var(--shadow-sm);
     }
-    .drive-wait-row {
-      display: flex;
-      flex-wrap: nowrap;
-      justify-content: flex-start;
-      align-items: baseline;
-      gap: 0.4rem;
-      font-variant-numeric: tabular-nums;
-      font-feature-settings: "tnum" 1, "lnum" 1;
-    }
-    .drive-wait-time {
-      display: inline-flex;
-      align-items: baseline;
-      gap: 0.1rem;
-      flex: 0 0 auto;
-    }
-    .drive-wait-val {
+    .drive-wait-top {
       font-size: 2.15rem;
       font-weight: 800;
       letter-spacing: 0;
       line-height: 0.95;
-      text-align: left;
+      font-variant-numeric: tabular-nums;
     }
-    .drive-wait-unit {
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      opacity: 0.75;
-      text-align: left;
+    .drive-wait-top.good { color: var(--green); }
+    .drive-wait-top.warn { color: var(--orange); }
+    .drive-wait-top.bad { color: var(--red); }
+    .drive-wait-top-dual {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.2rem 0.35rem;
+      font-size: 1.05rem;
+      font-weight: 800;
+      line-height: 1.15;
+      font-variant-numeric: tabular-nums;
     }
-    .drive-wait-lab {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.01em;
+    .drive-wait-top-dual .lab {
+      font-size: 0.62rem;
+      font-weight: 800;
       color: var(--muted);
-      text-align: left;
-      line-height: 1.2;
     }
-    .drive-wait-row.good .drive-wait-val,
-    .drive-wait-row.good .drive-wait-unit { color: var(--green); }
-    .drive-wait-row.warn .drive-wait-val,
-    .drive-wait-row.warn .drive-wait-unit { color: var(--amber); }
-    .drive-wait-row.bad .drive-wait-val,
-    .drive-wait-row.bad .drive-wait-unit { color: var(--red); }
+    .drive-wait-top-dual .val.good { color: var(--green); }
+    .drive-wait-top-dual .val.warn { color: var(--orange); }
+    .drive-wait-top-dual .val.bad { color: var(--red); }
+    .drive-wait-top-dual .sep { color: var(--muted); font-weight: 700; }
+    .drive-wait-mid,
+    .drive-wait-bot {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--muted);
+      line-height: 1.3;
+    }
     .drive-wait .unit,
     .drive-sentri .unit {
       font-size: 0.8rem;
@@ -734,6 +727,13 @@
       text-align: left;
       width: 100%;
     }
+    .compact-waits-inline {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.2rem 0.35rem;
+    }
+    .compact-sep { color: var(--muted); font-weight: 700; }
     html:not([data-theme="dark"]) .drive-wait-tile {
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.55));
       border-color: rgba(255, 255, 255, 0.85);
@@ -4816,7 +4816,7 @@
       return t("lanesOf").replace("{open}", String(open)).replace("{total}", String(total));
     }
 
-    /** "2 Gen, 2 Ready" or commercial "1 Gen, 1 FAST". */
+    /** "2 Gen, 2 Ready" (+ SENTRI/NEXUS) or commercial "1 Gen, 1 FAST". */
     function genReadySplit(section, commercial) {
       if (!section) return "";
       const parts = [];
@@ -4833,6 +4833,10 @@
         } else if (!commercial && /ready/i.test(lane.name)) {
           if (n === 0) continue;
           parts.push(n + " " + t("ready"));
+        } else if (/nexus/i.test(lane.name)) {
+          parts.push(n + " " + "NEXUS");
+        } else if (/sentri/i.test(lane.name)) {
+          parts.push(n + " " + t("sentri"));
         }
       }
       return parts.join(", ");
@@ -4898,72 +4902,61 @@
     }
 
     /**
-     * Concise wait cell:
-     *  - Gen and Ready (or FAST) equal: "Gen / Ready 5 min" (or "Gen / FAST") + open line
-     *  - All / Pedestrian, Gateway when Gen ≠ Ready: stacked dual + open line
-     *  - All filter, Commercial when Gen ≠ FAST: stacked dual + open line
+     * Wait pill top:
+     *  - One number when Gen/Ready (or Gen/FAST) match or only one exists
+     *  - "Gen 5 · Ready 12" when minutes differ — never pick only one
+     * Top line is minutes only (no Closed / Pending / N/A).
      */
+    function waitPillTop(summary, modeKey) {
+      if (!summary) return { html: "", cls: "", dual: false };
+      const w = summary.primary;
+      const readyActive = (summary.extras || []).find(
+        (l) => /ready/i.test(l.name) && isActiveWait(l.wait)
+      );
+      const fastActive = (summary.extras || []).find(
+        (l) => /fast/i.test(l.name) && isActiveWait(l.wait)
+      );
+      const genMins = isActiveWait(w) ? w.minutes : null;
+      const special = modeKey === "commercial" ? fastActive : readyActive;
+      const specialMins = special && isActiveWait(special.wait) ? special.wait.minutes : null;
+      const specialLab = modeKey === "commercial" ? t("fast") : t("ready");
+
+      if (genMins != null && specialMins != null && genMins !== specialMins) {
+        return {
+          html: `<div class="compact-waits compact-waits-inline">
+            <span class="compact-pair"><span class="dual-label dual-gen">${escapeHtml(t("gen"))}</span> <span class="wait-cell ${waitClass(genMins)}"><span class="num">${genMins}</span></span></span>
+            <span class="compact-sep">·</span>
+            <span class="compact-pair"><span class="dual-label">${escapeHtml(specialLab)}</span> <span class="wait-cell ${waitClass(specialMins)}"><span class="num">${specialMins}</span></span></span>
+          </div>`,
+          cls: "has-dual has-" + waitClass(Math.max(genMins, specialMins)),
+          dual: true
+        };
+      }
+      const mins = genMins != null ? genMins : specialMins;
+      if (mins == null) return { html: "", cls: "", dual: false };
+      return {
+        html: `<span class="wait-cell ${waitClass(mins)}"><span class="num">${mins}</span></span>`,
+        cls: "has-" + waitClass(mins),
+        dual: false
+      };
+    }
+
     function waitCellBlock(summary, modeKey, port) {
       if (!summary) {
         return { html: `<span class="wait-empty">—</span>`, cls: "" };
       }
-      const w = summary.primary;
-      const readyActive = (summary.extras || []).find(
-        (l) => /ready/i.test(l.name) && isShowableWait(l.wait)
-      );
-      const fastActive = (summary.extras || []).find(
-        (l) => /fast/i.test(l.name) && isShowableWait(l.wait)
-      );
-      const readyPair = !!(readyActive && isActiveWait(w) && isActiveWait(readyActive.wait));
-      const fastPair = !!(fastActive && isActiveWait(w) && isActiveWait(fastActive.wait));
-
-      const gatewayPedDual =
-        (currentFilter === "all" || currentFilter === "pedestrian") &&
-        port &&
-        isGatewayPort(port) &&
-        modeKey === "pedestrian" &&
-        readyPair &&
-        w.minutes !== readyActive.wait.minutes;
-
-      const commercialFastDual =
-        currentFilter === "all" &&
-        modeKey === "commercial" &&
-        fastPair &&
-        w.minutes !== fastActive.wait.minutes;
-
-      const combinedReady =
-        readyPair &&
-        w.minutes === readyActive.wait.minutes &&
-        (modeKey === "pedestrian" || modeKey === "passenger");
-
-      const combinedFast =
-        currentFilter === "all" &&
-        modeKey === "commercial" &&
-        fastPair &&
-        w.minutes === fastActive.wait.minutes;
-
-      let mainHtml;
-      if (gatewayPedDual) {
-        mainHtml = dualWaitHtml(t("ready"), w, readyActive.wait);
-      } else if (commercialFastDual) {
-        mainHtml = dualWaitHtml(t("fast"), w, fastActive.wait);
-      } else if (combinedReady) {
-        mainHtml = labeledWaitHtml(combinedLaneLabel("ready"), w);
-      } else if (combinedFast) {
-        mainHtml = labeledWaitHtml(combinedLaneLabel("fast"), w);
-      } else {
-        mainHtml = waitCellHtml(w);
-      }
-
+      const top = waitPillTop(summary, modeKey);
       const sec = sectionByKey(port, modeKey);
       const withSplit = modeKey === "passenger" || modeKey === "pedestrian" || modeKey === "commercial";
-      // All filter Commercial tile lists Gen + FAST. Commercial filter keeps FAST
-      // on the FAST column only; both tiles still get the pool total.
       const splitIncludesFast = modeKey === "commercial" && currentFilter !== "commercial";
+      const openLine = tileOpenText(sec, withSplit, splitIncludesFast);
+      if (!top.html && !openLine) {
+        return { html: `<span class="wait-empty">—</span>`, cls: "" };
+      }
       return {
-        html: `<div class="wait-stack">${mainHtml}</div>`,
-        openLine: tileOpenText(sec, withSplit, splitIncludesFast),
-        cls: ((gatewayPedDual || commercialFastDual) ? "has-dual " : "") + "has-" + w.cls
+        html: `<div class="wait-stack">${top.html || ""}</div>`,
+        openLine: openLine,
+        cls: top.cls || ""
       };
     }
 
@@ -6091,117 +6084,70 @@
       if (!summary || !summary.primary || !isActiveWait(summary.primary)) return null;
       return summary.primary.minutes;
     }
-    function driveWaitRow(lab, mins, tone) {
-      const toneCls = tone ? " " + tone : "";
-      const labHtml = lab
-        ? `<span class="drive-wait-lab">${escapeHtml(lab)}</span>`
-        : "";
-      return `<div class="drive-wait-row${toneCls}"><span class="drive-wait-time"><span class="drive-wait-val">${escapeHtml(String(mins))}</span><span class="drive-wait-unit">min</span></span>${labHtml}</div>`;
+    function driveWaitPillHtml(topHtml, mid, bot) {
+      let body = topHtml || "";
+      if (mid) body += `<div class="drive-wait-mid">${escapeHtml(mid)}</div>`;
+      if (bot) body += `<div class="drive-wait-bot">${escapeHtml(bot)}</div>`;
+      if (!body) return "—";
+      return `<div class="drive-wait-tile">${body}</div>`;
     }
-    function driveWaitTileHtml(rowsHtml) {
-      return `<div class="drive-wait-tile">${rowsHtml}</div>`;
-    }
-    function driveLaneOpenCount(lane) {
-      const w = lane && lane.wait;
-      if (!w || w.na || w.pending) return null;
-      if (w.closed) return 0;
-      if (w.lanesOpenCount == null) return null;
-      const n = Number(w.lanesOpenCount);
-      return isNaN(n) ? null : n;
-    }
-    function veteransVehicleLaneSplit(section) {
-      if (!section) return "";
-      let gen = null;
-      let ready = null;
-      let sentri = null;
+    function driveSectionTopHtml(section, commercial) {
+      if (!section) return { html: "", tone: "" };
+      let genMins = null;
+      let specialMins = null;
+      const specialRe = commercial ? /fast/i : /ready/i;
       sortLanes(section.lanes || []).forEach(function (lane) {
-        const n = driveLaneOpenCount(lane);
-        if (n == null) return;
-        if (/general/i.test(lane.name) && !/ready|sentri|fast|nexus/i.test(lane.name)) gen = n;
-        else if (/ready/i.test(lane.name)) ready = n;
-        else if (/sentri/i.test(lane.name)) sentri = n;
+        if (!isActiveWait(lane.wait)) return;
+        if (/general/i.test(lane.name) && !/ready|sentri|fast|nexus/i.test(lane.name)) {
+          genMins = lane.wait.minutes;
+        } else if (specialRe.test(lane.name)) {
+          specialMins = lane.wait.minutes;
+        }
       });
-      const parts = [];
-      if (gen != null) parts.push(gen + " " + t("gen"));
-      if (ready != null) parts.push(ready + " " + t("ready"));
-      if (sentri != null) parts.push(sentri + " " + t("sentri"));
-      return parts.join(" / ");
-    }
-    function drivePublishedMinutes(wait) {
-      if (!wait || wait.na || wait.pending) return null;
-      if (wait.closed) return 0;
-      return wait.minutes != null ? wait.minutes : null;
+      const specialLab = commercial ? t("fast") : t("ready");
+      if (genMins != null && specialMins != null && genMins !== specialMins) {
+        return {
+          html: `<div class="drive-wait-top-dual">
+            <span><span class="lab">${escapeHtml(t("gen"))}</span> <span class="val ${driveWaitTone(genMins)}">${genMins}</span></span>
+            <span class="sep">·</span>
+            <span><span class="lab">${escapeHtml(specialLab)}</span> <span class="val ${driveWaitTone(specialMins)}">${specialMins}</span></span>
+          </div>`,
+          tone: driveWaitTone(Math.max(genMins, specialMins))
+        };
+      }
+      const mins = genMins != null ? genMins : specialMins;
+      if (mins == null) return { html: "", tone: "" };
+      return {
+        html: `<div class="drive-wait-top ${driveWaitTone(mins)}">${mins}</div>`,
+        tone: driveWaitTone(mins)
+      };
     }
     function drivePedWaitPack(port) {
-      const summary = summarizeMode(port.sections || [], "pedestrian");
-      if (!summary || !summary.primary) {
+      const sec = sectionByKey(port, "pedestrian");
+      const top = driveSectionTopHtml(sec, false);
+      const mid = genReadySplit(sec, false);
+      const bot = sectionOfLine(sec);
+      if (!top.html && !mid && !bot) {
         return { html: "—", cls: "", openBits: [] };
       }
-      const w = summary.primary;
-      const ready = (summary.extras || []).find(function (l) {
-        return /ready/i.test(l.name) && isShowableWait(l.wait);
-      });
-      const sec = sectionByKey(port, "pedestrian");
-      const openText = tileOpenText(sec, true, false);
-      const openBits = openText ? openText.split("\n").filter(Boolean) : [];
-      const mins = isActiveWait(w) ? w.minutes : null;
-      if (mins == null) {
-        return { html: "—", cls: "", openBits: openBits };
-      }
-      let rows = "";
-      if (ready && isActiveWait(ready.wait) && ready.wait.minutes !== mins) {
-        rows =
-          driveWaitRow(t("driveGen"), mins, driveWaitTone(mins)) +
-          driveWaitRow(t("ready"), ready.wait.minutes, driveWaitTone(ready.wait.minutes));
-      } else if (ready && isActiveWait(ready.wait) && ready.wait.minutes === mins) {
-        rows = driveWaitRow(combinedLaneLabel("ready"), mins, driveWaitTone(mins));
-      } else {
-        rows = driveWaitRow("", mins, driveWaitTone(mins));
-      }
       return {
-        html: driveWaitTileHtml(rows),
+        html: driveWaitPillHtml(top.html, mid, bot),
         cls: "has-tile",
-        openBits: openBits
+        openBits: []
       };
     }
     function driveVehicleWaitPack(port) {
-      const wait = passengerVehicleWait(port);
-      const pass = sectionByKey(port, "passenger");
-      const ofLine = sectionOfLine(pass);
-      const summary = summarizeMode(port.sections || [], "passenger");
-      const ready = summary && (summary.extras || []).find(function (l) {
-        return /ready/i.test(l.name) && isShowableWait(l.wait);
-      });
-      const sentriMins = isVeteransPort(port)
-        ? drivePublishedMinutes(laneWaitForShare(port, "sentri"))
-        : null;
-      const breakdown = isVeteransPort(port)
-        ? veteransVehicleLaneSplit(pass)
-        : genReadySplit(pass);
-      const openBits = [breakdown, ofLine].filter(Boolean);
-      if (wait == null && sentriMins == null) {
-        return { html: "—", cls: "", openBits: openBits };
-      }
-      let rows = "";
-      if (isVeteransPort(port) && wait != null && sentriMins != null) {
-        rows =
-          driveWaitRow(combinedLaneLabel("ready"), wait, driveWaitTone(wait)) +
-          driveWaitRow(t("sentri"), sentriMins, driveWaitTone(sentriMins));
-      } else if (wait != null && ready && isActiveWait(ready.wait) && ready.wait.minutes !== wait) {
-        rows =
-          driveWaitRow(t("driveGen"), wait, driveWaitTone(wait)) +
-          driveWaitRow(t("ready"), ready.wait.minutes, driveWaitTone(ready.wait.minutes));
-      } else if (wait != null && ready && isActiveWait(ready.wait) && ready.wait.minutes === wait) {
-        rows = driveWaitRow(combinedLaneLabel("ready"), wait, driveWaitTone(wait));
-      } else if (wait != null) {
-        rows = driveWaitRow("", wait, driveWaitTone(wait));
-      } else {
-        rows = driveWaitRow(t("sentri"), sentriMins, driveWaitTone(sentriMins));
+      const sec = sectionByKey(port, "passenger");
+      const top = driveSectionTopHtml(sec, false);
+      const mid = genReadySplit(sec, false);
+      const bot = sectionOfLine(sec);
+      if (!top.html && !mid && !bot) {
+        return { html: "—", cls: "", openBits: [] };
       }
       return {
-        html: driveWaitTileHtml(rows),
+        html: driveWaitPillHtml(top.html, mid, bot),
         cls: "has-tile",
-        openBits: openBits
+        openBits: []
       };
     }
     function driveCardHtml(port, kind) {
