@@ -2187,13 +2187,21 @@
       .wait-table td { padding: 0.7rem 0.55rem; }
       .wait-table td.bridge { padding-left: 0.85rem; }
       .wait-table thead th.th-bridge { padding-left: 0.85rem; }
-      /* Drive/Walking: title/hours/Map first; chips wrap below */
-      .drive-card {
-        grid-template-columns: 1fr;
+    }
+
+    /* Drive/Walking mobile: title/hours/Map fully visible; chips below */
+    @media (max-width: 720px) {
+      html[data-view="drive"] .drive-card {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
         gap: 0.55rem;
-        align-items: start;
       }
-      .drive-waits {
+      html[data-view="drive"] .drive-wait {
+        width: 100%;
+        text-align: left;
+      }
+      html[data-view="drive"] .drive-waits {
         justify-content: flex-start;
         width: 100%;
       }
