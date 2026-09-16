@@ -701,9 +701,9 @@
     }
     .drive-wait-top-dual {
       display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      gap: 0.2rem 0.35rem;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.2rem;
       font-size: 1.05rem;
       font-weight: 800;
       line-height: 1.15;
@@ -4932,9 +4932,8 @@
 
       if (genMins != null && specialMins != null && genMins !== specialMins) {
         return {
-          html: `<div class="compact-waits compact-waits-inline">
+          html: `<div class="compact-waits">
             <span class="compact-pair"><span class="dual-label dual-gen">${escapeHtml(t("gen"))}</span> <span class="wait-cell ${waitClass(genMins)}"><span class="num">${genMins}</span><span class="unit">Min</span></span></span>
-            <span class="compact-sep">·</span>
             <span class="compact-pair"><span class="dual-label">${escapeHtml(specialLab)}</span> <span class="wait-cell ${waitClass(specialMins)}"><span class="num">${specialMins}</span><span class="unit">Min</span></span></span>
           </div>`,
           cls: "has-dual has-" + waitClass(Math.max(genMins, specialMins)),
@@ -5130,6 +5129,7 @@
 
       let trusted = null;
       let pending = null;
+      let closedPick = null;
       for (const sec of port.sections) {
         for (const lane of sec.lanes) {
           if (pedestrianOnly) {
@@ -5152,10 +5152,12 @@
             }
           } else if (lane.wait.pending && !pending) {
             pending = { lane, sectionKey: sec.key, sectionTitle: sec.title };
+          } else if (lane.wait && lane.wait.closed && !closedPick) {
+            closedPick = { lane, sectionKey: sec.key, sectionTitle: sec.title };
           }
         }
       }
-      const pick = trusted || pending;
+      const pick = trusted || pending || closedPick;
 
       if (pedestrianOnly) {
         const lane = pick && pick.lane;
@@ -6118,7 +6120,6 @@
         return {
           html: `<div class="drive-wait-top-dual">
             <span><span class="lab">${escapeHtml(t("gen"))}</span> <span class="val ${driveWaitTone(genMins)}">${genMins}<span class="unit"> Min</span></span></span>
-            <span class="sep">·</span>
             <span><span class="lab">${escapeHtml(specialLab)}</span> <span class="val ${driveWaitTone(specialMins)}">${specialMins}<span class="unit"> Min</span></span></span>
           </div>`,
           tone: driveWaitTone(Math.max(genMins, specialMins))
@@ -6282,12 +6283,12 @@
         waitCols.push({ key: "commercial", label: t("filterCommercial") });
       } else if (currentFilter === "passenger") {
         waitCols.push({ key: "passenger", label: t("filterVehicles") });
-        if (showSpecialCol) waitCols.push({ key: "trusted", label: t("sentri") });
+        waitCols.push({ key: "trusted", label: t("sentri") });
       } else if (currentFilter === "pedestrian") {
         waitCols.push({ key: "pedestrian", label: t("filterPedestrian") });
       } else if (currentFilter === "commercial") {
         waitCols.push({ key: "commercial", label: t("filterCommercial") });
-        if (showSpecialCol) waitCols.push({ key: "trusted", label: t("fast") });
+        waitCols.push({ key: "trusted", label: t("fast") });
       }
 
       const mobileCards = [];
@@ -6364,10 +6365,10 @@
         return;
       }
 
-      // Vehicles / Commercial: tight table. All / Pedestrian: bridge-band cards.
+      // All / Vehicles / Pedestrian / Commercial: same All-filter desktop card table.
       const waitN = Math.max(waitCols.length, 1);
-      const useCards = currentFilter === "all" || currentFilter === "pedestrian";
-      const tight = !useCards;
+      const useCards = true;
+      const tight = false;
       let bridgePct;
       if (waitN === 1) bridgePct = useCards ? 58 : 42;
       else if (waitN === 2) bridgePct = 36;
