@@ -727,12 +727,12 @@
     return w && w.minutes != null && !w.pending && !w.closed;
   }
 
+  /** Site-wide wait tone: green ≤20, amber ≤45, red above 45. */
   function waitClass(minutes) {
     if (minutes == null) return "na";
-    if (minutes <= 15) return "low";
-    if (minutes <= 30) return "med";
-    if (minutes <= 60) return "high";
-    return "severe";
+    if (minutes <= 20) return "low";
+    if (minutes <= 45) return "med";
+    return "high";
   }
 
   /** Attach homepage-style num/label/cls for wait rendering. */

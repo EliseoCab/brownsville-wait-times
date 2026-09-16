@@ -602,7 +602,7 @@
       white-space: nowrap;
     }
     .stat-card .stat.good { color: var(--green); }
-    .stat-card .stat.warn { color: var(--orange); }
+    .stat-card .stat.warn { color: var(--amber); }
     .stat-card .stat.bad { color: var(--red); }
     .stat-card .hint {
       font-size: 0.7rem;
@@ -717,7 +717,7 @@
     .drive-wait-row.good .drive-wait-val,
     .drive-wait-row.good .drive-wait-unit { color: var(--green); }
     .drive-wait-row.warn .drive-wait-val,
-    .drive-wait-row.warn .drive-wait-unit { color: var(--orange); }
+    .drive-wait-row.warn .drive-wait-unit { color: var(--amber); }
     .drive-wait-row.bad .drive-wait-val,
     .drive-wait-row.bad .drive-wait-unit { color: var(--red); }
     .drive-wait .unit,
@@ -783,7 +783,7 @@
       color: var(--muted);
     }
     .drive-wait.good { color: var(--green); }
-    .drive-wait.warn { color: var(--orange); }
+    .drive-wait.warn { color: var(--amber); }
     .drive-wait.bad { color: var(--red); }
     .drive-open {
       grid-column: 1 / -1;
@@ -1246,22 +1246,6 @@
       gap: 0.06rem;
       margin: 0;
     }
-    .table-wrap.table-cards .wait-table tbody td.wait-col.has-low .wait-stack {
-      background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 75%);
-      box-shadow: 0 2px 8px rgba(5, 150, 105, 0.1);
-    }
-    .table-wrap.table-cards .wait-table tbody td.wait-col.has-med .wait-stack {
-      background: linear-gradient(180deg, #fffbeb 0%, #ffffff 75%);
-      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.1);
-    }
-    .table-wrap.table-cards .wait-table tbody td.wait-col.has-high .wait-stack {
-      background: linear-gradient(180deg, #fff7ed 0%, #ffffff 75%);
-      box-shadow: 0 2px 8px rgba(234, 88, 12, 0.1);
-    }
-    .table-wrap.table-cards .wait-table tbody td.wait-col.has-severe .wait-stack {
-      background: linear-gradient(180deg, #fef2f2 0%, #ffffff 75%);
-      box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1);
-    }
     /* Headers already name the column — hide chip category tags (e.g. SENTRI) */
     .table-wrap.table-cards .wait-extra .tag {
       display: none;
@@ -1491,11 +1475,6 @@
       vertical-align: middle;
       border-left: 1px solid var(--line-soft);
     }
-    .wait-table td.wait-col.has-low { background: rgba(236, 253, 245, 0.65); }
-    .wait-table td.wait-col.has-med { background: rgba(255, 251, 235, 0.7); }
-    .wait-table td.wait-col.has-high { background: rgba(255, 247, 237, 0.75); }
-    .wait-table td.wait-col.has-severe { background: rgba(254, 242, 242, 0.8); }
-
     /* Stack wait + open lines centered in every filter view */
     .wait-stack {
       display: flex;
@@ -1531,10 +1510,8 @@
     .wait-cell.low .unit { color: var(--green); }
     .wait-cell.med .num,
     .wait-cell.med .unit { color: var(--amber); }
-    .wait-cell.high .num,
-    .wait-cell.high .unit { color: var(--orange); }
-    .wait-cell.severe .num,
-    .wait-cell.severe .unit { color: var(--red); }
+    .wait-cell:is(.high, .severe) .num,
+    .wait-cell:is(.high, .severe) .unit { color: var(--red); }
     .wait-cell.na .num,
     .wait-cell.pending .num {
       font-size: 0.78rem;
@@ -2042,10 +2019,6 @@
     .m-wait-block .compact-pair .wait-cell .num {
       font-size: clamp(0.95rem, 4vw, 1.15rem);
     }
-    .m-wait-block.has-low { background: rgba(236, 253, 245, 0.9); }
-    .m-wait-block.has-med { background: rgba(255, 251, 235, 0.95); }
-    .m-wait-block.has-high { background: rgba(255, 247, 237, 0.95); }
-    .m-wait-block.has-severe { background: rgba(254, 242, 242, 0.95); }
     .m-wait-block.has-na {
       background: #dbe3ee;
       border-color: #94a3b8;
@@ -2691,7 +2664,7 @@
     }
     .swatch.low { background: var(--green); }
     .swatch.med { background: var(--amber); }
-    .swatch.high { background: var(--orange); }
+    .swatch.high,
     .swatch.severe { background: var(--red); }
     .swatch.na { background: var(--gray); }
 
@@ -2762,10 +2735,6 @@
       color: #e2e8f0;
     }
     html[data-theme="dark"] .wait-table tbody tr:hover { background: #182338; }
-    html[data-theme="dark"] .wait-table td.wait-col.has-low { background: rgba(5, 46, 34, 0.55); }
-    html[data-theme="dark"] .wait-table td.wait-col.has-med { background: rgba(42, 31, 8, 0.55); }
-    html[data-theme="dark"] .wait-table td.wait-col.has-high { background: rgba(42, 20, 8, 0.55); }
-    html[data-theme="dark"] .wait-table td.wait-col.has-severe { background: rgba(42, 11, 11, 0.55); }
     html[data-theme="dark"] .wait-table td.wait-col.has-pending { background: #2a1f08; }
     html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td {
       background: linear-gradient(90deg, #152033 0%, var(--white) 22%, var(--white) 100%);
@@ -2788,18 +2757,6 @@
       background: #334155;
       border-color: #64748b;
     }
-    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-low .wait-stack {
-      background: linear-gradient(180deg, #0b2a1d 0%, var(--white) 75%);
-    }
-    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-med .wait-stack {
-      background: linear-gradient(180deg, #2a1f08 0%, var(--white) 75%);
-    }
-    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-high .wait-stack {
-      background: linear-gradient(180deg, #2a1408 0%, var(--white) 75%);
-    }
-    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-severe .wait-stack {
-      background: linear-gradient(180deg, #2a0b0b 0%, var(--white) 75%);
-    }
     html[data-theme="dark"] .notice {
       color: #d6e4f5;
     }
@@ -2815,11 +2772,6 @@
       border-color: #164e63;
       color: #7dd3fc;
     }
-    html[data-theme="dark"] .m-wait-block.has-low { background: rgba(5, 46, 34, 0.7); }
-    html[data-theme="dark"] .m-wait-block.has-med { background: rgba(42, 31, 8, 0.75); }
-    html[data-theme="dark"] .m-wait-block.has-high { background: rgba(42, 20, 8, 0.75); }
-    html[data-theme="dark"] .m-wait-block.has-severe { background: rgba(42, 11, 11, 0.75); }
-
     @media (prefers-reduced-motion: reduce) {
       .pulse { animation: none; }
     }
@@ -3019,18 +2971,6 @@
       box-shadow: 0 1px 0 #fff inset, 0 6px 16px rgba(15, 47, 84, 0.08);
       backdrop-filter: blur(16px) saturate(1.55);
       -webkit-backdrop-filter: blur(16px) saturate(1.55);
-    }
-    html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody td.wait-col.has-low .wait-stack {
-      background: linear-gradient(180deg, rgba(236, 253, 245, 0.78), rgba(255, 255, 255, 0.4));
-    }
-    html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody td.wait-col.has-med .wait-stack {
-      background: linear-gradient(180deg, rgba(255, 251, 235, 0.82), rgba(255, 255, 255, 0.4));
-    }
-    html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody td.wait-col.has-high .wait-stack {
-      background: linear-gradient(180deg, rgba(255, 247, 237, 0.82), rgba(255, 255, 255, 0.4));
-    }
-    html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody td.wait-col.has-severe .wait-stack {
-      background: linear-gradient(180deg, rgba(254, 242, 242, 0.78), rgba(255, 255, 255, 0.4));
     }
     html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody td.wait-col.has-na .wait-stack,
     html:not([data-theme="dark"]) .table-wrap.table-cards .wait-stack.wait-stack-na,
@@ -3318,22 +3258,6 @@
       backdrop-filter: blur(16px) saturate(1.4);
       -webkit-backdrop-filter: blur(16px) saturate(1.4);
     }
-    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-low .wait-stack {
-      background: linear-gradient(180deg, rgba(6, 78, 59, 0.55), rgba(16, 28, 46, 0.42));
-      border-color: rgba(52, 211, 153, 0.28);
-    }
-    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-med .wait-stack {
-      background: linear-gradient(180deg, rgba(120, 53, 15, 0.5), rgba(16, 28, 46, 0.42));
-      border-color: rgba(251, 191, 36, 0.28);
-    }
-    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-high .wait-stack {
-      background: linear-gradient(180deg, rgba(154, 52, 18, 0.48), rgba(16, 28, 46, 0.42));
-      border-color: rgba(251, 146, 60, 0.28);
-    }
-    html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-severe .wait-stack {
-      background: linear-gradient(180deg, rgba(127, 29, 29, 0.48), rgba(16, 28, 46, 0.42));
-      border-color: rgba(248, 113, 113, 0.28);
-    }
     html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col.has-na .wait-stack,
     html[data-theme="dark"] .table-wrap.table-cards .wait-stack.wait-stack-na,
     html[data-theme="dark"] .table-wrap.table-tight .wait-stack.wait-stack-na {
@@ -3348,18 +3272,6 @@
     html[data-theme="dark"] .m-wait-block {
       background: linear-gradient(180deg, rgba(36, 56, 84, 0.62), rgba(16, 28, 46, 0.48));
       border: 1px solid rgba(125, 211, 252, 0.14);
-    }
-    html[data-theme="dark"] .m-wait-block.has-low {
-      background: linear-gradient(180deg, rgba(6, 78, 59, 0.55), rgba(16, 28, 46, 0.42));
-    }
-    html[data-theme="dark"] .m-wait-block.has-med {
-      background: linear-gradient(180deg, rgba(120, 53, 15, 0.5), rgba(16, 28, 46, 0.42));
-    }
-    html[data-theme="dark"] .m-wait-block.has-high {
-      background: linear-gradient(180deg, rgba(154, 52, 18, 0.48), rgba(16, 28, 46, 0.42));
-    }
-    html[data-theme="dark"] .m-wait-block.has-severe {
-      background: linear-gradient(180deg, rgba(127, 29, 29, 0.48), rgba(16, 28, 46, 0.42));
     }
     html[data-theme="dark"] footer {
       background: transparent;
@@ -4246,12 +4158,20 @@
         .replace(/"/g, "&quot;");
     }
 
+    /** Site-wide wait tone: green ≤20, amber ≤45, red above 45. */
     function waitClass(minutes) {
       if (minutes == null) return "na";
-      if (minutes <= 15) return "low";
-      if (minutes <= 30) return "med";
-      if (minutes <= 60) return "high";
-      return "severe";
+      if (minutes <= 20) return "low";
+      if (minutes <= 45) return "med";
+      return "high";
+    }
+
+    function waitToneClass(minutes) {
+      const cls = waitClass(minutes);
+      if (cls === "low") return "good";
+      if (cls === "med") return "warn";
+      if (cls === "high") return "bad";
+      return "";
     }
 
     function parseWait(text) {
@@ -4504,7 +4424,7 @@
     }
 
     function worstLevel(sections) {
-      const order = { low: 1, med: 2, high: 3, severe: 4, na: 0 };
+      const order = { low: 1, med: 2, high: 3, severe: 3, na: 0 };
       let worst = "na";
       for (const sec of sections) {
         for (const lane of sec.lanes) {
@@ -4679,7 +4599,7 @@
       const leaveStr = formatLeaveClock(now);
       const boothStr = formatLeaveClock(booth);
       stat.textContent = boothStr;
-      stat.className = "stat " + (pick.wait <= 15 ? "good" : pick.wait <= 45 ? "warn" : "bad");
+      stat.className = "stat " + waitToneClass(pick.wait);
       if (kicker) kicker.textContent = t("statLeave");
       hint.textContent =
         pick.short +
@@ -4756,10 +4676,10 @@
         const best = generalWaits[0];
         const worst = generalWaits[generalWaits.length - 1];
         shortEl.textContent = best.mins + " min";
-        shortEl.className = "stat " + (best.mins <= 15 ? "good" : best.mins <= 45 ? "warn" : "bad");
+        shortEl.className = "stat " + waitToneClass(best.mins);
         shortHint.textContent = best.port + " · " + t("generalLanes");
         longEl.textContent = worst.mins + " min";
-        longEl.className = "stat " + (worst.mins <= 15 ? "good" : worst.mins <= 45 ? "warn" : "bad");
+        longEl.className = "stat " + waitToneClass(worst.mins);
         longHint.textContent = worst.port + " · " + t("generalLanes");
       } else {
         shortEl.textContent = "—";
@@ -4774,7 +4694,7 @@
         trustedWaits.sort((a, b) => a.mins - b.mins);
         const bestTrustedWait = trustedWaits[0];
         trustedEl.textContent = bestTrustedWait.mins + " min";
-        trustedEl.className = "stat " + (bestTrustedWait.mins <= 15 ? "good" : "warn");
+        trustedEl.className = "stat " + waitToneClass(bestTrustedWait.mins);
         trustedHint.textContent = bestTrustedWait.port + " · " + laneTypeLabel(bestTrustedWait.name);
       } else {
         trustedEl.textContent = t("na");
@@ -6124,10 +6044,7 @@
     }
 
     function driveWaitTone(mins) {
-      if (mins == null) return "";
-      if (mins <= 15) return "good";
-      if (mins <= 45) return "warn";
-      return "bad";
+      return waitToneClass(mins);
     }
     function driveSortWait(a, b, kind) {
       const aw = kind === "ped" ? drivePedMinutes(a) : passengerVehicleWait(a);
