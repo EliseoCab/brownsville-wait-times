@@ -375,10 +375,8 @@
     .wait-cell.low .unit { color: var(--green); }
     .wait-cell.med .num,
     .wait-cell.med .unit { color: var(--amber); }
-    .wait-cell.high .num,
-    .wait-cell.high .unit { color: var(--orange); }
-    .wait-cell.severe .num,
-    .wait-cell.severe .unit { color: var(--red); }
+    .wait-cell:is(.high, .severe) .num,
+    .wait-cell:is(.high, .severe) .unit { color: var(--red); }
     .wait-cell.na .num,
     .wait-cell.pending .num {
       font-size: 0.9rem;
@@ -402,6 +400,7 @@
       color: var(--muted);
       text-transform: none;
       min-width: 3.2rem;
+      white-space: nowrap;
     }
     .empty { text-align: center; color: var(--muted); padding: 1.5rem 0.5rem; }
     #showMoreBtn {
@@ -532,16 +531,6 @@
       backdrop-filter: blur(16px) saturate(1.55);
       -webkit-backdrop-filter: blur(16px) saturate(1.55);
     }
-    html:not([data-theme="dark"]) .cell:has(.wait-cell.low) {
-      background: linear-gradient(180deg, rgba(236, 253, 245, 0.78), rgba(255, 255, 255, 0.4));
-    }
-    html:not([data-theme="dark"]) .cell:has(.wait-cell.med) {
-      background: linear-gradient(180deg, rgba(255, 251, 235, 0.82), rgba(255, 255, 255, 0.4));
-    }
-    html:not([data-theme="dark"]) .cell:has(.wait-cell.high),
-    html:not([data-theme="dark"]) .cell:has(.wait-cell.severe) {
-      background: linear-gradient(180deg, rgba(254, 242, 242, 0.78), rgba(255, 255, 255, 0.4));
-    }
     html:not([data-theme="dark"]) .cell:has(.wait-empty),
     html:not([data-theme="dark"]) .cell:has(.wait-cell.pending),
     html:not([data-theme="dark"]) .cell:has(.wait-cell.na) {
@@ -637,16 +626,6 @@
     html[data-theme="dark"] .cell {
       background: linear-gradient(180deg, rgba(36, 56, 84, 0.62), rgba(16, 28, 46, 0.48));
       border: 1px solid rgba(125, 211, 252, 0.14);
-    }
-    html[data-theme="dark"] .cell:has(.wait-cell.low) {
-      background: linear-gradient(180deg, rgba(6, 78, 59, 0.55), rgba(16, 28, 46, 0.42));
-    }
-    html[data-theme="dark"] .cell:has(.wait-cell.med) {
-      background: linear-gradient(180deg, rgba(120, 53, 15, 0.5), rgba(16, 28, 46, 0.42));
-    }
-    html[data-theme="dark"] .cell:has(.wait-cell.high),
-    html[data-theme="dark"] .cell:has(.wait-cell.severe) {
-      background: linear-gradient(180deg, rgba(127, 29, 29, 0.48), rgba(16, 28, 46, 0.42));
     }
     html[data-theme="dark"] .cell:has(.wait-empty),
     html[data-theme="dark"] .cell:has(.wait-cell.pending),

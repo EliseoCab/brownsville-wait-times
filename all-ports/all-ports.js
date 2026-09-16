@@ -727,12 +727,12 @@
     return w && w.minutes != null && !w.pending && !w.closed;
   }
 
+  /** Site-wide wait tone: green ≤20, amber ≤45, red above 45. */
   function waitClass(minutes) {
     if (minutes == null) return "na";
-    if (minutes <= 15) return "low";
-    if (minutes <= 30) return "med";
-    if (minutes <= 60) return "high";
-    return "severe";
+    if (minutes <= 20) return "low";
+    if (minutes <= 45) return "med";
+    return "high";
   }
 
   /** Attach homepage-style num/label/cls for wait rendering. */
@@ -977,16 +977,47 @@
     return parts.join(", ");
   }
 
+  function combinedLaneLabel(kind) {
+    return t("gen") + " / " + t(kind === "fast" ? "fast" : "ready");
+  }
+
+  function isGeneralLaneName(name) {
+    return /general/i.test(name) && !/ready|sentri|fast|nexus/i.test(name);
+  }
+
   /** Homepage-style lane rows + open totals for one traffic section. */
   function modeCell(section, border, date, timeZone) {
     if (!sectionHasData(section)) {
       return '<span class="wait-empty">' + t("na") + "</span>";
     }
+    var lanes = sortLanes(section.lanes || []);
+    var gen = null;
+    var ready = null;
+    var fast = null;
+    lanes.forEach(function (lane) {
+      if (!isActiveWait(lane.wait)) return;
+      if (isGeneralLaneName(lane.name)) gen = lane;
+      else if (/ready/i.test(lane.name)) ready = lane;
+      else if (/fast/i.test(lane.name)) fast = lane;
+    });
+    var skipName = "";
+    var combinedKind = "";
+    if (gen && ready && gen.wait.minutes === ready.wait.minutes) {
+      skipName = ready.name;
+      combinedKind = "ready";
+    } else if (gen && fast && gen.wait.minutes === fast.wait.minutes) {
+      skipName = fast.name;
+      combinedKind = "fast";
+    }
     var rows = [];
-    sortLanes(section.lanes || []).forEach(function (lane) {
+    lanes.forEach(function (lane) {
       if (!isShowableWait(lane.wait)) return;
+      if (skipName && lane.name === skipName) return;
+      var label = (combinedKind && gen && lane === gen)
+        ? combinedLaneLabel(combinedKind)
+        : laneTypeLabel(lane.name);
       rows.push(
-        '<div class="lane-row"><span class="dual-label">' + escapeHtml(laneTypeLabel(lane.name)) +
+        '<div class="lane-row"><span class="dual-label">' + escapeHtml(label) +
         "</span> " + waitCellHtml(lane.wait) + "</div>"
       );
     });
