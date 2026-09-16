@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script>
+    (function () {
+      try {
+        var lang = localStorage.getItem("bwt-lang");
+        if (lang === "es" || lang === "en") document.documentElement.lang = lang;
+        var theme = localStorage.getItem("bwt-theme");
+        if (theme !== "light" && theme !== "dark") {
+          theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) {}
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1f3a" />
+  <meta name="description" content="How Brownsville Border Wait Times uses analytics, device storage, optional location, and crowd reports. Independent of CBP and DHS." />
+  <title>Privacy · Brownsville Border Wait Times</title>
+  <meta property="og:title" content="Privacy · Brownsville Border Wait Times" />
+  <meta property="og:description" content="How this wait-times site uses analytics, device storage, optional location, and crowd reports." />
+  <meta property="og:url" content="https://eliseocab.github.io/brownsville-wait-times/privacy/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://eliseocab.github.io/brownsville-wait-times/images/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../icons/apple-touch-icon.png?v=2" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png?v=2" />
+  <link rel="icon" type="image/x-icon" href="../icons/favicon.ico?v=2" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&amp;family=Instrument+Serif:ital@0;1&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../amenities.css?v=11" />
+  <style>
+    .legal {
+      max-width: 40rem;
+      margin: 0 auto;
+      padding: 0 1.1rem 3rem;
+    }
+    .legal h1 {
+      font-family: "Instrument Serif", Georgia, serif;
+      font-weight: 400;
+      font-size: clamp(1.8rem, 5vw, 2.4rem);
+      line-height: 1.15;
+      margin: 0.4rem 0 0.75rem;
+    }
+    .legal .updated {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 1.5rem;
+    }
+    .legal h2 {
+      font-size: 1.05rem;
+      margin: 1.6rem 0 0.45rem;
+    }
+    .legal p, .legal li {
+      color: var(--ink-soft);
+      line-height: 1.55;
+      font-size: 0.98rem;
+    }
+    .legal ul { padding-left: 1.2rem; }
+    .legal a { color: var(--sky-deep); font-weight: 650; }
+    html[lang="es"] .legal .lang-es { display: block; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="back" href="../"><span class="lang-en">← Back to wait times</span><span class="lang-es">← Volver a tiempos de espera</span></a>
+    <div class="topbar-controls">
+      <div class="seg" role="group" aria-label="Language">
+        <button type="button" id="langEn" class="active" onclick="setLang('en')" lang="en">EN</button>
+        <button type="button" id="langEs" onclick="setLang('es')" lang="es">ES</button>
+      </div>
+    </div>
+  </div>
+  <main class="legal">
+    <p class="eyebrow lang-en">Brownsville Border Wait Times</p>
+    <p class="eyebrow lang-es">Tiempos de espera en Brownsville</p>
+    <h1 class="lang-en">Privacy</h1>
+    <h1 class="lang-es">Privacidad</h1>
+    <p class="updated lang-en">Last updated: September 15, 2026</p>
+    <p class="updated lang-es">Última actualización: 15 de septiembre de 2026</p>
+
+    <p class="lang-en">This independent site shows public U.S. Customs and Border Protection (CBP) wait times for Brownsville-area bridges. It is not affiliated with CBP or DHS. This page explains what this site stores or sends.</p>
+    <p class="lang-es">Este sitio independiente muestra tiempos de espera públicos de U.S. Customs and Border Protection (CBP) para puentes del área de Brownsville. No está afiliado a CBP ni a DHS. Esta página explica qué guarda o envía el sitio.</p>
+
+    <h2 class="lang-en">Wait times</h2>
+    <h2 class="lang-es">Tiempos de espera</h2>
+    <p class="lang-en">Bridge times come from CBP’s public feed. Your browser loads them through this site or our Cloudflare Worker. We do not sell wait-time data.</p>
+    <p class="lang-es">Los tiempos de los puentes salen del feed público de CBP. Su navegador los carga por este sitio o nuestro Worker de Cloudflare. No vendemos esos datos.</p>
+
+    <h2 class="lang-en">Analytics</h2>
+    <h2 class="lang-es">Analítica</h2>
+    <p class="lang-en">The homepage uses Google Analytics (measurement ID G-DK2NZVHK75) to count visits. Google may set cookies and collect device and usage information under <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google’s privacy policy</a>.</p>
+    <p class="lang-es">La página principal usa Google Analytics (ID G-DK2NZVHK75) para contar visitas. Google puede colocar cookies y recoger datos del dispositivo y uso según la <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">política de privacidad de Google</a>.</p>
+
+    <h2 class="lang-en">On your device</h2>
+    <h2 class="lang-es">En su dispositivo</h2>
+    <p class="lang-en">Language (EN/ES), light/dark theme, and some display preferences stay in your browser’s local storage. They do not go to our servers.</p>
+    <p class="lang-es">El idioma (EN/ES), el tema claro/oscuro y algunas preferencias quedan en el almacenamiento local del navegador. No se envían a nuestros servidores.</p>
+
+    <h2 class="lang-en">Location</h2>
+    <h2 class="lang-es">Ubicación</h2>
+    <p class="lang-en">The site does not track you in the background. “Leave now,” distance to a bridge, All U.S. ports “nearest,” and optional crowd reports use your location <strong>only if you allow it</strong> in the browser prompt. You can refuse.</p>
+    <p class="lang-es">El sitio no lo rastrea en segundo plano. “Salir ahora”, la distancia a un puente, “más cercano” en Todos los puertos y los reportes opcionales de la fila usan su ubicación <strong>solo si usted lo permite</strong> en el navegador. Puede rechazar.</p>
+
+    <h2 class="lang-en">Crowd reports</h2>
+    <h2 class="lang-es">Reportes de la fila</h2>
+    <p class="lang-en">If you submit a crowd wait check-in, we store the bridge, lane type, wait minutes, time, a hashed IP, and location only if you shared it. This is to show recent traveler reports, not to identify you.</p>
+    <p class="lang-es">Si envía un reporte de espera, guardamos el puente, el tipo de carril, los minutos, la hora, una IP cifrada (hash) y la ubicación solo si la compartió. Sirve para mostrar reportes recientes, no para identificarlo.</p>
+
+    <h2 class="lang-en">Contact</h2>
+    <h2 class="lang-es">Contacto</h2>
+    <p class="lang-en">Questions: <a href="mailto:southtexaswaittimes@icloud.com">southtexaswaittimes@icloud.com</a>.</p>
+    <p class="lang-es">Preguntas: <a href="mailto:southtexaswaittimes@icloud.com">southtexaswaittimes@icloud.com</a>.</p>
+  </main>
+  <script src="../amenities.js?v=8"></script>
+</body>
+</html>
