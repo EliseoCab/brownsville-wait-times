@@ -781,6 +781,35 @@
     return !!(section && (section.lanes || []).some(function (l) { return isShowableWait(l.wait); }));
   }
 
+  /** True if this lane belongs to the Vehicles / Pedestrian / Commercial filter set. */
+  function laneMatchesTraffic(lane, trafficKey) {
+    var n = (lane && lane.name) || "";
+    if (trafficKey === "passenger") {
+      return /general|ready|sentri|nexus/i.test(n) && !/fast/i.test(n);
+    }
+    if (trafficKey === "pedestrian") {
+      return (/general/i.test(n) || /ready/i.test(n)) && !/sentri|nexus|fast/i.test(n);
+    }
+    if (trafficKey === "commercial") {
+      return (/general/i.test(n) && !/ready|sentri|nexus/i.test(n)) || /fast/i.test(n);
+    }
+    return true;
+  }
+
+  /**
+   * Keep a port for Vehicles/Pedestrian/Commercial only if that type has at least
+   * one Open lane (minutes including 0). Closed / N/A / Pending-without-minutes
+   * alone do not keep it. Sibling Open lanes still keep the port.
+   */
+  function portHasOpenTraffic(item, trafficKey) {
+    if (!trafficKey || trafficKey === "all") return true;
+    var section = (item.sections || []).find(function (s) { return s.key === trafficKey; });
+    if (!section) return false;
+    return (section.lanes || []).some(function (lane) {
+      return laneMatchesTraffic(lane, trafficKey) && isActiveWait(lane.wait);
+    });
+  }
+
   /** Newest CBP lane stamp for one crossing. */
   function collectStampFromLanes(lanes, date) {
     var best = null;
@@ -986,6 +1015,9 @@
     }
     if (prefs.port && prefs.port !== "all") {
       list = list.filter(function (it) { return it.portName === prefs.port; });
+    }
+    if (prefs.traffic && prefs.traffic !== "all") {
+      list = list.filter(function (it) { return portHasOpenTraffic(it, prefs.traffic); });
     }
 
     if (state.userPos) {
