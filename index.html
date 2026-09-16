@@ -1032,6 +1032,8 @@
       min-width: 0;
       width: fit-content;
       max-width: 100%;
+      /* Keep filter bar clear of notch / status bar when scrolled into view */
+      scroll-margin-top: max(0.55rem, calc(env(safe-area-inset-top, 0px) + 0.35rem));
     }
     .filter-btn {
       appearance: none;
@@ -4493,6 +4495,12 @@
       return worst;
     }
 
+    function scrollFiltersToTop() {
+      const el = document.querySelector(".filters");
+      if (!el) return;
+      el.scrollIntoView({ block: "start", behavior: "auto" });
+    }
+
     function setFilter(filter, btn) {
       currentFilter = filter;
       try { localStorage.setItem(FILTER_KEY, filter); } catch (e) { /* private mode */ }
@@ -4503,9 +4511,7 @@
       } else {
         applyStatCardLabels();
       }
-      if (filter === "drive") {
-        window.scrollTo(0, 0);
-      }
+      scrollFiltersToTop();
     }
 
     function syncFilterUi() {
