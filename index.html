@@ -755,9 +755,27 @@
       background: linear-gradient(180deg, rgba(28, 46, 72, 0.7), rgba(12, 22, 38, 0.5));
       border-color: rgba(125, 211, 252, 0.16);
     }
+    .drive-waits {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      gap: 0.45rem;
+      justify-content: flex-end;
+    }
+    .drive-waits .drive-wait-tile {
+      width: 9.25rem;
+      min-width: 9.25rem;
+    }
+    .drive-wait-na {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      line-height: 1.1;
+    }
     .drive-card {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 9.25rem;
+      grid-template-columns: minmax(0, 1fr) auto;
       justify-content: stretch;
       gap: 0.15rem 0.75rem;
       align-items: center;
@@ -6160,6 +6178,23 @@
         openBits: []
       };
     }
+    /** Drive Vehicles only: SENTRI chip in Gen/Ready count format; N/A if no lane. */
+    function driveSentriChipHtml(port) {
+      const wait = laneWaitForShare(port, "sentri");
+      let topHtml;
+      if (wait && isActiveWait(wait)) {
+        topHtml = `<div class="drive-wait-top ${driveWaitTone(wait.minutes)}">${wait.minutes}<span class="unit"> Min</span></div>`;
+      } else {
+        topHtml = `<div class="drive-wait-na">${escapeHtml(t("na"))}</div>`;
+      }
+      let mid = "";
+      if (wait && !wait.na && !wait.pending) {
+        const n = wait.closed ? 0 : (wait.lanesOpenCount != null ? Number(wait.lanesOpenCount) : NaN);
+        if (!isNaN(n)) mid = n + " " + t("sentri");
+      }
+      const bot = sectionOfLine(sectionByKey(port, "passenger"));
+      return driveWaitPillHtml(topHtml, mid, bot);
+    }
     function driveCardHtml(port, kind) {
       const hoursLabel = formatHoursOfOperation(port.hours);
       const portStamp = collectPortAsOf(port);
@@ -6177,7 +6212,7 @@
         openBits = pack.openBits;
       } else {
         const pack = driveVehicleWaitPack(port);
-        waitHtml = pack.html;
+        waitHtml = `<div class="drive-waits">${pack.html}${driveSentriChipHtml(port)}</div>`;
         waitCls = pack.cls;
         openBits = pack.openBits;
       }
