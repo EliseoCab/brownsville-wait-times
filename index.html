@@ -4816,7 +4816,8 @@
       return t("lanesOf").replace("{open}", String(open)).replace("{total}", String(total));
     }
 
-    /** "2 Gen, 2 Ready" (+ SENTRI/NEXUS) or commercial "1 Gen, 1 FAST". */
+    /** "2 Gen, 2 Ready" or commercial "1 Gen, 1 FAST". SENTRI/NEXUS stay out of the
+     *  vehicle mid-line; they still count in "{open} of {total} Open". */
     function genReadySplit(section, commercial) {
       if (!section) return "";
       const parts = [];
@@ -4833,10 +4834,6 @@
         } else if (!commercial && /ready/i.test(lane.name)) {
           if (n === 0) continue;
           parts.push(n + " " + t("ready"));
-        } else if (/nexus/i.test(lane.name)) {
-          parts.push(n + " " + "NEXUS");
-        } else if (/sentri/i.test(lane.name)) {
-          parts.push(n + " " + t("sentri"));
         }
       }
       return parts.join(", ");
