@@ -1151,7 +1151,11 @@
       padding: 0.65rem 0.65rem;
       box-shadow: none;
       border-radius: 0;
-      font-weight: 700;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-align: left;
     }
     .table-wrap.table-cards .wait-table thead th.th-bridge {
       border-radius: 12px 0 0 12px;
@@ -1163,7 +1167,7 @@
     .table-wrap.table-cards .wait-table thead th:not(.th-bridge) {
       padding-left: 0.25rem;
       padding-right: 0.25rem;
-      text-align: center;
+      text-align: left;
     }
     .table-wrap.table-cards .wait-table thead th:last-child {
       border-radius: 0 12px 12px 0;
@@ -1201,9 +1205,9 @@
       border-radius: 0 12px 12px 0;
       padding-right: 0.35rem;
     }
-    /* Floating time chips — centered under column headers */
+    /* Floating time chips — left edge matches the column header */
     .table-wrap.table-cards .wait-table tbody td.wait-col {
-      text-align: center;
+      text-align: left;
       vertical-align: middle;
       padding-left: 0.25rem;
       padding-right: 0.25rem;
@@ -1212,14 +1216,26 @@
     .table-wrap.table-cards .wait-table tbody td.wait-col:last-child {
       padding-right: 0.25rem;
     }
-    .table-wrap.table-cards .wait-table tbody td.wait-col .wait-col-inner {
-      width: 100%;
+    .table-wrap.table-cards .wait-table tbody td.wait-col .wait-col-inner,
+    .table-wrap.table-cards .wait-table thead th:not(.th-bridge) .wait-col-inner {
+      width: max-content;
+      min-width: 0;
+      max-width: 100%;
       height: 100%;
       display: flex;
       align-items: stretch;
-      justify-content: center;
+      justify-content: flex-start;
       box-sizing: border-box;
       padding: 3px 0;
+    }
+    .table-wrap.table-cards .wait-table thead th:not(.th-bridge) .wait-head-label {
+      align-items: center;
+      padding: 0;
+      font: inherit;
+      color: inherit;
+      letter-spacing: inherit;
+      text-transform: inherit;
+      text-align: left;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
       display: inline-flex;
@@ -1397,11 +1413,11 @@
       z-index: 1;
       background: var(--navy);
       color: #e2e8f0;
-      font-size: 0.7rem;
-      font-weight: 700;
+      font-size: 0.65rem;
+      font-weight: 800;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      text-align: center;
+      text-align: left;
       padding: 0.85rem 0.75rem;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
@@ -1410,8 +1426,10 @@
       padding-left: 1.15rem;
     }
     .wait-table thead th.th-lane {
-      text-transform: none;
-      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.65rem;
+      font-weight: 800;
     }
     .wait-table tbody tr {
       border-bottom: 1px solid var(--line);
@@ -1941,11 +1959,12 @@
     .m-head-port {
       flex: 0 1 auto;
       max-width: min(52%, 11.5rem);
-      font-size: 0.62rem;
+      font-size: 0.65rem;
       font-weight: 800;
       letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--muted);
+      text-align: left;
     }
     .m-head-waits {
       display: flex;
@@ -1958,17 +1977,19 @@
       min-width: 5.5rem;
       width: max-content;
       box-sizing: border-box;
-      font-size: 0.55rem;
+      font-size: 0.65rem;
       font-weight: 800;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--muted);
-      text-align: center;
+      text-align: left;
       padding: 0;
     }
     .m-head-lab.lane-type {
-      text-transform: none;
-      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.65rem;
+      font-weight: 800;
     }
     .m-row {
       /* Same layout for Vehicles / Pedestrian / Commercial: name left, fixed wait strip right */
@@ -2057,12 +2078,12 @@
       align-items: end;
     }
     .table-wrap.table-tight .m-head-lab {
-      text-align: center;
-      justify-self: center;
+      text-align: left;
+      justify-self: start;
       width: 100%;
     }
     .table-wrap.table-tight .m-wait-block {
-      justify-self: center;
+      justify-self: start;
     }
     .table-wrap.table-tight .m-head-waits,
     .table-wrap.table-tight .m-row-waits {
@@ -2192,10 +2213,14 @@
         min-width: 0;
       }
       .table-wrap.table-cards .wait-table thead th {
-        font-size: 0.62rem;
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
         padding: 0.55rem 0.35rem;
         border: none;
         border-bottom: none;
+        text-align: left;
       }
       .table-wrap.table-cards .wait-table thead th.th-bridge {
         border-radius: 10px 0 0 10px;
@@ -2206,7 +2231,7 @@
       .table-wrap.table-cards .wait-table thead th:not(.th-bridge) {
         padding-left: 0.25rem;
         padding-right: 0.25rem;
-        text-align: center;
+        text-align: left;
       }
       .table-wrap.table-cards .wait-table thead th:last-child {
         border-radius: 0 10px 10px 0;
@@ -2221,7 +2246,7 @@
       .table-wrap.table-cards .wait-table tbody td.wait-col {
         padding-left: 0.25rem;
         padding-right: 0.25rem;
-        text-align: center;
+        text-align: left;
       }
       .table-wrap.table-cards .wait-table tbody td:last-child {
         border-radius: 0 10px 10px 0;
@@ -2366,6 +2391,15 @@
         flex: 1.15 1 8rem;
         min-width: 8rem;
         max-width: none;
+        text-align: left;
+      }
+      .table-wrap.table-cards .wait-table thead th.th-bridge {
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        justify-content: flex-start;
+        padding-left: 0.15rem;
       }
       .table-wrap.table-cards .wait-table thead th:not(.th-bridge),
       .table-wrap.table-cards .wait-table tbody td.wait-col {
@@ -2373,16 +2407,26 @@
         min-width: 0;
         display: flex;
         align-items: stretch;
-        justify-content: center;
-        text-align: center;
+        justify-content: flex-start;
+        text-align: left;
       }
-      .table-wrap.table-cards .wait-table tbody td.wait-col .wait-col-inner {
-        width: auto;
+      .table-wrap.table-cards .wait-table thead th:not(.th-bridge) {
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding-left: 0;
+        padding-right: 0;
+      }
+      .table-wrap.table-cards .wait-table tbody td.wait-col .wait-col-inner,
+      .table-wrap.table-cards .wait-table thead th:not(.th-bridge) .wait-col-inner {
+        width: max-content;
+        min-width: 6.75rem;
         max-width: 8.5rem;
         height: auto;
-        align-self: stretch;
+        align-self: flex-start;
         display: flex;
-        justify-content: center;
+        justify-content: flex-start;
         padding: 3px 0;
       }
       .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
@@ -6800,7 +6844,7 @@
         waitCols.map(() => `<col class="c-wait" style="width:${waitPct}%" />`).join("");
 
       const headCols = waitCols.map((c) =>
-        `<th scope="col"${c.key === "trusted" ? ' class="th-lane"' : ""}>${escapeHtml(c.label)}</th>`
+        `<th scope="col"${c.key === "trusted" ? ' class="th-lane"' : ""}><div class="wait-col-inner wait-head-label">${escapeHtml(c.label)}</div></th>`
       ).join("");
 
       const tightClass = tight
@@ -6963,6 +7007,16 @@
             if (stack) colStacks.push(stack);
           });
           equalizeChipGroup(colStacks, minRem);
+          const headInner = table.querySelectorAll("thead th:not(.th-bridge) .wait-head-label")[i];
+          const sample = colStacks[0];
+          if (headInner && sample) {
+            const w = Math.ceil(sample.getBoundingClientRect().width);
+            if (w > 0) {
+              headInner.style.width = w + "px";
+              headInner.style.minWidth = w + "px";
+              headInner.style.maxWidth = w + "px";
+            }
+          }
         }
         stretchChipsToRibbon(
           "#portGrid .table-wrap.table-cards .wait-table tbody tr",
