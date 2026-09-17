@@ -1154,10 +1154,10 @@
       text-align: left;
     }
     .table-wrap.table-cards .wait-table thead th:not(.th-bridge) {
-      /* Match wait-col padding so lane headers center over chips */
-      padding-left: 1px;
-      padding-right: 1px;
-      text-align: center;
+      /* Left-align with chips in the same column (center looked offset) */
+      padding-left: 0.35rem;
+      padding-right: 0.25rem;
+      text-align: left;
     }
     .table-wrap.table-cards .wait-table thead th:last-child {
       border-radius: 0 12px 12px 0;
@@ -1195,23 +1195,23 @@
       border-radius: 0 12px 12px 0;
       padding-right: 0.35rem;
     }
-    /* Floating time chips — JS sets one width/height from the largest message */
+    /* Floating time chips — left edge aligns with column header text */
     .table-wrap.table-cards .wait-table tbody td.wait-col {
-      text-align: center;
+      text-align: left;
       vertical-align: middle;
-      padding-left: 1px;
-      padding-right: 1px;
+      padding-left: 0.35rem;
+      padding-right: 0.25rem;
       border-left: none;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col:last-child {
-      padding-right: 1px;
+      padding-right: 0.25rem;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-col-inner {
       width: 100%;
       height: 100%;
       display: flex;
       align-items: stretch;
-      justify-content: center;
+      justify-content: flex-start;
       box-sizing: border-box;
       padding: 3px 0;
     }
@@ -1221,8 +1221,8 @@
       align-items: center;
       justify-content: center;
       width: max-content;
-      min-width: 6.75rem;
-      max-width: none;
+      min-width: 0;
+      max-width: 100%;
       height: auto;
       min-height: 2.75rem;
       margin: 0;
@@ -2033,37 +2033,41 @@
       overflow-x: auto;
     }
     /*
-     * Vehicles/Commercial phone cards: pack bridge + chips to the LEFT.
-     * Default m-row is 1fr|auto which stretches the title and pins chips
-     * to the far right — that looked unchanged vs the desktop table band.
+     * Vehicles/Commercial phone cards: shared CSS grid so Port / Vehicles /
+     * SENTRI (or Commercial / FAST) headers and chips share the same columns.
      */
     html[data-view="passenger"] .m-head,
     html[data-view="commercial"] .m-head,
     html[data-view="passenger"] .m-row,
     html[data-view="commercial"] .m-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: flex-start;
-      justify-content: flex-start;
-      gap: 0.45rem 0.5rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) max-content max-content;
+      column-gap: 0.5rem;
+      row-gap: 0.45rem;
+      align-items: start;
+      justify-content: start;
     }
     html[data-view="passenger"] .m-head,
     html[data-view="commercial"] .m-head {
-      align-items: flex-end;
+      align-items: end;
     }
-    html[data-view="passenger"] .m-row > div:first-child,
-    html[data-view="commercial"] .m-row > div:first-child {
-      flex: 0 1 auto;
-      max-width: min(52%, 11.5rem);
-      min-width: 0;
-    }
+    html[data-view="passenger"] .m-head-waits,
+    html[data-view="commercial"] .m-head-waits,
     html[data-view="passenger"] .m-row-waits,
     html[data-view="commercial"] .m-row-waits {
-      flex: 0 0 auto;
-      justify-content: flex-start;
-      gap: 0.25rem;
-      overflow: visible;
-      min-width: auto;
+      display: contents;
+    }
+    html[data-view="passenger"] .m-head-port,
+    html[data-view="commercial"] .m-head-port,
+    html[data-view="passenger"] .m-row > div:first-child,
+    html[data-view="commercial"] .m-row > div:first-child {
+      grid-column: 1;
+      max-width: none;
+      min-width: 0;
+    }
+    html[data-view="passenger"] .m-row-notice,
+    html[data-view="commercial"] .m-row-notice {
+      grid-column: 1 / -1;
     }
     .m-wait-block {
       /* Uniform width set after render from the widest message */
@@ -2192,9 +2196,9 @@
         text-align: left;
       }
       .table-wrap.table-cards .wait-table thead th:not(.th-bridge) {
-        padding-left: 1px;
-        padding-right: 1px;
-        text-align: center;
+        padding-left: 0.35rem;
+        padding-right: 0.25rem;
+        text-align: left;
       }
       .table-wrap.table-cards .wait-table thead th:last-child {
         border-radius: 0 10px 10px 0;
@@ -2207,8 +2211,9 @@
         padding: 0.28rem 0.45rem;
       }
       .table-wrap.table-cards .wait-table tbody td.wait-col {
-        padding-left: 1px;
-        padding-right: 1px;
+        padding-left: 0.35rem;
+        padding-right: 0.25rem;
+        text-align: left;
       }
       .table-wrap.table-cards .wait-table tbody td:last-child {
         border-radius: 0 10px 10px 0;
@@ -6623,10 +6628,12 @@
       nodes.forEach(function (el) {
         el.style.width = "max-content";
         el.style.minWidth = "";
-        el.style.maxWidth = "none";
+        el.style.maxWidth = "100%";
         el.style.height = "auto";
         el.style.minHeight = "";
       });
+      // Force layout before measuring column caps
+      void (nodes[0] && nodes[0].offsetWidth);
       let maxW = 0;
       let maxH = 0;
       let availW = Infinity;
@@ -6635,16 +6642,12 @@
         maxH = Math.max(maxH, Math.ceil(el.scrollHeight), Math.ceil(el.offsetHeight));
         const host = el.closest("td.wait-col") || el.parentElement;
         if (!host) return;
-        const cs = getComputedStyle(host);
-        const inner =
-          host.clientWidth -
-          (parseFloat(cs.paddingLeft) || 0) -
-          (parseFloat(cs.paddingRight) || 0);
-        if (inner > 4) availW = Math.min(availW, Math.floor(inner));
+        const inner = Math.floor(host.getBoundingClientRect().width) - 8;
+        if (inner > 4) availW = Math.min(availW, inner);
       });
       maxW = Math.max(maxW, Math.round(remPx(minRem)));
       if (availW !== Infinity) maxW = Math.min(maxW, availW);
-      if (maxH < 1) return;
+      if (maxW < 1 || maxH < 1) return;
       const w = maxW + "px";
       const h = maxH + "px";
       nodes.forEach(function (el) {
