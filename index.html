@@ -1117,6 +1117,142 @@
       width: 100%;
     }
 
+    /* Shared CSS grid: header + every port row use the same columns */
+    .wait-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      width: 100%;
+    }
+    .wait-grid-head,
+    .wait-grid-band {
+      display: grid;
+      grid-template-columns: minmax(7.25rem, 1.15fr) repeat(var(--wait-n, 4), minmax(0, 1fr));
+      column-gap: 0.35rem;
+      align-items: stretch;
+      box-sizing: border-box;
+    }
+    .wait-grid-head {
+      background: var(--navy);
+      color: #e2e8f0;
+      border-radius: 12px;
+      padding: 0.55rem 0.4rem;
+    }
+    .wait-grid-h {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      min-width: 0;
+      padding: 0 0.15rem;
+    }
+    .wait-grid-h-port {
+      justify-content: flex-start;
+      text-align: left;
+      padding-left: 0.35rem;
+    }
+    .wait-grid-h.lane-type {
+      text-transform: none;
+      letter-spacing: 0.04em;
+    }
+    .wait-grid-band {
+      background: linear-gradient(90deg, #f8fafc 0%, #ffffff 18%, #ffffff 100%);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 0.35rem;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+    }
+    .wait-grid-port {
+      min-width: 0;
+      padding: 0.15rem 0.35rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .wait-grid-chip {
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      min-width: 0;
+      padding: 2px 0;
+    }
+    .wait-grid-chip .wait-col-inner {
+      width: auto;
+      max-width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+    .wait-grid-chip .wait-stack {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: max-content;
+      max-width: 100%;
+      min-width: 0;
+      min-height: 2.75rem;
+      margin: 0;
+      padding: 0.4rem 0.45rem 0.35rem;
+      border-radius: 10px;
+      background: var(--white);
+      border: 1px solid rgba(226, 232, 240, 0.95);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+      box-sizing: border-box;
+      line-height: 1.15;
+      overflow: hidden;
+    }
+    .wait-grid-chip.has-na .wait-stack,
+    .wait-grid-chip .wait-stack.wait-stack-na {
+      background: #dbe3ee !important;
+      border: 1px solid #94a3b8 !important;
+      box-shadow: none !important;
+    }
+    .wait-grid-notice {
+      margin-top: 0.2rem;
+      padding: 0 0.15rem 0.1rem;
+    }
+    @media (max-width: 720px) {
+      .wait-grid-head,
+      .wait-grid-band {
+        grid-template-columns: minmax(5.5rem, 1fr) repeat(var(--wait-n, 4), minmax(0, 1fr));
+        column-gap: 0.25rem;
+      }
+      .wait-grid-h { font-size: 0.58rem; }
+      .wait-grid-chip .wait-stack { padding: 0.32rem 0.35rem; }
+    }
+    html:not([data-theme="dark"]) .wait-grid-band {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.4));
+      border: 1px solid rgba(255, 255, 255, 0.78);
+      box-shadow: 0 1px 0 #fff inset, 0 8px 22px rgba(15, 47, 84, 0.08);
+      backdrop-filter: blur(16px) saturate(1.45);
+      -webkit-backdrop-filter: blur(16px) saturate(1.45);
+    }
+    html:not([data-theme="dark"]) .wait-grid-head {
+      background: linear-gradient(180deg, rgba(11, 31, 58, 0.88), rgba(18, 48, 86, 0.78));
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.16) inset;
+    }
+    html:not([data-theme="dark"]) .wait-grid-chip .wait-stack {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.55));
+      border-color: rgba(255, 255, 255, 0.85);
+      box-shadow: 0 1px 0 #fff inset, 0 4px 12px rgba(15, 47, 84, 0.08);
+    }
+    html[data-theme="dark"] .wait-grid-band {
+      background: linear-gradient(180deg, rgba(28, 46, 72, 0.55), rgba(12, 22, 38, 0.42));
+      border: 1px solid rgba(125, 211, 252, 0.16);
+      box-shadow: 0 1px 0 rgba(186, 230, 253, 0.14) inset, 0 10px 28px rgba(0, 0, 0, 0.28);
+    }
+    html[data-theme="dark"] .wait-grid-chip .wait-stack {
+      background: linear-gradient(180deg, rgba(16, 28, 46, 0.92), rgba(12, 22, 38, 0.78));
+      border-color: rgba(125, 211, 252, 0.2);
+    }
+
     /* All filter — match mockups/all-filter-bridge-band.html
        Separate rounded bridge cards + floating chips; rows stacked tightly */
     .table-wrap.table-cards {
@@ -6427,7 +6563,6 @@
 
     function renderPorts(data) {
       const grid = document.getElementById("portGrid");
-      const tableRows = [];
       if (currentFilter !== "drive") crowdStopPoll();
 
       const newestAsOf = collectAsOf(data);
@@ -6445,7 +6580,6 @@
       if (numericCount === 0 && pendingCount > 0) {
         asOfText = t("pendingNoTimes");
       } else if (newestAsOf) {
-        // One stamp only (newest date + time across bridges)
         asOfText = formatReportStamp(newestAsOf);
       } else {
         asOfText = "—";
@@ -6458,17 +6592,12 @@
         return;
       }
 
-      // All: Vehicles · SENTRI · Pedestrian · Commercial
-      // Pedestrian: one All-style wait column (Ready lives inside that tile)
-      // Vehicles / Commercial: primary wait · special column (SENTRI / FAST) when published
       const portsSorted = data.items.slice().sort((a, b) => {
         const an = (a.meta && a.meta.short ? a.meta.short : a.title || "").toLowerCase();
         const bn = (b.meta && b.meta.short ? b.meta.short : b.title || "").toLowerCase();
         return an.localeCompare(bn);
       });
       const portsVisible = portsSorted.filter(portHasActiveForFilter);
-      const showSpecialCol = currentFilter === "all" ||
-        portsVisible.some((port) => cellHasPublishedWait(bestTrusted(port)));
 
       const waitCols = [];
       if (currentFilter === "all") {
@@ -6486,6 +6615,15 @@
         waitCols.push({ key: "trusted", label: t("fast") });
       }
 
+      const waitN = Math.max(waitCols.length, 1);
+      const isNarrow =
+        typeof window.matchMedia === "function" &&
+        window.matchMedia("(max-width: 720px)").matches;
+      const twoChipMobile =
+        isNarrow &&
+        (currentFilter === "commercial" || currentFilter === "passenger");
+
+      const gridBands = [];
       const mobileCards = [];
 
       for (const port of portsVisible) {
@@ -6495,15 +6633,9 @@
           commercial: waitCellBlock(summarizeMode(port.sections, "commercial"), "commercial", port),
           trusted: bestTrusted(port)
         };
-
-        Object.keys(cells).forEach((key) => {
+        Object.keys(cells).forEach(function (key) {
           cells[key] = toEmptyNaChip(cells[key]);
         });
-
-        const tdHtml = waitCols.map((c) => {
-          const cell = cells[c.key];
-          return `<td class="wait-col ${cell.cls}"><div class="wait-col-inner">${waitStackWithOpen(cell)}</div></td>`;
-        }).join("");
 
         const hoursLabel = formatHoursOfOperation(port.hours);
         const portStamp = collectPortAsOf(port);
@@ -6515,112 +6647,81 @@
           ? `<span class="m-row-updated">${escapeHtml(t("bridgeUpdated"))} ${escapeHtml(updatedLabel)}</span>`
           : "";
         const noticeHtml = noticeBannerHtml(port);
-        const colCount = waitCols.length + 1;
-        const noticeRow = noticeHtml
-          ? `<tr class="notice-row"><td colspan="${colCount}">${noticeHtml}</td></tr>`
-          : "";
-        const gapRow = `<tr class="band-gap" aria-hidden="true"><td colspan="${colCount}"></td></tr>`;
-        tableRows.push(`
-          <tr class="${noticeHtml ? "has-notice" : ""}">
-            <td class="bridge">
-              ${bridgeTitleHtml(port)}
-              ${mexicoLineHtml(port, "mx-line")}
-              <span class="hours-line"><strong>${escapeHtml(t("hours"))}</strong> ${escapeHtml(hoursLabel)}</span>
-              ${updatedHtml}
-            </td>
-            ${tdHtml}
-          </tr>
-          ${noticeRow}
-          ${gapRow}`);
 
-        // Compact phone cards — labels live in m-head, chips are minutes + counts only
-        const waitBlocks = waitCols.map((c) => {
+        const portBlock =
+          `${bridgeTitleHtml(port)}` +
+          `${mexicoLineHtml(port, "mx-line")}` +
+          `<span class="hours-line"><strong>${escapeHtml(t("hours"))}</strong> ${escapeHtml(hoursLabel)}</span>` +
+          updatedHtml;
+
+        const chipCells = waitCols.map(function (c) {
+          const cell = cells[c.key];
+          return `<div class="wait-grid-chip ${cell.cls}"><div class="wait-col-inner">${waitStackWithOpen(cell)}</div></div>`;
+        }).join("");
+
+        gridBands.push(
+          `<div class="wait-grid-band">` +
+            `<div class="wait-grid-port">${portBlock}</div>` +
+            chipCells +
+          `</div>` +
+          (noticeHtml ? `<div class="wait-grid-notice">${noticeHtml}</div>` : "")
+        );
+
+        const waitBlocks = waitCols.map(function (c) {
           const cell = cells[c.key];
           return `<div class="m-wait-block ${cell.cls}">${waitStackWithOpen(cell)}</div>`;
         }).join("");
 
-        mobileCards.push(`
-          <article class="m-row">
-            <div>
-              ${bridgeTitleHtml(port, "m-row-bridge")}
-              ${mexicoLineHtml(port, "m-row-mx")}
-              <span class="m-row-hours">${escapeHtml(hoursLabel)}</span>
-              ${updatedMobile}
-            </div>
-            <div class="m-row-waits">${waitBlocks}</div>
-            ${noticeHtml ? `<div class="m-row-notice">${noticeHtml}</div>` : ""}
-          </article>`);
+        mobileCards.push(
+          `<article class="m-row">` +
+            `<div>` +
+              `${bridgeTitleHtml(port, "m-row-bridge")}` +
+              `${mexicoLineHtml(port, "m-row-mx")}` +
+              `<span class="m-row-hours">${escapeHtml(hoursLabel)}</span>` +
+              updatedMobile +
+            `</div>` +
+            `<div class="m-row-waits">${waitBlocks}</div>` +
+            (noticeHtml ? `<div class="m-row-notice">${noticeHtml}</div>` : "") +
+          `</article>`
+        );
       }
 
-      if (!tableRows.length) {
+      if (!gridBands.length) {
         grid.innerHTML = `<p class="empty">${escapeHtml(t("emptyFilter"))}</p>`;
         return;
       }
 
-      // Desktop: All-filter card table. Vehicles/Commercial mobile: phone cards so
-      // Gen+SENTRI / Gen+FAST sit beside the bridge (not stretched far right).
-      const waitN = Math.max(waitCols.length, 1);
-      const isNarrow =
-        typeof window.matchMedia === "function" &&
-        window.matchMedia("(max-width: 720px)").matches;
-      const twoChipMobile =
-        isNarrow &&
-        (currentFilter === "commercial" || currentFilter === "passenger");
-      const useCards = !twoChipMobile;
-      const tight = twoChipMobile;
-      let bridgePct;
-      if (waitN === 1) bridgePct = useCards ? 58 : 42;
-      else if (waitN === 2) bridgePct = 36;
-      else if (waitN === 3) bridgePct = 28;
-      else bridgePct = 20;
-      const waitPct = ((100 - bridgePct) / waitN).toFixed(3);
-      const colgroup =
-        `<col class="c-bridge" style="width:${bridgePct}%" />` +
-        waitCols.map(() => `<col class="c-wait" style="width:${waitPct}%" />`).join("");
+      if (twoChipMobile) {
+        const mobileHead =
+          `<div class="m-head" role="row">` +
+          `<span class="m-head-port">${escapeHtml(t("colBridge"))}</span>` +
+          `<div class="m-head-waits">` +
+          waitCols.map(function (c) {
+            return `<span class="m-head-lab${c.key === "trusted" ? " lane-type" : ""}">${escapeHtml(c.label)}</span>`;
+          }).join("") +
+          `</div></div>`;
+        grid.innerHTML =
+          `<div class="table-wrap table-tight table-tight-${waitN}">` +
+            `<div class="mobile-cards" style="display:flex">` +
+              mobileHead +
+              mobileCards.join("") +
+            `</div>` +
+          `</div>`;
+      } else {
+        const head =
+          `<div class="wait-grid-head">` +
+            `<div class="wait-grid-h wait-grid-h-port">${escapeHtml(t("colBridge"))}</div>` +
+            waitCols.map(function (c) {
+              return `<div class="wait-grid-h${c.key === "trusted" ? " lane-type" : ""}">${escapeHtml(c.label)}</div>`;
+            }).join("") +
+          `</div>`;
+        grid.innerHTML =
+          `<div class="wait-grid" style="--wait-n:${waitN}">` +
+            head +
+            gridBands.join("") +
+          `</div>`;
+      }
 
-      const headCols = waitCols.map((c) =>
-        `<th scope="col"${c.key === "trusted" ? ' class="th-lane"' : ""}>${escapeHtml(c.label)}</th>`
-      ).join("");
-
-      const tightClass = tight
-        ? ` table-tight table-tight-${waitN}`
-        : "";
-      const cardsClass = useCards
-        ? (waitN === 1 ? " table-cards table-cards-1" : " table-cards")
-        : "";
-
-      const mobileHead =
-        `<div class="m-head" role="row">` +
-        `<span class="m-head-port">${escapeHtml(t("colBridge"))}</span>` +
-        `<div class="m-head-waits">` +
-        waitCols.map(function (c) {
-          return `<span class="m-head-lab${c.key === "trusted" ? " lane-type" : ""}">${escapeHtml(c.label)}</span>`;
-        }).join("") +
-        `</div></div>`;
-
-      grid.innerHTML = `
-        <div class="table-wrap${tightClass}${cardsClass}">
-          <div class="table-scroll">
-            <table class="wait-table">
-              <colgroup>${colgroup}</colgroup>
-              <thead>
-                <tr>
-                  <th scope="col" class="th-bridge">${escapeHtml(t("colBridge"))}</th>
-                  ${headCols}
-                </tr>
-              </thead>
-              <tbody>
-                ${tableRows.join("")}
-              </tbody>
-            </table>
-          </div>
-          <div class="mobile-cards">
-            ${mobileHead}
-            ${mobileCards.join("")}
-          </div>
-        </div>`;
-
-      // Match every wait chip to the largest message (uniform width + height)
       syncMexicoNameVisibility();
       requestAnimationFrame(function () {
         equalizeAllFilterChipHeights();
@@ -6716,34 +6817,26 @@
     }
 
     /**
-     * Equalize chip WIDTH per column (not globally). Global equalize made every
-     * chip as wide as Gateway's dual Gen/Ready, which overflowed columns and
-     * misaligned headers (All / Pedestrian / Vehicles / Commercial).
+     * Equalize chip WIDTH per shared grid column, then stretch height to Port ribbon.
      */
     function equalizeAllFilterChipHeights() {
       const minRem = window.matchMedia("(max-width: 720px)").matches ? 5.75 : 6.75;
-      const table = document.querySelector("#portGrid .table-wrap.table-cards .wait-table");
-      if (table) {
-        const bodyRows = Array.prototype.filter.call(
-          table.querySelectorAll("tbody tr"),
-          function (tr) {
-            return !tr.classList.contains("notice-row") && !tr.classList.contains("band-gap");
-          }
-        );
-        const waitColCount = Math.max(0, table.querySelectorAll("thead th").length - 1);
-        for (let i = 0; i < waitColCount; i++) {
+      const bands = document.querySelectorAll("#portGrid .wait-grid-band");
+      if (bands.length) {
+        const chipCount = bands[0].querySelectorAll(".wait-grid-chip").length;
+        for (let i = 0; i < chipCount; i++) {
           const colStacks = [];
-          bodyRows.forEach(function (tr) {
-            const td = tr.querySelectorAll("td.wait-col")[i];
-            const stack = td && td.querySelector(".wait-stack");
+          bands.forEach(function (band) {
+            const chip = band.querySelectorAll(".wait-grid-chip")[i];
+            const stack = chip && chip.querySelector(".wait-stack");
             if (stack) colStacks.push(stack);
           });
           equalizeChipGroup(colStacks, minRem);
         }
         stretchChipsToRibbon(
-          "#portGrid .table-wrap.table-cards .wait-table tbody tr",
-          "td.bridge",
-          "td.wait-col .wait-stack",
+          "#portGrid .wait-grid-band",
+          ".wait-grid-port",
+          ".wait-stack",
           minRem
         );
       }
