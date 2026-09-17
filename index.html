@@ -5319,6 +5319,102 @@
       return lines.join("\n");
     }
 
+    function isCommercialGenLane(name) {
+      return /general/i.test(name) && !/ready|sentri|fast|nexus/i.test(name);
+    }
+
+    function commercialSectionMax(section) {
+      if (!section) return 0;
+      const max = section.maxLanes != null && section.maxLanes !== "" ? Number(section.maxLanes) : NaN;
+      return !isNaN(max) && max > 0 ? max : 0;
+    }
+
+    function commercialLaneOpenCount(lane) {
+      const w = lane && lane.wait;
+      if (!w || w.na || w.pending) return null;
+      if (w.closed) return 0;
+      const n = w.lanesOpenCount != null ? Number(w.lanesOpenCount) : NaN;
+      return isNaN(n) ? null : n;
+    }
+
+    function commercialAllOpen(section) {
+      let open = 0;
+      for (const lane of section && section.lanes || []) {
+        const n = commercialLaneOpenCount(lane);
+        if (n != null) open += n;
+      }
+      return open;
+    }
+
+    function findCommercialLane(section, kind) {
+      for (const lane of section && section.lanes || []) {
+        if (kind === "fast") {
+          if (/fast/i.test(lane.name)) return lane;
+        } else if (isCommercialGenLane(lane.name)) {
+          return lane;
+        }
+      }
+      return null;
+    }
+
+    /** Commercial filter only: 3-line chips. Gen mins/count vs FAST mins/count; of-total uses commercial max. */
+    function commercialFilterChip(port, kind) {
+      const sec = sectionByKey(port, "commercial");
+      const max = commercialSectionMax(sec);
+      const lane = findCommercialLane(sec, kind);
+      const ofLine = function (open) {
+        if (max < 1) return "";
+        return t("lanesOf").replace("{open}", String(open)).replace("{total}", String(max));
+      };
+
+      if (kind === "fast" && !lane) {
+        return { html: `<span class="wait-empty">—</span>`, cls: "" };
+      }
+
+      const w = lane && lane.wait;
+      const count = commercialLaneOpenCount(lane);
+      const lines = [];
+      let topHtml;
+      let cls = "";
+
+      if (kind === "fast" && w && w.closed) {
+        const bot = ofLine(0);
+        return {
+          html: `<div class="wait-stack"><span class="wait-empty">—</span></div>`,
+          openLine: bot,
+          cls: "",
+          keep: true
+        };
+      }
+
+      if (w && isActiveWait(w)) {
+        topHtml = waitCellHtml(w);
+        cls = "has-" + w.cls;
+      } else if (w && w.pending) {
+        topHtml = waitCellHtml(w);
+        cls = "has-pending";
+      } else {
+        topHtml = `<span class="wait-empty">—</span>`;
+      }
+
+      if (kind === "fast") {
+        if (count != null && count > 0) lines.push(count + " " + t("fast"));
+        const bot = ofLine(count != null ? count : 0);
+        if (bot) lines.push(bot);
+      } else {
+        if (count != null) lines.push(count + " " + t("gen"));
+        const bot = ofLine(commercialAllOpen(sec));
+        if (bot) lines.push(bot);
+      }
+
+      return {
+        html: `<div class="wait-stack">${topHtml}</div>`,
+        openLine: lines.join("\n"),
+        cls: cls,
+        keep: true
+      };
+    }
+
     /** SENTRI / FAST / pedestrian Ready note, then the matching pool total. */
     function specialPoolOpenText(port, kind) {
       const secKey = kind === "fast" ? "commercial" : kind === "ready" ? "pedestrian" : "passenger";
@@ -5393,6 +5489,9 @@
     }
 
     function waitCellBlock(summary, modeKey, port) {
+      if (currentFilter === "commercial" && modeKey === "commercial") {
+        return commercialFilterChip(port, "gen");
+      }
       if (!summary) {
         return { html: `<span class="wait-empty">—</span>`, cls: "" };
       }
@@ -5631,20 +5730,13 @@
         };
       }
 
-      if (!pick) {
-        return { html: `<span class="wait-empty">—</span>`, cls: "" };
+      // Commercial filter: FAST column — never SENTRI
+      if (commercialOnly) {
+        return commercialFilterChip(port, "fast");
       }
 
-      // Commercial filter: FAST only — never SENTRI
-      if (commercialOnly) {
-        const main = isActiveWait(pick.lane.wait)
-          ? waitCellHtml(pick.lane.wait)
-          : `<span class="wait-empty">—</span>`;
-        return {
-          html: main,
-          openLine: specialPoolOpenText(port, "fast"),
-          cls: isActiveWait(pick.lane.wait) ? "has-" + pick.lane.wait.cls : ""
-        };
+      if (!pick) {
+        return { html: `<span class="wait-empty">—</span>`, cls: "" };
       }
 
       let openLine = /sentri/i.test(pick.lane.name)
@@ -5670,6 +5762,16 @@
 
     /** Any cell without a real minute value (or pending) → N/A chip — every filter */
     function toEmptyNaChip(cell) {
+      if (cell && cell.keep) {
+        const html = cell.html && String(cell.html).includes("wait-stack")
+          ? cell.html
+          : `<div class="wait-stack">${(cell && cell.html) || ""}</div>`;
+        return {
+          html: html,
+          openLine: (cell && cell.openLine) || "",
+          cls: cell.cls || ""
+        };
+      }
       const html = cell && cell.html ? cell.html : "";
       const cls = (cell && cell.cls) || "";
       if (cellHasPublishedWait(cell)) {
