@@ -1967,10 +1967,32 @@
       text-align: center;
       overflow-x: auto;
     }
-    /* Vehicles/Commercial phone cards: dual chips sit beside bridge like Pedestrian */
-    html[data-view="commercial"] .m-row-waits,
-    html[data-view="passenger"] .m-row-waits {
+    /*
+     * Vehicles/Commercial phone cards: pack bridge + chips to the LEFT.
+     * Default m-row is 1fr|auto which stretches the title and pins chips
+     * to the far right — that looked unchanged vs the desktop table band.
+     */
+    html[data-view="passenger"] .m-row,
+    html[data-view="commercial"] .m-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 0.45rem 0.5rem;
+    }
+    html[data-view="passenger"] .m-row > div:first-child,
+    html[data-view="commercial"] .m-row > div:first-child {
+      flex: 0 1 auto;
+      max-width: min(52%, 11.5rem);
+      min-width: 0;
+    }
+    html[data-view="passenger"] .m-row-waits,
+    html[data-view="commercial"] .m-row-waits {
+      flex: 0 0 auto;
+      justify-content: flex-start;
       gap: 0.25rem;
+      overflow: visible;
+      min-width: auto;
     }
     .m-wait-block {
       /* Uniform width set after render from the widest message */
