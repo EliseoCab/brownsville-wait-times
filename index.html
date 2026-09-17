@@ -1885,8 +1885,7 @@
         font-size: 0.75rem;
       }
 
-      /* Tight filters only: hide wide table, show compact phone cards.
-         All / Pedestrian keep the same bridge-band table as desktop. */
+      /* Phone cards: hide wide table (All / Pedestrian / Vehicles / Commercial). */
       .table-wrap.table-tight .table-scroll {
         display: none !important;
       }
@@ -2032,50 +2031,40 @@
       overflow-x: auto;
     }
     /*
-     * Vehicles/Commercial phone cards: shared CSS grid so Port / Vehicles /
-     * SENTRI (or Commercial / FAST) headers and chips share the same columns.
+     * Phone cards (All / Pedestrian / Vehicles / Commercial): same grid as
+     * Vehicles/Commercial — Port + one track per chip so headers sit on chips.
      */
-    html[data-view="passenger"] .m-head,
-    html[data-view="commercial"] .m-head,
-    html[data-view="passenger"] .m-row,
-    html[data-view="commercial"] .m-row {
+    .table-wrap.table-tight .m-head,
+    .table-wrap.table-tight .m-row {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) max-content max-content;
+      grid-template-columns: minmax(0, 1fr) repeat(var(--wait-n, 2), max-content);
       column-gap: 0.5rem;
       row-gap: 0.45rem;
       align-items: start;
       justify-content: start;
     }
-    html[data-view="passenger"] .m-head,
-    html[data-view="commercial"] .m-head {
+    .table-wrap.table-tight .m-head {
       align-items: end;
     }
-    html[data-view="passenger"] .m-head-lab,
-    html[data-view="commercial"] .m-head-lab {
+    .table-wrap.table-tight .m-head-lab {
       text-align: center;
       justify-self: center;
       width: 100%;
     }
-    html[data-view="passenger"] .m-wait-block,
-    html[data-view="commercial"] .m-wait-block {
+    .table-wrap.table-tight .m-wait-block {
       justify-self: center;
     }
-    html[data-view="passenger"] .m-head-waits,
-    html[data-view="commercial"] .m-head-waits,
-    html[data-view="passenger"] .m-row-waits,
-    html[data-view="commercial"] .m-row-waits {
+    .table-wrap.table-tight .m-head-waits,
+    .table-wrap.table-tight .m-row-waits {
       display: contents;
     }
-    html[data-view="passenger"] .m-head-port,
-    html[data-view="commercial"] .m-head-port,
-    html[data-view="passenger"] .m-row > div:first-child,
-    html[data-view="commercial"] .m-row > div:first-child {
+    .table-wrap.table-tight .m-head-port,
+    .table-wrap.table-tight .m-row > div:first-child {
       grid-column: 1;
       max-width: none;
       min-width: 0;
     }
-    html[data-view="passenger"] .m-row-notice,
-    html[data-view="commercial"] .m-row-notice {
+    .table-wrap.table-tight .m-row-notice {
       grid-column: 1 / -1;
     }
     .m-wait-block {
@@ -6557,17 +6546,15 @@
         return;
       }
 
-      // Desktop: All-filter card table. Vehicles/Commercial mobile: phone cards so
-      // Gen+SENTRI / Gen+FAST sit beside the bridge (not stretched far right).
+      // Desktop: table-cards band. Mobile: phone cards for All / Pedestrian /
+      // Vehicles / Commercial so headers share chip columns (Vehicles/Commercial look).
       const waitN = Math.max(waitCols.length, 1);
       const isNarrow =
         typeof window.matchMedia === "function" &&
         window.matchMedia("(max-width: 720px)").matches;
-      const twoChipMobile =
-        isNarrow &&
-        (currentFilter === "commercial" || currentFilter === "passenger");
-      const useCards = !twoChipMobile;
-      const tight = twoChipMobile;
+      const phoneCardsMobile = isNarrow;
+      const useCards = !phoneCardsMobile;
+      const tight = phoneCardsMobile;
       let bridgePct;
       if (waitN === 1) bridgePct = useCards ? 58 : 42;
       else if (waitN === 2) bridgePct = 36;
@@ -6599,7 +6586,7 @@
         `</div></div>`;
 
       grid.innerHTML = `
-        <div class="table-wrap${tightClass}${cardsClass}">
+        <div class="table-wrap${tightClass}${cardsClass}" style="--wait-n:${waitN}">
           <div class="table-scroll">
             <table class="wait-table">
               <colgroup>${colgroup}</colgroup>
