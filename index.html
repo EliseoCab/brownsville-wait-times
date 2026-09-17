@@ -5377,8 +5377,10 @@
       let topHtml;
       let cls = "";
 
+      const allOpen = commercialAllOpen(sec);
+
       if (kind === "fast" && w && w.closed) {
-        const bot = ofLine(0);
+        const bot = ofLine(allOpen);
         return {
           html: `<div class="wait-stack"><span class="wait-empty">—</span></div>`,
           openLine: bot,
@@ -5399,13 +5401,11 @@
 
       if (kind === "fast") {
         if (count != null && count > 0) lines.push(count + " " + t("fast"));
-        const bot = ofLine(count != null ? count : 0);
-        if (bot) lines.push(bot);
-      } else {
-        if (count != null) lines.push(count + " " + t("gen"));
-        const bot = ofLine(commercialAllOpen(sec));
-        if (bot) lines.push(bot);
+      } else if (count != null) {
+        lines.push(count + " " + t("gen"));
       }
+      const bot = ofLine(allOpen);
+      if (bot) lines.push(bot);
 
       return {
         html: `<div class="wait-stack">${topHtml}</div>`,
