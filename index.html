@@ -2326,17 +2326,40 @@
         display: flex;
         align-items: stretch;
         width: 100%;
+        min-width: 0;
         gap: 0.4rem;
+        box-sizing: border-box;
       }
       .table-wrap.table-cards .wait-table thead tr {
         background: var(--navy);
         border-radius: 12px;
-        padding: 0.15rem 0.25rem;
+        padding: 0.5rem 0.45rem;
       }
-      .table-wrap.table-cards .wait-table thead th {
+      .table-wrap.table-cards .wait-table tbody tr:not(.notice-row):not(.band-gap) {
+        padding: 0.4rem 0.45rem;
+        border-radius: 12px;
+      }
+      .table-wrap.table-cards .wait-table tbody tr.has-notice {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        padding-bottom: 0.2rem;
+      }
+      /* Row owns the ribbon paint; cells stay transparent so gap isn't a split. */
+      .table-wrap.table-cards .wait-table thead th,
+      .table-wrap.table-cards .wait-table tbody td,
+      .table-wrap.table-cards .wait-table tbody td.bridge,
+      .table-wrap.table-cards .wait-table tbody td.wait-col,
+      .table-wrap.table-cards .wait-table tbody td:last-child {
         background: transparent;
         box-shadow: none;
+        border: none;
         border-radius: 0;
+      }
+      .table-wrap.table-cards .wait-table tbody td.bridge {
+        padding: 0.2rem 0.5rem 0.2rem 0.15rem;
+      }
+      .table-wrap.table-cards .wait-table tbody td.wait-col {
+        padding: 0;
       }
       .table-wrap.table-cards .wait-table thead th.th-bridge,
       .table-wrap.table-cards .wait-table tbody td.bridge {
@@ -2383,14 +2406,38 @@
         font-size: 1.95rem;
         white-space: nowrap;
       }
-      .table-wrap.table-cards .wait-table tbody tr.notice-row,
+      .table-wrap.table-cards .wait-table tbody tr.notice-row {
+        display: flex;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 0 0.45rem 0.4rem;
+        border-radius: 0 0 12px 12px;
+      }
       .table-wrap.table-cards .wait-table tbody tr.band-gap {
         display: block;
         width: 100%;
+        min-width: 0;
       }
-      .table-wrap.table-cards .wait-table tbody tr.notice-row td {
+      .table-wrap.table-cards .wait-table tbody tr.notice-row td,
+      .table-wrap.table-cards .wait-table tbody tr.notice-row td:last-child {
         display: block;
+        flex: 1 1 auto;
         width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        border-radius: 0;
+        padding: 0;
+      }
+      .table-wrap.table-cards .wait-table tbody tr.notice-row td .notice {
+        white-space: normal;
+        overflow: visible;
+        overflow-wrap: break-word;
+        word-break: break-word;
       }
     }
 
@@ -3562,6 +3609,92 @@
       box-shadow: 0 1px 0 rgba(186, 230, 253, 0.12) inset, 0 12px 36px rgba(0, 0, 0, 0.35);
       backdrop-filter: blur(18px) saturate(1.3);
       -webkit-backdrop-filter: blur(18px) saturate(1.3);
+    }
+
+    /* Desktop ribbon: beat theme per-cell paint (those rules sit above). */
+    @media (min-width: 721px) {
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table thead th,
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table thead th.th-bridge,
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table thead th:last-child,
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table thead th + th,
+      html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table thead th,
+      html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table thead th.th-bridge,
+      html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table thead th:last-child,
+      html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table thead th + th {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        border-radius: 0;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td,
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.bridge,
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td.wait-col,
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody td:last-child,
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody tr.has-notice td,
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody tr.has-notice td.bridge,
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody tr.has-notice td:last-child,
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody tr:hover td,
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody tr.notice-row td,
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody tr.notice-row td:last-child,
+      html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody td,
+      html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody td.bridge,
+      html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody td.wait-col,
+      html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody td:last-child,
+      html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody tr.has-notice td,
+      html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody tr:hover td,
+      html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody tr.notice-row td,
+      html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody tr.notice-row td:last-child {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        border-radius: 0;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table thead tr {
+        background: linear-gradient(180deg, rgba(8, 18, 32, 0.88), rgba(14, 28, 48, 0.72));
+        border: 1px solid rgba(125, 211, 252, 0.16);
+        box-shadow: 0 1px 0 rgba(186, 230, 253, 0.12) inset;
+      }
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody tr:not(.notice-row):not(.band-gap),
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody tr.notice-row {
+        background: linear-gradient(180deg, rgba(28, 46, 72, 0.55), rgba(12, 22, 38, 0.42));
+        border: 1px solid rgba(125, 211, 252, 0.16);
+        box-shadow: 0 1px 0 rgba(186, 230, 253, 0.12) inset, 0 -1px 0 rgba(0, 0, 0, 0.35) inset;
+        backdrop-filter: blur(22px) saturate(1.4);
+        -webkit-backdrop-filter: blur(22px) saturate(1.4);
+      }
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody tr.has-notice {
+        border-bottom-color: transparent;
+        box-shadow: 0 1px 0 rgba(186, 230, 253, 0.12) inset;
+      }
+      html[data-theme="dark"] .table-wrap.table-cards .wait-table tbody tr.notice-row {
+        border-top: none;
+        box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.35) inset;
+      }
+      html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table thead tr {
+        background: linear-gradient(180deg, rgba(11, 31, 58, 0.82), rgba(18, 48, 86, 0.7));
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.16) inset;
+      }
+      html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody tr:not(.notice-row):not(.band-gap),
+      html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody tr.notice-row {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.34));
+        border: 1px solid rgba(255, 255, 255, 0.72);
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 -1px 0 rgba(14, 116, 144, 0.06) inset;
+        backdrop-filter: blur(22px) saturate(1.7);
+        -webkit-backdrop-filter: blur(22px) saturate(1.7);
+      }
+      html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody tr.has-notice {
+        border-bottom-color: transparent;
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset;
+      }
+      html:not([data-theme="dark"]) .table-wrap.table-cards .wait-table tbody tr.notice-row {
+        border-top: none;
+        box-shadow: 0 -1px 0 rgba(14, 116, 144, 0.06) inset;
+      }
     }
   </style>
 </head>
