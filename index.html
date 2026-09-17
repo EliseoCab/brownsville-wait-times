@@ -1967,8 +1967,9 @@
       text-align: center;
       overflow-x: auto;
     }
-    /* Commercial phone cards: Gen + FAST sit beside bridge like Pedestrian */
-    html[data-view="commercial"] .m-row-waits {
+    /* Vehicles/Commercial phone cards: dual chips sit beside bridge like Pedestrian */
+    html[data-view="commercial"] .m-row-waits,
+    html[data-view="passenger"] .m-row-waits {
       gap: 0.25rem;
     }
     .m-wait-block {
@@ -4524,7 +4525,11 @@
       });
       document.documentElement.setAttribute(
         "data-view",
-        currentFilter === "drive" ? "drive" : currentFilter === "commercial" ? "commercial" : ""
+        currentFilter === "drive" ||
+          currentFilter === "commercial" ||
+          currentFilter === "passenger"
+          ? currentFilter
+          : ""
       );
     }
 
@@ -6430,15 +6435,17 @@
         return;
       }
 
-      // Desktop: All-filter card table. Commercial mobile: phone cards so Gen/FAST
-      // sit beside the bridge like Pedestrian (not stretched to the far right).
+      // Desktop: All-filter card table. Vehicles/Commercial mobile: phone cards so
+      // Gen+SENTRI / Gen+FAST sit beside the bridge (not stretched far right).
       const waitN = Math.max(waitCols.length, 1);
       const isNarrow =
         typeof window.matchMedia === "function" &&
         window.matchMedia("(max-width: 720px)").matches;
-      const commercialMobile = currentFilter === "commercial" && isNarrow;
-      const useCards = !commercialMobile;
-      const tight = commercialMobile;
+      const twoChipMobile =
+        isNarrow &&
+        (currentFilter === "commercial" || currentFilter === "passenger");
+      const useCards = !twoChipMobile;
+      const tight = twoChipMobile;
       let bridgePct;
       if (waitN === 1) bridgePct = useCards ? 58 : 42;
       else if (waitN === 2) bridgePct = 36;
