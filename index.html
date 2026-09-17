@@ -6703,29 +6703,58 @@
       });
     }
 
-    /** All filter: one width for every wait tile; height matches Port ribbon. */
+    /**
+     * Equalize chip WIDTH per column (not globally). Global equalize made every
+     * chip as wide as Gateway's dual Gen/Ready, which overflowed columns and
+     * misaligned headers (All / Pedestrian / Vehicles / Commercial).
+     */
     function equalizeAllFilterChipHeights() {
-      const stacks = document.querySelectorAll(
-        ".table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack"
-      );
       const minRem = window.matchMedia("(max-width: 720px)").matches ? 5.75 : 6.75;
-      equalizeChipGroup(stacks, minRem);
-      stretchChipsToRibbon(
-        ".table-wrap.table-cards .wait-table tbody tr",
-        "td.bridge",
-        "td.wait-col .wait-stack",
-        minRem
-      );
+      const table = document.querySelector("#portGrid .table-wrap.table-cards .wait-table");
+      if (table) {
+        const bodyRows = Array.prototype.filter.call(
+          table.querySelectorAll("tbody tr"),
+          function (tr) {
+            return !tr.classList.contains("notice-row") && !tr.classList.contains("band-gap");
+          }
+        );
+        const waitColCount = Math.max(0, table.querySelectorAll("thead th").length - 1);
+        for (let i = 0; i < waitColCount; i++) {
+          const colStacks = [];
+          bodyRows.forEach(function (tr) {
+            const td = tr.querySelectorAll("td.wait-col")[i];
+            const stack = td && td.querySelector(".wait-stack");
+            if (stack) colStacks.push(stack);
+          });
+          equalizeChipGroup(colStacks, minRem);
+        }
+        stretchChipsToRibbon(
+          "#portGrid .table-wrap.table-cards .wait-table tbody tr",
+          "td.bridge",
+          "td.wait-col .wait-stack",
+          minRem
+        );
+      }
 
-      const mobile = document.querySelectorAll(".mobile-cards .m-wait-block");
-      equalizeChipGroup(mobile, 5.5);
-      stretchChipsToRibbon(
-        ".mobile-cards .m-row",
-        ":scope > div:first-child",
-        ".m-wait-block",
-        5.5
-      );
-      alignMobileHeadToChips();
+      const mobileRows = document.querySelectorAll(".mobile-cards .m-row");
+      if (mobileRows.length) {
+        const chipCount = mobileRows[0].querySelectorAll(".m-wait-block").length;
+        for (let i = 0; i < chipCount; i++) {
+          const colChips = [];
+          mobileRows.forEach(function (row) {
+            const chip = row.querySelectorAll(".m-wait-block")[i];
+            if (chip) colChips.push(chip);
+          });
+          equalizeChipGroup(colChips, 5.5);
+        }
+        stretchChipsToRibbon(
+          ".mobile-cards .m-row",
+          ":scope > div:first-child",
+          ".m-wait-block",
+          5.5
+        );
+        alignMobileHeadToChips();
+      }
     }
 
     function render(data, sourceLabel, isLive) {
