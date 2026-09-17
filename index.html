@@ -1198,6 +1198,12 @@
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-col-inner {
       width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      box-sizing: border-box;
+      padding: 3px 0;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
       display: inline-flex;
@@ -1217,7 +1223,7 @@
       box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
       box-sizing: border-box;
       line-height: 1.15;
-      overflow: visible;
+      overflow: hidden;
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col.has-na .wait-stack,
     .table-wrap.table-cards .wait-stack.wait-stack-na {
@@ -1244,6 +1250,12 @@
     }
     .table-wrap.table-cards .wait-table tbody td.wait-col .wait-cell .num {
       line-height: 1;
+      font-size: 1.95rem;
+      white-space: nowrap;
+    }
+    .table-wrap.table-cards .wait-table tbody td.wait-col .compact-pair .wait-cell .num {
+      font-size: 1.55rem;
+      white-space: nowrap;
     }
     /* Gen + Ready / FAST stacked; chip width grows to the longest pair */
     .table-wrap.table-cards .wait-table tbody td.wait-col .compact-waits {
@@ -1531,9 +1543,10 @@
       margin: 0 auto;
     }
     .wait-cell .num {
-      font-size: 1.75rem;
+      font-size: 1.95rem;
       font-weight: 800;
       letter-spacing: -0.04em;
+      white-space: nowrap;
     }
     .wait-cell .unit {
       font-size: 0.8rem;
@@ -2099,8 +2112,9 @@
       justify-content: center;
     }
     .m-wait-block .wait-cell .num {
-      font-size: clamp(1.05rem, 4.5vw, 1.3rem);
+      font-size: clamp(1.35rem, 5.5vw, 1.7rem);
       line-height: 1.05;
+      white-space: nowrap;
     }
     .m-wait-block .wait-cell .unit {
       font-size: 0.68rem;
@@ -2135,7 +2149,8 @@
       overflow: visible;
     }
     .m-wait-block .compact-pair .wait-cell .num {
-      font-size: clamp(0.95rem, 4vw, 1.15rem);
+      font-size: clamp(1.15rem, 4.5vw, 1.4rem);
+      white-space: nowrap;
     }
     .m-wait-block.has-na {
       background: #dbe3ee;
@@ -2199,6 +2214,10 @@
         font-size: 0.68rem;
       }
       .table-wrap.table-cards .wait-cell .num {
+        font-size: 1.5rem;
+        white-space: nowrap;
+      }
+      .table-wrap.table-cards .wait-table tbody td.wait-col .compact-pair .wait-cell .num {
         font-size: 1.25rem;
       }
       .table-wrap.table-cards .wait-extra.open-line {
@@ -2243,7 +2262,7 @@
         padding: 0.3rem 0.2rem;
         overflow: hidden;
       }
-      .m-wait-block .wait-cell .num { font-size: 1.1rem; }
+      .m-wait-block .wait-cell .num { font-size: 1.4rem; white-space: nowrap; }
       .m-wait-block .wait-extra,
       .m-wait-block .wait-extra.open-line {
         font-size: 0.52rem;
@@ -6649,16 +6668,45 @@
       }
     }
 
-    /** All filter: one width/height for every wait tile so messages fit and stay uniform. */
+    /** Stretch chips in a row to nearly the Port ribbon / name-column height. */
+    function stretchChipsToRibbon(rowSel, ribbonSel, chipSel, minRem) {
+      document.querySelectorAll(rowSel).forEach(function (row) {
+        if (row.classList.contains("notice-row") || row.classList.contains("band-gap")) return;
+        const ribbon = row.querySelector(ribbonSel);
+        const chips = row.querySelectorAll(chipSel);
+        if (!ribbon || !chips.length) return;
+        const rh = Math.floor(ribbon.getBoundingClientRect().height);
+        if (rh < 1) return;
+        const h = Math.max(Math.round(remPx(minRem)), rh - 6) + "px";
+        chips.forEach(function (el) {
+          el.style.height = h;
+          el.style.minHeight = h;
+        });
+      });
+    }
+
+    /** All filter: one width for every wait tile; height matches Port ribbon. */
     function equalizeAllFilterChipHeights() {
       const stacks = document.querySelectorAll(
         ".table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack"
       );
       const minRem = window.matchMedia("(max-width: 720px)").matches ? 5.75 : 6.75;
       equalizeChipGroup(stacks, minRem);
+      stretchChipsToRibbon(
+        ".table-wrap.table-cards .wait-table tbody tr",
+        "td.bridge",
+        "td.wait-col .wait-stack",
+        minRem
+      );
 
       const mobile = document.querySelectorAll(".mobile-cards .m-wait-block");
       equalizeChipGroup(mobile, 5.5);
+      stretchChipsToRibbon(
+        ".mobile-cards .m-row",
+        ":scope > div:first-child",
+        ".m-wait-block",
+        5.5
+      );
       alignMobileHeadToChips();
     }
 
