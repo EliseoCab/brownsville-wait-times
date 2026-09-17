@@ -1885,7 +1885,8 @@
         font-size: 0.75rem;
       }
 
-      /* Phone cards: hide wide table (All / Pedestrian / Vehicles / Commercial). */
+      /* Tight filters only: hide wide table, show compact phone cards.
+         All / Pedestrian keep the same bridge-band table as desktop. */
       .table-wrap.table-tight .table-scroll {
         display: none !important;
       }
@@ -6546,15 +6547,17 @@
         return;
       }
 
-      // Desktop: table-cards band. Mobile: phone cards for All / Pedestrian /
-      // Vehicles / Commercial so headers share chip columns (Vehicles/Commercial look).
+      // Desktop: table-cards ribbon + chips. Mobile: All/Pedestrian keep the ribbon;
+      // Vehicles/Commercial use phone cards (labels over chips).
       const waitN = Math.max(waitCols.length, 1);
       const isNarrow =
         typeof window.matchMedia === "function" &&
         window.matchMedia("(max-width: 720px)").matches;
-      const phoneCardsMobile = isNarrow;
-      const useCards = !phoneCardsMobile;
-      const tight = phoneCardsMobile;
+      const twoChipMobile =
+        isNarrow &&
+        (currentFilter === "commercial" || currentFilter === "passenger");
+      const useCards = !twoChipMobile;
+      const tight = twoChipMobile;
       let bridgePct;
       if (waitN === 1) bridgePct = useCards ? 58 : 42;
       else if (waitN === 2) bridgePct = 36;

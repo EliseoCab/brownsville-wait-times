@@ -1,4 +1,4 @@
-const CACHE = "bwt-shell-v67";
+const CACHE = "bwt-shell-v68";
 const PRECACHE = [
   "./",
   "./index.html",
