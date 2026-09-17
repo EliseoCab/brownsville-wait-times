@@ -1903,7 +1903,9 @@
       align-items: flex-end;
       justify-content: flex-start;
       gap: 0.45rem 0.5rem;
-      padding: 0 0.15rem 0.15rem;
+      /* Match .m-row horizontal padding so Port / chip headers line up */
+      padding: 0 0.7rem 0.2rem;
+      box-sizing: border-box;
     }
     .m-head-port {
       flex: 0 1 auto;
@@ -1931,7 +1933,7 @@
       text-transform: uppercase;
       color: var(--muted);
       text-align: center;
-      padding: 0 0.15rem;
+      padding: 0;
     }
     .m-head-lab.lane-type {
       text-transform: none;
@@ -2012,6 +2014,8 @@
      * Default m-row is 1fr|auto which stretches the title and pins chips
      * to the far right — that looked unchanged vs the desktop table band.
      */
+    html[data-view="passenger"] .m-head,
+    html[data-view="commercial"] .m-head,
     html[data-view="passenger"] .m-row,
     html[data-view="commercial"] .m-row {
       display: flex;
@@ -2019,6 +2023,10 @@
       align-items: flex-start;
       justify-content: flex-start;
       gap: 0.45rem 0.5rem;
+    }
+    html[data-view="passenger"] .m-head,
+    html[data-view="commercial"] .m-head {
+      align-items: flex-end;
     }
     html[data-view="passenger"] .m-row > div:first-child,
     html[data-view="commercial"] .m-row > div:first-child {
@@ -4578,7 +4586,11 @@
       } else {
         applyStatCardLabels();
       }
-      scrollFiltersToTop();
+      // After Drive/Commercial layout changes (data-view hide/show), wait for reflow
+      // or scrollIntoView can run against the old page height and appear skipped.
+      requestAnimationFrame(function () {
+        requestAnimationFrame(scrollFiltersToTop);
+      });
     }
 
     function syncFilterUi() {
@@ -6607,6 +6619,36 @@
       });
     }
 
+    /** Match mobile header labels to equalized chip widths (and Port to name column). */
+    function alignMobileHeadToChips() {
+      const cards = document.querySelector(".mobile-cards");
+      if (!cards || getComputedStyle(cards).display === "none") return;
+      const headWaits = cards.querySelector(".m-head-waits");
+      const firstRow = cards.querySelector(".m-row .m-row-waits");
+      if (!headWaits || !firstRow) return;
+      const labs = headWaits.querySelectorAll(".m-head-lab");
+      const chips = firstRow.querySelectorAll(".m-wait-block");
+      if (labs.length && labs.length === chips.length) {
+        chips.forEach(function (chip, i) {
+          const w = Math.ceil(chip.getBoundingClientRect().width);
+          if (!labs[i] || w < 1) return;
+          labs[i].style.width = w + "px";
+          labs[i].style.minWidth = w + "px";
+          labs[i].style.maxWidth = w + "px";
+        });
+      }
+      const headPort = cards.querySelector(".m-head-port");
+      const rowPort = cards.querySelector(".m-row > div:first-child");
+      if (headPort && rowPort) {
+        const w = Math.ceil(rowPort.getBoundingClientRect().width);
+        if (w > 0) {
+          headPort.style.width = w + "px";
+          headPort.style.maxWidth = w + "px";
+          headPort.style.minWidth = "0";
+        }
+      }
+    }
+
     /** All filter: one width/height for every wait tile so messages fit and stay uniform. */
     function equalizeAllFilterChipHeights() {
       const stacks = document.querySelectorAll(
@@ -6617,6 +6659,7 @@
 
       const mobile = document.querySelectorAll(".mobile-cards .m-wait-block");
       equalizeChipGroup(mobile, 5.5);
+      alignMobileHeadToChips();
     }
 
     function render(data, sourceLabel, isLive) {
