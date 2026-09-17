@@ -709,6 +709,13 @@
       line-height: 1.15;
       font-variant-numeric: tabular-nums;
     }
+    .drive-wait-top-dual > span {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: baseline;
+      gap: 0.2rem;
+      white-space: nowrap;
+    }
     .drive-wait-top-dual .lab {
       font-size: 0.62rem;
       font-weight: 800;
@@ -1608,11 +1615,13 @@
     }
     .compact-pair {
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: baseline;
       justify-content: center;
-      gap: 0.1rem;
+      gap: 0.2rem;
       text-align: center;
+      white-space: nowrap;
     }
     .compact-pair.combined-lanes {
       flex-direction: row;

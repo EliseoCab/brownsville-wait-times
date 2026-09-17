@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MOCKUP · Desktop flex ribbon — not live</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&amp;family=Instrument+Serif&amp;display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #e2e8f0;
+      --muted: #94a3b8;
+      --navy: #0b1f3a;
+      --green: #34d399;
+      --amber: #fb923c;
+      --sky: #7dd3fc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "DM Sans", system-ui, sans-serif;
+      color: var(--ink);
+      background: #0a1220;
+      padding: 1.25rem 1.4rem 2.5rem;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 0.62rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+      background: rgba(125,211,252,.12); color: #7dd3fc; border-radius: 999px; padding: .12rem .5rem;
+    }
+    h1 { font-size: 1.2rem; margin: 0.4rem 0 0.25rem; }
+    .lede { font-size: 0.86rem; color: #94a3b8; max-width: 46rem; line-height: 1.45; margin: 0 0 1.25rem; }
+    h2 {
+      font-size: 0.68rem; letter-spacing: .08em; text-transform: uppercase; color: #7dd3fc;
+      margin: 1.4rem 0 0.5rem;
+    }
+    .note {
+      font-size: 0.78rem; color: #94a3b8; margin: 0 0 0.7rem; max-width: 44rem; line-height: 1.4;
+    }
+
+    /* Shared flex recipe: header row === data row */
+    .ribbon-head,
+    .ribbon {
+      display: flex;
+      align-items: stretch;
+      gap: 0.4rem;
+      width: 100%;
+    }
+    .col-port {
+      flex: 1.15 1 8rem;
+      min-width: 8rem;
+    }
+    .col-chip {
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .ribbon-head {
+      background: linear-gradient(180deg, rgba(11,31,58,.95), rgba(18,48,86,.88));
+      border: 1px solid rgba(125,211,252,.16);
+      border-radius: 12px;
+      padding: 0.55rem 0.45rem;
+      margin-bottom: 0.4rem;
+    }
+    .ribbon-head .col-port,
+    .ribbon-head .col-chip {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #cbd5e1;
+      align-items: center;
+      justify-content: center;
+    }
+    .ribbon-head .col-port {
+      justify-content: flex-start;
+      padding-left: 0.45rem;
+      text-align: left;
+    }
+    .ribbon-head .lane { text-transform: none; letter-spacing: 0.04em; }
+
+    .ribbon {
+      background: linear-gradient(180deg, rgba(28,46,72,.55), rgba(12,22,38,.42));
+      border: 1px solid rgba(125,211,252,.16);
+      border-radius: 12px;
+      padding: 0.4rem 0.45rem;
+      margin-bottom: 0.4rem;
+      box-shadow: 0 1px 0 rgba(186,230,253,.12) inset;
+    }
+    .port {
+      padding: 0.2rem 0.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+    .pname { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.02em; }
+    .meta { font-size: 0.72rem; font-weight: 650; color: var(--sky); margin-top: 0.12rem; }
+    .upd { font-size: 0.68rem; font-weight: 650; color: var(--muted); }
+
+    .chip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 8.5rem;
+      padding: 0.4rem 0.45rem;
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(16,28,46,.92), rgba(12,22,38,.78));
+      border: 1px solid rgba(125,211,252,.2);
+      text-align: center;
+    }
+    .chip.na {
+      background: linear-gradient(180deg, rgba(51,65,85,.55), rgba(16,28,46,.4));
+      border-color: rgba(148,163,184,.45);
+      color: #94a3b8;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+    .num {
+      font-size: 1.95rem;
+      font-weight: 800;
+      line-height: 1;
+      white-space: nowrap;
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 0.12rem;
+    }
+    .unit { font-size: 0.72rem; font-weight: 700; opacity: .75; letter-spacing: .06em; }
+    .good { color: var(--green); }
+    .warn { color: var(--amber); }
+    .open { margin-top: 0.2rem; font-size: 0.62rem; font-weight: 700; color: var(--muted); line-height: 1.3; }
+    .dual-line {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: baseline;
+      justify-content: center;
+      gap: 0.2rem;
+      white-space: nowrap;
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+    .dual-line .lab { font-size: 0.62rem; font-weight: 800; color: var(--muted); }
+    .dual-line .num { font-size: 1.35rem; }
+  </style>
+</head>
+<body>
+  <p class="tag">Mockup only · desktop flex ribbon · not live</p>
+  <h1>Option A · shared flex tracks</h1>
+  <p class="lede">
+    Header row and every Port ribbon use the <strong>same flex recipe</strong>:
+    Port <code>flex: 1.15 1 8rem</code>, each wait column <code>flex: 1 1 0</code>.
+    Labels sit in the same tracks as chips. Chips stretch to ribbon height.
+    Mobile CSS would be untouched.
+  </p>
+
+  <h2>All</h2>
+  <p class="note">Port · Vehicles · SENTRI · Pedestrian · Commercial — five tracks, header matches row.</p>
+  <div class="ribbon-head">
+    <div class="col-port">Port</div>
+    <div class="col-chip">Vehicles</div>
+    <div class="col-chip lane">SENTRI</div>
+    <div class="col-chip">Pedestrian</div>
+    <div class="col-chip">Commercial</div>
+  </div>
+  <div class="ribbon">
+    <div class="col-port port">
+      <div class="pname">B&amp;M</div>
+      <div class="meta">7.8 mi · Hours 24 hours</div>
+      <div class="upd">Updated 9:00 pm CDT</div>
+    </div>
+    <div class="col-chip"><div class="chip">
+      <div class="num warn">25<span class="unit">Min</span></div>
+      <div class="open">2 Gen, 2 Ready<br>4 of 4 Open</div>
+    </div></div>
+    <div class="col-chip"><div class="chip na">N/A</div></div>
+    <div class="col-chip"><div class="chip">
+      <div class="num good">5<span class="unit">Min</span></div>
+      <div class="open">1 Gen<br>1 of 2 Open</div>
+    </div></div>
+    <div class="col-chip"><div class="chip na">N/A</div></div>
+  </div>
+  <div class="ribbon">
+    <div class="col-port port">
+      <div class="pname">Gateway</div>
+      <div class="meta">7.6 mi · Hours 24 hours</div>
+      <div class="upd">Updated 9:00 pm CDT</div>
+    </div>
+    <div class="col-chip"><div class="chip">
+      <div class="num warn">10<span class="unit">Min</span></div>
+      <div class="open">2 Gen, 2 Ready<br>4 of 5 Open</div>
+    </div></div>
+    <div class="col-chip"><div class="chip na">N/A</div></div>
+    <div class="col-chip"><div class="chip">
+      <div class="dual-line"><span class="lab">Gen</span><span class="num good">5<span class="unit">Min</span></span></div>
+      <div class="dual-line"><span class="lab">Ready</span><span class="num good">9<span class="unit">Min</span></span></div>
+      <div class="open">1 Gen, 1 Ready<br>2 of 4 Open</div>
+    </div></div>
+    <div class="col-chip"><div class="chip na">N/A</div></div>
+  </div>
+  <div class="ribbon">
+    <div class="col-port port">
+      <div class="pname">Veterans</div>
+      <div class="meta">9.2 mi · Hours 6 a.m.–midnight</div>
+      <div class="upd">Updated 9:00 pm CDT</div>
+    </div>
+    <div class="col-chip"><div class="chip">
+      <div class="num warn">40<span class="unit">Min</span></div>
+      <div class="open">1 Gen, 2 Ready<br>5 of 8 Open</div>
+    </div></div>
+    <div class="col-chip"><div class="chip">
+      <div class="num good">5<span class="unit">Min</span></div>
+      <div class="open">2 SENTRI<br>5 of 8 Open</div>
+    </div></div>
+    <div class="col-chip"><div class="chip">
+      <div class="num good">0<span class="unit">Min</span></div>
+      <div class="open">1 Gen<br>1 of 2 Open</div>
+    </div></div>
+    <div class="col-chip"><div class="chip">
+      <div class="num good">5<span class="unit">Min</span></div>
+      <div class="open">2 Gen, 0 FAST<br>2 of 4 Open</div>
+    </div></div>
+  </div>
+
+  <h2>Vehicles</h2>
+  <p class="note">Port · Vehicles · SENTRI — three tracks. Labels sit on the same flex items as the chips.</p>
+  <div class="ribbon-head">
+    <div class="col-port">Port</div>
+    <div class="col-chip">Vehicles</div>
+    <div class="col-chip lane">SENTRI</div>
+  </div>
+  <div class="ribbon">
+    <div class="col-port port">
+      <div class="pname">B&amp;M</div>
+      <div class="meta">7.8 mi · Hours 24 hours</div>
+      <div class="upd">Updated 9:00 pm CDT</div>
+    </div>
+    <div class="col-chip"><div class="chip">
+      <div class="num warn">25<span class="unit">Min</span></div>
+      <div class="open">2 Gen, 2 Ready<br>4 of 4 Open</div>
+    </div></div>
+    <div class="col-chip"><div class="chip na">N/A</div></div>
+  </div>
+  <div class="ribbon">
+    <div class="col-port port">
+      <div class="pname">Veterans</div>
+      <div class="meta">9.2 mi · Hours 6 a.m.–midnight</div>
+      <div class="upd">Updated 9:00 pm CDT</div>
+    </div>
+    <div class="col-chip"><div class="chip">
+      <div class="num warn">40<span class="unit">Min</span></div>
+      <div class="open">1 Gen, 2 Ready<br>5 of 8 Open</div>
+    </div></div>
+    <div class="col-chip"><div class="chip">
+      <div class="num good">5<span class="unit">Min</span></div>
+      <div class="open">2 SENTRI<br>5 of 8 Open</div>
+    </div></div>
+  </div>
+
+  <h2>Pedestrian</h2>
+  <p class="note">Port · Pedestrian — two tracks. One chip column, header centered on it.</p>
+  <div class="ribbon-head">
+    <div class="col-port">Port</div>
+    <div class="col-chip">Pedestrian</div>
+  </div>
+  <div class="ribbon">
+    <div class="col-port port">
+      <div class="pname">Gateway</div>
+      <div class="meta">7.6 mi · Hours 24 hours</div>
+      <div class="upd">Updated 9:00 pm CDT</div>
+    </div>
+    <div class="col-chip"><div class="chip">
+      <div class="dual-line"><span class="lab">Gen</span><span class="num good">5<span class="unit">Min</span></span></div>
+      <div class="dual-line"><span class="lab">Ready</span><span class="num good">9<span class="unit">Min</span></span></div>
+      <div class="open">1 Gen, 1 Ready<br>2 of 4 Open</div>
+    </div></div>
+  </div>
+
+  <h2>Commercial</h2>
+  <p class="note">Port · Commercial · FAST — three tracks, same recipe as Vehicles.</p>
+  <div class="ribbon-head">
+    <div class="col-port">Port</div>
+    <div class="col-chip">Commercial</div>
+    <div class="col-chip lane">FAST</div>
+  </div>
+  <div class="ribbon">
+    <div class="col-port port">
+      <div class="pname">Los Indios</div>
+      <div class="meta">13.5 mi · Hours 6 a.m.–10 p.m.</div>
+      <div class="upd">Updated 9:00 pm CDT</div>
+    </div>
+    <div class="col-chip"><div class="chip">
+      <div class="num good">5<span class="unit">Min</span></div>
+      <div class="open">1 Gen, 0 FAST<br>1 of 4 Open</div>
+    </div></div>
+    <div class="col-chip"><div class="chip na">N/A</div></div>
+  </div>
+</body>
+</html>
