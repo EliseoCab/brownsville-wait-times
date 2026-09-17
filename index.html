@@ -1148,6 +1148,16 @@
     }
     .table-wrap.table-cards .wait-table thead th.th-bridge {
       border-radius: 12px 0 0 12px;
+      /* Match Port cell padding so header lines up with crossing name */
+      padding-left: 0.7rem;
+      padding-right: 0.35rem;
+      text-align: left;
+    }
+    .table-wrap.table-cards .wait-table thead th:not(.th-bridge) {
+      /* Match wait-col padding so lane headers center over chips */
+      padding-left: 1px;
+      padding-right: 1px;
+      text-align: center;
     }
     .table-wrap.table-cards .wait-table thead th:last-child {
       border-radius: 0 12px 12px 0;
@@ -2177,6 +2187,14 @@
       }
       .table-wrap.table-cards .wait-table thead th.th-bridge {
         border-radius: 10px 0 0 10px;
+        padding-left: 0.45rem;
+        padding-right: 0.2rem;
+        text-align: left;
+      }
+      .table-wrap.table-cards .wait-table thead th:not(.th-bridge) {
+        padding-left: 1px;
+        padding-right: 1px;
+        text-align: center;
       }
       .table-wrap.table-cards .wait-table thead th:last-child {
         border-radius: 0 10px 10px 0;
