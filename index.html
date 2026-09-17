@@ -1897,6 +1897,46 @@
       box-sizing: border-box;
       overflow: hidden;
     }
+    .m-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: flex-start;
+      gap: 0.45rem 0.5rem;
+      padding: 0 0.15rem 0.15rem;
+    }
+    .m-head-port {
+      flex: 0 1 auto;
+      max-width: min(52%, 11.5rem);
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .m-head-waits {
+      display: flex;
+      flex: 0 0 auto;
+      gap: 0.25rem;
+      justify-content: flex-start;
+    }
+    .m-head-lab {
+      flex: 0 0 auto;
+      min-width: 5.5rem;
+      width: max-content;
+      box-sizing: border-box;
+      font-size: 0.55rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: center;
+      padding: 0 0.15rem;
+    }
+    .m-head-lab.lane-type {
+      text-transform: none;
+      letter-spacing: 0.03em;
+    }
     .m-row {
       /* Same layout for Vehicles / Pedestrian / Commercial: name left, fixed wait strip right */
       display: grid;
@@ -3815,7 +3855,7 @@
         openMaps: "Open {name} in maps",
         distMi: "{n} mi",
         distKm: "{n} km",
-        colBridge: "Bridge",
+        colBridge: "Port",
         na: "N/A",
         closed: "Closed",
         updatePending: "Update pending",
@@ -4001,7 +4041,7 @@
         openMaps: "Abrir {name} en mapas",
         distMi: "{n} mi",
         distKm: "{n} km",
-        colBridge: "Puente",
+        colBridge: "Puerto",
         na: "N/D",
         closed: "Cerrado",
         updatePending: "Actualización pendiente",
@@ -6430,13 +6470,10 @@
           ${noticeRow}
           ${gapRow}`);
 
-        // Compact phone cards (used for Vehicles / Commercial tight filters)
+        // Compact phone cards — labels live in m-head, chips are minutes + counts only
         const waitBlocks = waitCols.map((c) => {
           const cell = cells[c.key];
-          return `<div class="m-wait-block ${cell.cls}">
-            <span class="m-lab${c.key === "trusted" ? " lane-type" : ""}">${escapeHtml(c.label)}</span>
-            ${waitStackWithOpen(cell)}
-          </div>`;
+          return `<div class="m-wait-block ${cell.cls}">${waitStackWithOpen(cell)}</div>`;
         }).join("");
 
         mobileCards.push(`
@@ -6489,6 +6526,15 @@
         ? (waitN === 1 ? " table-cards table-cards-1" : " table-cards")
         : "";
 
+      const mobileHead =
+        `<div class="m-head" role="row">` +
+        `<span class="m-head-port">${escapeHtml(t("colBridge"))}</span>` +
+        `<div class="m-head-waits">` +
+        waitCols.map(function (c) {
+          return `<span class="m-head-lab${c.key === "trusted" ? " lane-type" : ""}">${escapeHtml(c.label)}</span>`;
+        }).join("") +
+        `</div></div>`;
+
       grid.innerHTML = `
         <div class="table-wrap${tightClass}${cardsClass}">
           <div class="table-scroll">
@@ -6506,6 +6552,7 @@
             </table>
           </div>
           <div class="mobile-cards">
+            ${mobileHead}
             ${mobileCards.join("")}
           </div>
         </div>`;
