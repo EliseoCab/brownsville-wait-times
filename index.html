@@ -2305,6 +2305,94 @@
       .hero-meta { grid-template-columns: 1fr; }
     }
 
+    /* Desktop flex ribbon: header + each Port row share the same tracks.
+       Mobile CSS above is unchanged. */
+    @media (min-width: 721px) {
+      .table-wrap.table-cards table.wait-table {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        table-layout: auto;
+      }
+      .table-wrap.table-cards .wait-table colgroup { display: none; }
+      .table-wrap.table-cards .wait-table thead,
+      .table-wrap.table-cards .wait-table tbody {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+      .table-wrap.table-cards .wait-table thead tr,
+      .table-wrap.table-cards .wait-table tbody tr:not(.notice-row):not(.band-gap) {
+        display: flex;
+        align-items: stretch;
+        width: 100%;
+        gap: 0.4rem;
+      }
+      .table-wrap.table-cards .wait-table thead tr {
+        background: var(--navy);
+        border-radius: 12px;
+        padding: 0.15rem 0.25rem;
+      }
+      .table-wrap.table-cards .wait-table thead th {
+        background: transparent;
+        box-shadow: none;
+        border-radius: 0;
+      }
+      .table-wrap.table-cards .wait-table thead th.th-bridge,
+      .table-wrap.table-cards .wait-table tbody td.bridge {
+        flex: 1.15 1 8rem;
+        min-width: 8rem;
+        max-width: none;
+      }
+      .table-wrap.table-cards .wait-table thead th:not(.th-bridge),
+      .table-wrap.table-cards .wait-table tbody td.wait-col {
+        flex: 1 1 0;
+        min-width: 0;
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        text-align: center;
+      }
+      .table-wrap.table-cards .wait-table tbody td.wait-col .wait-col-inner {
+        width: 100%;
+        max-width: 8.5rem;
+        height: auto;
+        align-self: stretch;
+        display: flex;
+        justify-content: center;
+        padding: 3px 0;
+      }
+      .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
+        width: 100%;
+        max-width: 8.5rem;
+        height: 100%;
+        min-height: 0;
+        align-self: stretch;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .table-wrap.table-cards .wait-table tbody td.wait-col .wait-cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .table-wrap.table-cards .wait-table tbody td.wait-col .wait-cell .num {
+        font-size: 1.95rem;
+        white-space: nowrap;
+      }
+      .table-wrap.table-cards .wait-table tbody tr.notice-row,
+      .table-wrap.table-cards .wait-table tbody tr.band-gap {
+        display: block;
+        width: 100%;
+      }
+      .table-wrap.table-cards .wait-table tbody tr.notice-row td {
+        display: block;
+        width: 100%;
+      }
+    }
+
     @media (max-width: 640px) {
       table.wait-table { min-width: 640px; }
       .table-wrap.table-cards table.wait-table { min-width: 580px; }
@@ -6720,7 +6808,10 @@
      * misaligned headers (All / Pedestrian / Vehicles / Commercial).
      */
     function equalizeAllFilterChipHeights() {
-      const minRem = window.matchMedia("(max-width: 720px)").matches ? 5.75 : 6.75;
+      const isNarrow = window.matchMedia("(max-width: 720px)").matches;
+      // Desktop flex ribbon sizes columns/chips — skip JS widths/heights there.
+      if (!isNarrow) return;
+      const minRem = 5.75;
       const table = document.querySelector("#portGrid .table-wrap.table-cards .wait-table");
       if (table) {
         const bodyRows = Array.prototype.filter.call(
