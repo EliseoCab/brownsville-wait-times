@@ -1967,6 +1967,10 @@
       text-align: center;
       overflow-x: auto;
     }
+    /* Commercial phone cards: Gen + FAST sit beside bridge like Pedestrian */
+    html[data-view="commercial"] .m-row-waits {
+      gap: 0.25rem;
+    }
     .m-wait-block {
       /* Uniform width set after render from the widest message */
       flex: 0 0 auto;
@@ -2105,41 +2109,6 @@
       .table-wrap.table-cards .wait-table tbody td:last-child {
         border-radius: 0 10px 10px 0;
         padding-right: 0.2rem;
-      }
-      /* Commercial mobile: beat width:100%/fixed layout so chips sit beside bridge */
-      html[data-view="commercial"] .table-wrap.table-cards table.wait-table {
-        table-layout: auto !important;
-        width: max-content !important;
-        max-width: 100%;
-      }
-      html[data-view="commercial"] .table-wrap.table-cards .wait-table col.c-bridge,
-      html[data-view="commercial"] .table-wrap.table-cards .wait-table col.c-wait {
-        width: auto !important;
-      }
-      html[data-view="commercial"] .table-wrap.table-cards .wait-table thead th.th-bridge,
-      html[data-view="commercial"] .table-wrap.table-cards .wait-table tbody td.bridge {
-        width: auto !important;
-        max-width: 9.5rem;
-        padding-right: 0.4rem !important;
-        overflow-wrap: anywhere;
-      }
-      html[data-view="commercial"] .table-wrap.table-cards .wait-table thead th:nth-child(2),
-      html[data-view="commercial"] .table-wrap.table-cards .wait-table thead th:nth-child(3),
-      html[data-view="commercial"] .table-wrap.table-cards .wait-table tbody td.wait-col {
-        width: 1% !important;
-        padding-left: 3px !important;
-        padding-right: 3px !important;
-        white-space: nowrap;
-        text-align: left !important;
-      }
-      html[data-view="commercial"] .table-wrap.table-cards .wait-table tbody td.wait-col .wait-col-inner {
-        width: auto !important;
-        display: inline-block;
-        vertical-align: middle;
-      }
-      html[data-view="commercial"] .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
-        margin-left: 0;
-        margin-right: 0;
       }
       /* Desktop/tablet narrow: JS still equalizes chip width from content */
       .table-wrap.table-cards .wait-table tbody td.wait-col .wait-stack {
@@ -6461,25 +6430,24 @@
         return;
       }
 
-      // All / Vehicles / Pedestrian / Commercial: same All-filter desktop card table.
+      // Desktop: All-filter card table. Commercial mobile: phone cards so Gen/FAST
+      // sit beside the bridge like Pedestrian (not stretched to the far right).
       const waitN = Math.max(waitCols.length, 1);
-      const useCards = true;
-      const tight = false;
-      const commercialMobile =
-        currentFilter === "commercial" &&
+      const isNarrow =
         typeof window.matchMedia === "function" &&
         window.matchMedia("(max-width: 720px)").matches;
+      const commercialMobile = currentFilter === "commercial" && isNarrow;
+      const useCards = !commercialMobile;
+      const tight = commercialMobile;
       let bridgePct;
       if (waitN === 1) bridgePct = useCards ? 58 : 42;
       else if (waitN === 2) bridgePct = 36;
       else if (waitN === 3) bridgePct = 28;
       else bridgePct = 20;
       const waitPct = ((100 - bridgePct) / waitN).toFixed(3);
-      // Commercial mobile: no % col widths — pack bridge + chips left (CSS shrink-wraps).
-      const colgroup = commercialMobile
-        ? `<col class="c-bridge" />` + waitCols.map(() => `<col class="c-wait" />`).join("")
-        : `<col class="c-bridge" style="width:${bridgePct}%" />` +
-          waitCols.map(() => `<col class="c-wait" style="width:${waitPct}%" />`).join("");
+      const colgroup =
+        `<col class="c-bridge" style="width:${bridgePct}%" />` +
+        waitCols.map(() => `<col class="c-wait" style="width:${waitPct}%" />`).join("");
 
       const headCols = waitCols.map((c) =>
         `<th scope="col"${c.key === "trusted" ? ' class="th-lane"' : ""}>${escapeHtml(c.label)}</th>`
@@ -6488,7 +6456,6 @@
       const tightClass = tight
         ? ` table-tight table-tight-${waitN}`
         : "";
-      // All + Pedestrian: long bridge bands + floating chips (headers on top)
       const cardsClass = useCards
         ? (waitN === 1 ? " table-cards table-cards-1" : " table-cards")
         : "";
