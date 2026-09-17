@@ -4,10 +4,11 @@
 Evaluates EACH Brownsville bridge separately (B&M, Gateway, Veterans,
 Los Indios). Operating hours come from that item's CBP `Hours:` line
 (America/Chicago). Closed bridges (plus a short post-close grace) are
-skipped. Update Pending: 24h bridges wait 15 minutes into the current
-hour only when waiting for that hour's first post; pending that already
-carried over the hour boundary is stale immediately. Limited-hours
-bridges (Veterans, Los Indios) wait 15 minutes after official open.
+skipped. Update Pending / missing hourly post: 24h bridges wait 10
+minutes into the current hour when the last post was last hour; pending
+that already carried over the hour boundary is stale immediately.
+Limited-hours bridges (Veterans, Los Indios) wait 10 minutes after
+official open.
 
 Writes GitHub Actions outputs:
   lagging, reason, lag_minutes, lagging_bridges, still_lagging
@@ -50,6 +51,7 @@ __all__ = [
     "HoursWindow",
     "HOUR_PENDING_GRACE_MIN",
     "evaluate_bridges",
+    "hourly_post_overdue",
     "pending_ready",
     "waiting_for_new_hourly_post",
     "hours_status",
@@ -63,7 +65,7 @@ __all__ = [
 # Minutes to wait before Update Pending / first-post checks are stale:
 # 24h — into the current clock hour, only while waiting for that hour's
 # first post; limited-hours — after official open.
-HOUR_PENDING_GRACE_MIN = 15
+HOUR_PENDING_GRACE_MIN = 10
 
 
 def _chicago_hour(dt: datetime) -> datetime:
@@ -85,6 +87,19 @@ def waiting_for_new_hourly_post(now: datetime, last_stamp: datetime | None) -> b
     return stamp_hour in (now_hour, now_hour - timedelta(hours=1))
 
 
+def hourly_post_overdue(now: datetime, last_stamp: datetime | None) -> bool:
+    """True 10+ minutes into the hour when the newest stamp is still last hour or older.
+
+    Example: 11:00 am wait still showing at 12:10 pm.
+    """
+    local = now.astimezone(CHICAGO)
+    if local.minute < HOUR_PENDING_GRACE_MIN:
+        return False
+    if last_stamp is None:
+        return True
+    return _chicago_hour(last_stamp) < _chicago_hour(local)
+
+
 def pending_ready(
     window: HoursWindow,
     now: datetime,
@@ -93,8 +108,8 @@ def pending_ready(
 ) -> bool:
     """When Update Pending is stale for this bridge.
 
-    Limited-hours: 15 minutes after official open.
-    24h: 15 minutes into the current clock hour when waiting for a
+    Limited-hours: 10 minutes after official open.
+    24h: 10 minutes into the current clock hour when waiting for a
     brand-new hourly post; stale immediately if pending already carried
     over from an earlier hour (or there is no usable stamp).
     """
@@ -204,13 +219,13 @@ def evaluate_bridges(
             results.append(check)
             continue
 
-        # Stuck/missing: 24h always eligible; limited-hours wait 15 min after open.
+        # Stuck/missing: 24h always eligible; limited-hours wait 10 min after open.
         cbp_self_ready = window.always or (
             open_for is not None and open_for >= HOUR_PENDING_GRACE_MIN
         )
-        # Pending: 24h waits 15 min into the hour only for a new hourly post;
+        # Pending: 24h waits 10 min into the hour only for a new hourly post;
         # carry-over / no-stamp pending is stale immediately. Limited-hours
-        # wait 15 min after open.
+        # wait 10 min after open.
         pending_ok_to_flag = pending_ready(window, now, open_for, last_stamp=cbp.newest)
 
         if cbp.pending_only:
@@ -221,6 +236,8 @@ def evaluate_bridges(
                 check.problems.append("cbp_missing")
             elif cbp.newest is None:
                 check.problems.append("cbp_missing_stamp")
+            elif hourly_post_overdue(now, cbp.newest):
+                check.problems.append("cbp_stuck")
             elif check.cbp_age_minutes is not None and check.cbp_age_minutes > max_lag:
                 check.problems.append("cbp_stuck")
 

@@ -65,8 +65,9 @@ EVENING = chicago(2026, 9, 10, 22, 20)  # Los Indios in post-close grace (10pm +
 NIGHT = chicago(2026, 9, 10, 23, 10)  # Los Indios closed; Veterans still open
 AFTER_MID = chicago(2026, 9, 11, 0, 20)  # Veterans in post-close grace
 PREDWN = chicago(2026, 9, 11, 2, 0)  # Veterans + Los Indios closed
-JUST_OPEN = chicago(2026, 9, 10, 6, 10)  # 10 min after 6am — still in 15 min grace
-OPEN_15 = chicago(2026, 9, 10, 6, 15)  # 15 min after 6am — first-post checks start
+JUST_OPEN = chicago(2026, 9, 10, 6, 9)  # 9 min after 6am — still in 10 min grace
+OPEN_10 = chicago(2026, 9, 10, 6, 10)  # 10 min after 6am — first-post checks start
+OPEN_15 = chicago(2026, 9, 10, 6, 15)  # well after first-post checks start
 OPEN_LONG = chicago(2026, 9, 10, 7, 30)  # well after first hourly post
 
 
@@ -123,11 +124,18 @@ class PendingReadyHelperTests(unittest.TestCase):
         self.assertFalse(c.pending_ready(w, now, None, last_stamp=stamp))
         self.assertTrue(c.waiting_for_new_hourly_post(now, stamp))
 
-    def test_24h_after_15_is_ready_even_with_previous_stamp(self):
+    def test_24h_after_10_is_ready_even_with_previous_stamp(self):
         w = c.parse_hours("24 hrs/day")
-        now = chicago(2026, 9, 11, 1, 15)
+        now = chicago(2026, 9, 11, 1, 10)
         stamp = chicago(2026, 9, 11, 0, 0)
         self.assertTrue(c.pending_ready(w, now, None, last_stamp=stamp))
+
+    def test_hourly_post_overdue_at_10_past(self):
+        now = chicago(2026, 9, 10, 12, 10)
+        stamp = chicago(2026, 9, 10, 11, 0)
+        self.assertTrue(c.hourly_post_overdue(now, stamp))
+        self.assertFalse(c.hourly_post_overdue(chicago(2026, 9, 10, 12, 9), stamp))
+        self.assertFalse(c.hourly_post_overdue(now, chicago(2026, 9, 10, 12, 0)))
 
 
 class StampAndPendingTests(unittest.TestCase):
@@ -285,19 +293,19 @@ class PerBridgeEvaluateTests(unittest.TestCase):
         self.assertFalse(by["veterans"].problems)
         self.assertFalse(by["los_indios"].problems)
 
-    def test_limited_hours_pending_15_min_after_open_is_stale(self):
+    def test_limited_hours_pending_10_min_after_open_is_stale(self):
         xml = feed(
             item(BM, "24 hrs/day", "9/10/2026", FRESH.replace("2:00 pm", "6:00 am")),
             item(GW, "24 hrs/day", "9/10/2026", FRESH.replace("2:00 pm", "6:00 am")),
             item(VA, "6 am-Midnight", "9/10/2026", PENDING),
             item(LI, "6 am-10 pm", "9/10/2026", PENDING),
         )
-        ordered = self.checks(xml, xml, OPEN_15)
+        ordered = self.checks(xml, xml, OPEN_10)
         by = self.by_id(ordered)
         self.assertIn("cbp_pending", by["veterans"].problems)
         self.assertIn("cbp_pending", by["los_indios"].problems)
 
-    def test_limited_hours_overnight_stamp_15_min_after_open_is_stuck(self):
+    def test_limited_hours_overnight_stamp_10_min_after_open_is_stuck(self):
         overnight = "General Lanes: At 10:00 pm CDT 5 min delay 1 lane(s) open"
         xml = feed(
             item(BM, "24 hrs/day", "9/10/2026", "General Lanes: At 6:00 am CDT 5 min delay 1 lane(s) open"),
@@ -305,7 +313,7 @@ class PerBridgeEvaluateTests(unittest.TestCase):
             item(VA, "6 am-Midnight", "9/9/2026", overnight),
             item(LI, "6 am-10 pm", "9/9/2026", overnight),
         )
-        ordered = self.checks(xml, xml, OPEN_15)
+        ordered = self.checks(xml, xml, OPEN_10)
         by = self.by_id(ordered)
         self.assertIn("cbp_stuck", by["veterans"].problems)
         self.assertIn("cbp_stuck", by["los_indios"].problems)
@@ -399,20 +407,60 @@ class PerBridgeEvaluateTests(unittest.TestCase):
         self.assertIn("B&M", names)
         self.assertIn("Gateway", names)
 
-    def test_24h_pending_at_exactly_15_is_stale(self):
+    def test_24h_pending_at_exactly_10_is_stale(self):
         xml = four_bridges(gw=PENDING, date="9/11/2026")
-        now = chicago(2026, 9, 11, 2, 15)
+        now = chicago(2026, 9, 11, 2, 10)
         gw = self.by_id(self.checks(xml, xml, now))["gateway"]
         self.assertIn("cbp_pending", gw.problems)
 
-    def test_24h_pending_after_15_with_previous_hour_stamp_is_stale(self):
-        """After :15, even a fresh previous-hour stamp no longer gets grace."""
+    def test_24h_pending_after_10_with_previous_hour_stamp_is_stale(self):
+        """After :10, even a fresh previous-hour stamp no longer gets grace."""
         prev = "General Lanes: At 1:00 am CDT Update Pending"
         xml = four_bridges(gw=prev, date="9/11/2026")
-        now = chicago(2026, 9, 11, 2, 15)
+        now = chicago(2026, 9, 11, 2, 10)
         gw = self.by_id(self.checks(xml, xml, now))["gateway"]
         self.assertTrue(gw.cbp_pending)
         self.assertIn("cbp_pending", gw.problems)
+
+    def test_11am_wait_still_ok_nine_minutes_past_noon(self):
+        """11:00 am wait at 12:09 pm is still inside the 10-minute hourly grace."""
+        wait = "General Lanes: At 11:00 am CDT 20 min delay 1 lane(s) open"
+        xml = four_bridges(bm=wait, gw=wait, date="9/10/2026")
+        now = chicago(2026, 9, 10, 12, 9)
+        ordered = self.checks(xml, xml, now)
+        by = self.by_id(ordered)
+        self.assertFalse(by["bm"].problems)
+        self.assertFalse(by["gateway"].problems)
+        lagging, reason, _, _ = c.summarize(ordered)
+        self.assertFalse(lagging)
+        self.assertEqual(reason, "fresh")
+
+    def test_11am_wait_stuck_ten_minutes_past_noon(self):
+        """11:00 am wait still showing at 12:10 pm — no new hourly post."""
+        wait = "General Lanes: At 11:00 am CDT 20 min delay 1 lane(s) open"
+        xml = four_bridges(bm=wait, gw=wait, date="9/10/2026")
+        now = chicago(2026, 9, 10, 12, 10)
+        ordered = self.checks(xml, xml, now)
+        by = self.by_id(ordered)
+        self.assertIn("cbp_stuck", by["bm"].problems)
+        self.assertIn("cbp_stuck", by["gateway"].problems)
+        lagging, reason, _, names = c.summarize(ordered)
+        self.assertTrue(lagging)
+        self.assertIn("B&M", names)
+        self.assertIn("Gateway", names)
+
+    def test_11am_wait_then_pending_stale_ten_minutes_past_noon(self):
+        """11:00 am had times; 12:10 pm is Update Pending → alert."""
+        prev = "General Lanes: At 11:00 am CDT Update Pending"
+        xml = four_bridges(bm=prev, gw=prev, date="9/10/2026")
+        now = chicago(2026, 9, 10, 12, 10)
+        ordered = self.checks(xml, xml, now)
+        by = self.by_id(ordered)
+        self.assertIn("cbp_pending", by["bm"].problems)
+        self.assertIn("cbp_pending", by["gateway"].problems)
+        lagging, reason, _, _ = c.summarize(ordered)
+        self.assertTrue(lagging)
+        self.assertIn("cbp_pending", reason)
 
     def test_24h_site_pending_while_cbp_has_times_is_stale_in_hour_grace(self):
         cbp = four_bridges(
