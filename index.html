@@ -5427,7 +5427,7 @@
         sec,
         re,
         label,
-        !(kind === "sentri" && currentFilter === "passenger")
+        !(kind === "sentri" && (currentFilter === "passenger" || currentFilter === "all"))
       );
       if (note) lines.push(note);
       const ofLine = sectionOfLine(sec);
