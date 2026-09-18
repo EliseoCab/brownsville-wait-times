@@ -5294,7 +5294,7 @@
       return parts.join(", ");
     }
 
-    function typeOpenNote(section, nameRe, label) {
+    function typeOpenNote(section, nameRe, label, withOpenWord) {
       if (!section) return "";
       for (const lane of section.lanes || []) {
         if (!nameRe.test(lane.name)) continue;
@@ -5303,6 +5303,7 @@
         const n = w.closed ? 0 : (w.lanesOpenCount != null ? Number(w.lanesOpenCount) : NaN);
         if (isNaN(n)) return "";
         if (n === 0 && /ready/i.test(lane.name)) return "";
+        if (withOpenWord === false) return n + " " + label;
         return n + " " + label + " " + t("open");
       }
       return "";
@@ -5422,7 +5423,12 @@
       const label = kind === "fast" ? t("fast") : kind === "ready" ? t("ready") : t("sentri");
       const sec = sectionByKey(port, secKey);
       const lines = [];
-      const note = typeOpenNote(sec, re, label);
+      const note = typeOpenNote(
+        sec,
+        re,
+        label,
+        !(kind === "sentri" && currentFilter === "passenger")
+      );
       if (note) lines.push(note);
       const ofLine = sectionOfLine(sec);
       if (ofLine) lines.push(ofLine);
