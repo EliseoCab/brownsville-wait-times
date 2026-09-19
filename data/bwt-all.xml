@@ -1,6 +1,6 @@
 <border_wait_time>
   <last_updated_date>2026-9-19</last_updated_date>
-  <last_updated_time>02:28:29</last_updated_time>
+  <last_updated_time>02:36:03</last_updated_time>
   <number_of_ports>85</number_of_ports>
   <port>
     <port_number>070801</port_number>
@@ -1281,7 +1281,7 @@
       <maximum_lanes>1</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 10:00 pm PDT</update_time>
+        <update_time>At 11:00 pm PDT</update_time>
         <delay_minutes>5</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
@@ -1296,7 +1296,7 @@
       <maximum_lanes>4</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 10:00 pm PDT</update_time>
+        <update_time>At 11:00 pm PDT</update_time>
         <delay_minutes>5</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
@@ -2162,13 +2162,13 @@
     <commercial_vehicle_lanes>
       <maximum_lanes>N/A</maximum_lanes>
       <standard_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>N/A</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
       </standard_lanes>
       <FAST_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>N/A</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
@@ -2177,19 +2177,19 @@
     <passenger_vehicle_lanes>
       <maximum_lanes>4</maximum_lanes>
       <standard_lanes>
-        <operational_status>Update Pending</operational_status>
-        <update_time />
-        <delay_minutes />
-        <lanes_open />
+        <operational_status>delay</operational_status>
+        <update_time>At 1:00 am CDT</update_time>
+        <delay_minutes>15</delay_minutes>
+        <lanes_open>1</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>N/A</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
       </NEXUS_SENTRI_lanes>
       <ready_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>Lanes Closed</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
@@ -2198,13 +2198,13 @@
     <pedestrian_lanes>
       <maximum_lanes>2</maximum_lanes>
       <standard_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>Lanes Closed</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
       </standard_lanes>
       <ready_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>N/A</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
@@ -2226,13 +2226,13 @@
     <commercial_vehicle_lanes>
       <maximum_lanes>N/A</maximum_lanes>
       <standard_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>N/A</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
       </standard_lanes>
       <FAST_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>N/A</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
@@ -2241,19 +2241,19 @@
     <passenger_vehicle_lanes>
       <maximum_lanes>5</maximum_lanes>
       <standard_lanes>
-        <operational_status>Update Pending</operational_status>
-        <update_time />
-        <delay_minutes />
-        <lanes_open />
+        <operational_status>delay</operational_status>
+        <update_time>At 1:00 am CDT</update_time>
+        <delay_minutes>60</delay_minutes>
+        <lanes_open>1</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>N/A</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
       </NEXUS_SENTRI_lanes>
       <ready_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>Lanes Closed</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
@@ -2262,13 +2262,13 @@
     <pedestrian_lanes>
       <maximum_lanes>4</maximum_lanes>
       <standard_lanes>
-        <operational_status>Update Pending</operational_status>
-        <update_time />
-        <delay_minutes />
-        <lanes_open />
+        <operational_status>no delay</operational_status>
+        <update_time>At 1:00 am CDT</update_time>
+        <delay_minutes>0</delay_minutes>
+        <lanes_open>1</lanes_open>
       </standard_lanes>
       <ready_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>Lanes Closed</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
@@ -2290,13 +2290,13 @@
     <commercial_vehicle_lanes>
       <maximum_lanes>4</maximum_lanes>
       <standard_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>Lanes Closed</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
       </standard_lanes>
       <FAST_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>Lanes Closed</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
@@ -2305,19 +2305,19 @@
     <passenger_vehicle_lanes>
       <maximum_lanes>4</maximum_lanes>
       <standard_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>Lanes Closed</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>N/A</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
       </NEXUS_SENTRI_lanes>
       <ready_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>Lanes Closed</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
@@ -2326,13 +2326,13 @@
     <pedestrian_lanes>
       <maximum_lanes>N/A</maximum_lanes>
       <standard_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>N/A</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
       </standard_lanes>
       <ready_lanes>
-        <operational_status>Update Pending</operational_status>
+        <operational_status>N/A</operational_status>
         <update_time />
         <delay_minutes />
         <lanes_open />
