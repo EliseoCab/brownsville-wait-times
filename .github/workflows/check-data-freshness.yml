@@ -2,8 +2,9 @@ name: Check data freshness (lag alarm)
 
 on:
   schedule:
-    # Every 15 minutes (GitHub cron can lag a few minutes)
-    - cron: "7,22,37,52 * * * *"
+    # Check at :10 past the hour (and :25, :40, :55) so "Update Pending" 10+ min after the hour (or no new post) triggers an alert for open bridges.
+    # GitHub cron can lag a few minutes.
+    - cron: "10,25,40,55 * * * *"
   # Cloudflare Worker also POSTs workflow_dispatch at :17 and :47 UTC when
   # GITHUB_DISPATCH_TOKEN is set (backup if this Actions schedule stalls).
   workflow_dispatch:
