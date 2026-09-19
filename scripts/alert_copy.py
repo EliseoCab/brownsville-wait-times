@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Employee-facing alert copy. Bottom line first. Plain language."""
+"""Professional alert copy for Brownsville Wait Times monitoring.
+
+Messages are designed to be clear, actionable, and clearly marked as automated."""
 
 from __future__ import annotations
 
@@ -40,6 +42,15 @@ def hour_label(now: datetime | None) -> str:
     return _clock(now.hour, 0, now.tzname() or "CT")
 
 
+def checked_at_label(now: datetime | None) -> str:
+    """More precise time for alerts: '1:13 pm CDT'."""
+    now = _chicago(now)
+    hour12 = now.hour % 12 or 12
+    ampm = "am" if now.hour < 12 else "pm"
+    tz = now.tzname() or "CT"
+    return f"{hour12}:{now.minute:02d} {ampm} {tz}"
+
+
 def slot_label(now: datetime | None) -> str:
     """Hour or half-hour slot: '2:00 pm CDT' or '2:30 pm CDT'."""
     now = _chicago(now)
@@ -69,14 +80,18 @@ def time_from_raw(raw: str, now: datetime | None = None) -> str:
     return s
 
 
-def template_wait_pending(bridges: list[str], when: str) -> tuple[str, str]:
+def template_wait_pending(bridges: list[str], when: str, checked_at: str = "") -> tuple[str, str]:
     who = _names(bridges)
-    subject = f"{when} — update wait times ({who})"
+    as_of = checked_at or when
+    subject = f"Brownsville Wait Times Alert — Update Pending ({who}) as of {when}"
     body = (
-        f"{when} — {who} wait times not posted (Update Pending).\n"
-        "\n"
-        "Update them now.\n"
-        "If already updated, disregard."
+        "Automated Alert: Brownsville Border Wait Times\n\n"
+        f"As of {as_of}, CBP is still showing 'Update Pending' for the current hour. "
+        f"The following bridge(s) have not yet posted updated wait times:\n\n"
+        f"{who}\n\n"
+        "Please update the wait times at the earliest opportunity.\n\n"
+        "This is an automated message from the Brownsville Wait Times monitoring system. "
+        "If the data has already been updated, you may disregard this notification."
     )
     return subject, body
 
@@ -85,15 +100,19 @@ def template_wait_stale(
     bridges: list[str],
     when: str,
     last_posted: str = "",
+    checked_at: str = "",
 ) -> tuple[str, str]:
     who = _names(bridges)
-    subject = f"{when} — update wait times ({who})"
-    last = f" (last posted {last_posted})" if last_posted else ""
+    as_of = checked_at or when
+    subject = f"Brownsville Wait Times Alert — No New Data Since {last_posted} ({who})" if last_posted else f"Brownsville Wait Times Alert — Data Out of Date ({who}) as of {when}"
+    last_clause = f", the latest published data is still from {last_posted}." if last_posted else ""
     body = (
-        f"{when} — {who} wait times are old or missing{last}.\n"
-        "\n"
-        "Update them now.\n"
-        "If already updated, disregard."
+        "Automated Alert: Brownsville Border Wait Times\n\n"
+        f"As of {as_of}{last_clause} No newer hourly update has appeared yet for the following bridge(s):\n\n"
+        f"{who}\n\n"
+        "Please publish the next update at the earliest opportunity.\n\n"
+        "This is an automated message from the Brownsville Wait Times monitoring system. "
+        "If the data has already been updated, you may disregard this notification."
     )
     return subject, body
 
@@ -141,6 +160,7 @@ def format_lag_alert(results, now: datetime | None = None) -> tuple[str, str]:
     if not bad:
         return "", ""
     when = hour_label(now)
+    checked_at = checked_at_label(now)
     pending: list[str] = []
     stale: list[str] = []
     stale_checks = []
@@ -165,23 +185,24 @@ def format_lag_alert(results, now: datetime | None = None) -> tuple[str, str]:
             last_posted = ""
 
     if pending and not stale:
-        return template_wait_pending(pending, when)
+        return template_wait_pending(pending, when, checked_at=checked_at)
     if stale and not pending:
-        return template_wait_stale(stale, when, last_posted=last_posted)
+        return template_wait_stale(stale, when, last_posted=last_posted, checked_at=checked_at)
 
     who = _names([r.name for r in bad])
-    subject = f"{when} — update wait times ({who})"
+    subject = f"Brownsville Wait Times Alert — Action Required ({who}) as of {when}"
     bits = []
     if pending:
-        bits.append(f"{_names(pending)} wait times not posted (Update Pending)")
+        bits.append(f"{_names(pending)} show 'Update Pending'")
     if stale:
-        last = f", last posted {last_posted}" if last_posted else ""
-        bits.append(f"{_names(stale)} wait times are old or missing{last}")
+        last = f" (latest published still {last_posted})" if last_posted else ""
+        bits.append(f"{_names(stale)} have no newer data{last}")
     body = (
-        f"{when} — " + "; ".join(bits) + ".\n"
-        "\n"
-        "Update them now.\n"
-        "If already updated, disregard."
+        "Automated Alert: Brownsville Border Wait Times\n\n"
+        f"As of {checked_at}: " + "; ".join(bits) + ".\n\n"
+        "Please update the wait times at the earliest opportunity.\n\n"
+        "This is an automated message from the Brownsville Wait Times monitoring system. "
+        "If the data has already been updated, you may disregard this notification."
     )
     return subject, body
 
