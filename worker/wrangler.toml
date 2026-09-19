@@ -14,10 +14,10 @@ main = "src/index.js"
 compatibility_date = "2025-08-01"
 
 # Warm the edge cache about every 5 minutes (free plan supports cron triggers).
-# :17 and :47 UTC kick the lag-alarm workflow_dispatch (offset from Actions
+# :10, :25, :40, :55 UTC kick the lag-alarm (aligned with Actions for 10-min pending alerts) workflow_dispatch (offset from Actions
 # cron 7,22,37,52). Free accounts allow 5 cron triggers; this Worker uses 3.
 [triggers]
-crons = ["*/5 * * * *", "17 * * * *", "47 * * * *"]
+crons = ["*/5 * * * *", "10 * * * *", "25 * * * *", "40 * * * *", "55 * * * *"]
 
 [[d1_databases]]
 binding = "DB"
