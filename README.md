@@ -87,11 +87,25 @@ Alert mail tells employees what to do in plain language (update wait times, or c
 
 Set repo secret **GMAIL** (Gmail app password) so Actions can send from `eliseocab@gmail.com`. 
 
-- **ALERT_TO**: Visible "To" recipients (designated emails that appear in the To field).
-- **ALERT_BCC**: Blind carbon copy recipients (hidden from each other and from the To list).
-- Optional: **ALERT_SMTP_USER**, **ALERT_FROM**.
+### Email visibility setup (recommended)
 
-This setup allows BCC for the full distribution list while keeping only designated emails visible. Turn off GitHub Actions failure emails if you only want this custom mail. Alert mail **expires 90 days** after the secret date in `scripts/send_alert_email.py` (currently 2026-09-11 → 2026-12-10); rotate **GMAIL** and bump `SECRET_SET_ON` to extend.
+To control what recipients see:
+
+- **ALERT_TO** — Emails that will be visible in the **To:** field (recipients can see these).
+- **ALERT_BCC** — Emails that receive the alert but are **hidden** (they won't appear in the To field).
+
+**Recommended configuration for this repo:**
+
+- `ALERT_TO`: `eliseo.cabrera@cbp.dhs.gov`
+- `ALERT_BCC`: `eliseocab@gmail.com`
+
+This way:
+- Recipients only see the official CBP address in the To field.
+- Your personal Gmail receives the alert but does not show up.
+
+Optional: **ALERT_SMTP_USER**, **ALERT_FROM**.
+
+Turn off GitHub Actions failure emails if you only want this custom mail. Alert mail **expires 90 days** after the secret date in `scripts/send_alert_email.py` (currently 2026-09-11 → 2026-12-10); rotate **GMAIL** and bump `SECRET_SET_ON` to extend.
 
 ### Manual SMTP test
 
