@@ -91,7 +91,8 @@ def template_wait_pending(bridges: list[str], when: str, checked_at: str = "") -
         f"{who}\n\n"
         "Please update the wait times at the earliest opportunity.\n\n"
         "This is an automated message from the Brownsville Wait Times monitoring system. "
-        "If the data has already been updated, you may disregard this notification."
+        "If the data has already been updated, you may disregard this notification.\n\n"
+        "This report is based on public information from:\nhttps://bwt.cbp.gov/viewAllPorts"
     )
     return subject, body
 
@@ -112,7 +113,8 @@ def template_wait_stale(
         f"{who}\n\n"
         "Please publish the next update at the earliest opportunity.\n\n"
         "This is an automated message from the Brownsville Wait Times monitoring system. "
-        "If the data has already been updated, you may disregard this notification."
+        "If the data has already been updated, you may disregard this notification.\n\n"
+        "This report is based on public information from:\nhttps://bwt.cbp.gov/viewAllPorts"
     )
     return subject, body
 
@@ -202,7 +204,8 @@ def format_lag_alert(results, now: datetime | None = None) -> tuple[str, str]:
         f"As of {checked_at}: " + "; ".join(bits) + ".\n\n"
         "Please update the wait times at the earliest opportunity.\n\n"
         "This is an automated message from the Brownsville Wait Times monitoring system. "
-        "If the data has already been updated, you may disregard this notification."
+        "If the data has already been updated, you may disregard this notification.\n\n"
+        "This report is based on public information from:\nhttps://bwt.cbp.gov/viewAllPorts"
     )
     return subject, body
 
