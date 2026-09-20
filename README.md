@@ -98,12 +98,14 @@ To control what recipients see:
 
 - `ALERT_TO`: `eliseo.cabrera@cbp.dhs.gov`
 - `ALERT_BCC`: `eliseocab@gmail.com`
+- `ALERT_FROM`: `eliseo.cabrera@cbp.dhs.gov`   (this hides your personal Gmail from the From field)
+- `ALERT_REPLY_TO`: `eliseocab@gmail.com`     (replies will go to your Gmail)
 
 This way:
-- Recipients only see the official CBP address in the To field.
-- Your personal Gmail receives the alert but does not show up.
+- Recipients see the official CBP address as the sender.
+- Your personal Gmail (`eliseocab@gmail.com`) is completely hidden from the From, To, and visible fields, but still receives the email and any replies.
 
-Optional: **ALERT_SMTP_USER**, **ALERT_FROM**.
+Optional: **ALERT_SMTP_USER**.
 
 Turn off GitHub Actions failure emails if you only want this custom mail. Alert mail **expires 90 days** after the secret date in `scripts/send_alert_email.py` (currently 2026-09-11 → 2026-12-10); rotate **GMAIL** and bump `SECRET_SET_ON` to extend.
 

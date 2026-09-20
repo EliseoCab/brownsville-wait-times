@@ -77,6 +77,7 @@ def main() -> int:
         return 1
 
     from_addr = (os.environ.get("ALERT_FROM") or "").strip() or DEFAULT_FROM
+    reply_to = (os.environ.get("ALERT_REPLY_TO") or "").strip()
 
     visible_list = recipients(os.environ.get("ALERT_TO") or DEFAULT_TO)
     bcc_list = recipients(os.environ.get("ALERT_BCC") or "")
@@ -89,6 +90,8 @@ def main() -> int:
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = from_addr
+    if reply_to:
+        msg["Reply-To"] = reply_to
 
     if visible_list:
         msg["To"] = ", ".join(visible_list)

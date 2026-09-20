@@ -25,6 +25,7 @@ jobs:
           ALERT_TO: ${{ secrets.ALERT_TO }}
           ALERT_BCC: ${{ secrets.ALERT_BCC }}
           ALERT_FROM: ${{ secrets.ALERT_FROM }}
+          ALERT_REPLY_TO: ${{ secrets.ALERT_REPLY_TO }}
           ALERT_SUBJECT: BWT alert email test
         run: |
           set -euo pipefail

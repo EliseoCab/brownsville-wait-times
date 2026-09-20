@@ -170,6 +170,7 @@ jobs:
           ALERT_TO: ${{ secrets.ALERT_TO }}
           ALERT_BCC: ${{ secrets.ALERT_BCC }}
           ALERT_FROM: ${{ secrets.ALERT_FROM }}
+          ALERT_REPLY_TO: ${{ secrets.ALERT_REPLY_TO }}
           ALERT_SUBJECT: ${{ steps.recheck.outputs.alert_subject || steps.compare.outputs.alert_subject }}
           ALERT_BODY: ${{ steps.recheck.outputs.alert_body || steps.compare.outputs.alert_body }}
         run: |
