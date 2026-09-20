@@ -18,13 +18,15 @@ from zoneinfo import ZoneInfo
 
 DEFAULT_FROM = "eliseocab@gmail.com"
 DEFAULT_TO = "eliseo.cabrera@cbp.dhs.gov,eliseocab@gmail.com"
+DEFAULT_BCC = "Brownsvilleopscenter@cbp.dhs.gov"
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = 465
 CHICAGO = ZoneInfo("America/Chicago")
 
-# GMAIL repo secret added 2026-09-11. Bump this date when you rotate it.
-SECRET_SET_ON = date(2026, 9, 11)
-ALERT_TTL_DAYS = 90
+# GMAIL repo secret added/rotated 2026-09-20. Bump this date when you rotate it.
+# Automated messaging (email alerts) set to active for 30 days from this date.
+SECRET_SET_ON = date(2026, 9, 20)
+ALERT_TTL_DAYS = 30
 
 
 def expires_on() -> date:
@@ -80,7 +82,7 @@ def main() -> int:
     reply_to = (os.environ.get("ALERT_REPLY_TO") or "").strip()
 
     visible_list = recipients(os.environ.get("ALERT_TO") or DEFAULT_TO)
-    bcc_list = recipients(os.environ.get("ALERT_BCC") or "")
+    bcc_list = recipients(os.environ.get("ALERT_BCC") or DEFAULT_BCC)
 
     all_recipients = visible_list + bcc_list
     if not all_recipients:

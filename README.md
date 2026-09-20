@@ -97,7 +97,7 @@ To control what recipients see:
 **Recommended configuration for this repo:**
 
 - `ALERT_TO`: `eliseo.cabrera@cbp.dhs.gov`
-- `ALERT_BCC`: `eliseocab@gmail.com`
+- `ALERT_BCC`: `eliseocab@gmail.com,Brownsvilleopscenter@cbp.dhs.gov`
 - `ALERT_FROM`: `eliseo.cabrera@cbp.dhs.gov`   (this hides your personal Gmail from the From field)
 - `ALERT_REPLY_TO`: `eliseocab@gmail.com`     (replies will go to your Gmail)
 
@@ -107,7 +107,7 @@ This way:
 
 Optional: **ALERT_SMTP_USER**.
 
-Turn off GitHub Actions failure emails if you only want this custom mail. Alert mail **expires 90 days** after the secret date in `scripts/send_alert_email.py` (currently 2026-09-11 → 2026-12-10); rotate **GMAIL** and bump `SECRET_SET_ON` to extend.
+Turn off GitHub Actions failure emails if you only want this custom mail. Alert mail **expires 30 days** after the secret date in `scripts/send_alert_email.py` (currently 2026-09-20 → 2026-10-20); rotate **GMAIL** and bump `SECRET_SET_ON` to extend or change ALERT_TTL_DAYS. This automated messaging is set to active for the next 30 days.
 
 ### Manual SMTP test
 
