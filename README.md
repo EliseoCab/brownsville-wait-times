@@ -96,14 +96,15 @@ To control what recipients see:
 
 **Recommended configuration for this repo:**
 
-- `ALERT_TO`: `eliseo.cabrera@cbp.dhs.gov`
-- `ALERT_BCC`: `eliseocab@gmail.com,Brownsvilleopscenter@cbp.dhs.gov`
+- `ALERT_TO`: `eliseo.cabrera@cbp.dhs.gov,Brownsvilleopscenter@cbp.dhs.gov`
+- `ALERT_BCC`: `eliseocab@gmail.com`
 - `ALERT_FROM`: `eliseo.cabrera@cbp.dhs.gov`   (this hides your personal Gmail from the From field)
 - `ALERT_REPLY_TO`: `eliseocab@gmail.com`     (replies will go to your Gmail)
 
 This way:
 - Recipients see the official CBP address as the sender.
-- Your personal Gmail (`eliseocab@gmail.com`) is completely hidden from the From, To, and visible fields, but still receives the email and any replies.
+- Brownsvilleopscenter@cbp.dhs.gov is visible in the To: field (along with the designated recipient).
+- Your personal Gmail (`eliseocab@gmail.com`) is completely hidden from the From, To, and visible fields (via BCC), but still receives the email and any replies.
 
 Optional: **ALERT_SMTP_USER**.
 

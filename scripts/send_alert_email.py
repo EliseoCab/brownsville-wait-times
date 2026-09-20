@@ -17,8 +17,8 @@ from email.message import EmailMessage
 from zoneinfo import ZoneInfo
 
 DEFAULT_FROM = "eliseocab@gmail.com"
-DEFAULT_TO = "eliseo.cabrera@cbp.dhs.gov,eliseocab@gmail.com"
-DEFAULT_BCC = "Brownsvilleopscenter@cbp.dhs.gov"
+DEFAULT_TO = "eliseo.cabrera@cbp.dhs.gov,Brownsvilleopscenter@cbp.dhs.gov"
+DEFAULT_BCC = ""
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = 465
 CHICAGO = ZoneInfo("America/Chicago")
