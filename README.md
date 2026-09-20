@@ -85,7 +85,13 @@ Workflow: **Check data freshness (lag alarm)**
 
 Alert mail tells employees what to do in plain language (update wait times, or contact the duty supervisor for SENTRI). Disregard if already handled.
 
-Set repo secret **GMAIL** (Gmail app password) so Actions can send from `eliseocab@gmail.com`. Optional: **ALERT_SMTP_USER**, **ALERT_TO**, **ALERT_FROM**. Turn off GitHub Actions failure emails if you only want this custom mail. Alert mail **expires 90 days** after the secret date in `scripts/send_alert_email.py` (currently 2026-09-11 → 2026-12-10); rotate **GMAIL** and bump `SECRET_SET_ON` to extend.
+Set repo secret **GMAIL** (Gmail app password) so Actions can send from `eliseocab@gmail.com`. 
+
+- **ALERT_TO**: Visible "To" recipients (designated emails that appear in the To field).
+- **ALERT_BCC**: Blind carbon copy recipients (hidden from each other and from the To list).
+- Optional: **ALERT_SMTP_USER**, **ALERT_FROM**.
+
+This setup allows BCC for the full distribution list while keeping only designated emails visible. Turn off GitHub Actions failure emails if you only want this custom mail. Alert mail **expires 90 days** after the secret date in `scripts/send_alert_email.py` (currently 2026-09-11 → 2026-12-10); rotate **GMAIL** and bump `SECRET_SET_ON` to extend.
 
 ### Manual SMTP test
 

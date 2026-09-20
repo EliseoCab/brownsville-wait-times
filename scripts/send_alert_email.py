@@ -77,21 +77,30 @@ def main() -> int:
         return 1
 
     from_addr = (os.environ.get("ALERT_FROM") or "").strip() or DEFAULT_FROM
-    to_list = recipients(os.environ.get("ALERT_TO") or DEFAULT_TO)
-    if not to_list:
-        print("No ALERT_TO recipients; skip send.")
+
+    visible_list = recipients(os.environ.get("ALERT_TO") or DEFAULT_TO)
+    bcc_list = recipients(os.environ.get("ALERT_BCC") or "")
+
+    all_recipients = visible_list + bcc_list
+    if not all_recipients:
+        print("No ALERT_TO or ALERT_BCC recipients; skip send.")
         return 1
 
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = from_addr
-    msg["To"] = ", ".join(to_list)
+
+    if visible_list:
+        msg["To"] = ", ".join(visible_list)
+    if bcc_list:
+        msg["Bcc"] = ", ".join(bcc_list)
+
     msg.set_content(body)
 
     try:
         with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=20) as smtp:
             smtp.login(user, password)
-            smtp.send_message(msg)
+            smtp.send_message(msg, to_addrs=all_recipients)
     except Exception as exc:
         print(f"SMTP send failed: {exc}", file=sys.stderr)
         return 1
