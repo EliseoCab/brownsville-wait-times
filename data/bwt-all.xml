@@ -1,6 +1,6 @@
 <border_wait_time>
   <last_updated_date>2026-9-21</last_updated_date>
-  <last_updated_time>05:21:33</last_updated_time>
+  <last_updated_time>05:39:37</last_updated_time>
   <number_of_ports>85</number_of_ports>
   <port>
     <port_number>070801</port_number>
@@ -269,8 +269,8 @@
       <maximum_lanes>4</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 5:07 am EDT</update_time>
-        <delay_minutes>2</delay_minutes>
+        <update_time>At 5:27 am EDT</update_time>
+        <delay_minutes>0</delay_minutes>
         <lanes_open>2</lanes_open>
       </standard_lanes>
       <FAST_lanes>
@@ -284,7 +284,7 @@
       <maximum_lanes>8</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 5:07 am EDT</update_time>
+        <update_time>At 5:27 am EDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
@@ -332,8 +332,8 @@
       <maximum_lanes>8</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 5:07 am EDT</update_time>
-        <delay_minutes>2</delay_minutes>
+        <update_time>At 5:27 am EDT</update_time>
+        <delay_minutes>3</delay_minutes>
         <lanes_open>4</lanes_open>
       </standard_lanes>
       <FAST_lanes>
@@ -346,16 +346,16 @@
     <passenger_vehicle_lanes>
       <maximum_lanes>17</maximum_lanes>
       <standard_lanes>
-        <operational_status>no delay</operational_status>
-        <update_time>At 5:07 am EDT</update_time>
-        <delay_minutes>3</delay_minutes>
+        <operational_status>delay</operational_status>
+        <update_time>At 5:27 am EDT</update_time>
+        <delay_minutes>12</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
-        <operational_status>Lanes Closed</operational_status>
-        <update_time />
-        <delay_minutes />
-        <lanes_open />
+        <operational_status>no delay</operational_status>
+        <update_time>At 5:27 am EDT</update_time>
+        <delay_minutes>0</delay_minutes>
+        <lanes_open>1</lanes_open>
       </NEXUS_SENTRI_lanes>
       <ready_lanes>
         <operational_status>Lanes Closed</operational_status>
@@ -411,7 +411,7 @@
       <maximum_lanes>16</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 5:07 am EDT</update_time>
+        <update_time>At 5:27 am EDT</update_time>
         <delay_minutes>1</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
@@ -726,10 +726,10 @@
     <passenger_vehicle_lanes>
       <maximum_lanes>10</maximum_lanes>
       <standard_lanes>
-        <operational_status>Lanes Closed</operational_status>
-        <update_time />
-        <delay_minutes />
-        <lanes_open />
+        <operational_status>no delay</operational_status>
+        <update_time>At 5:00 am EDT</update_time>
+        <delay_minutes>0</delay_minutes>
+        <lanes_open>1</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
         <operational_status>Lanes Closed</operational_status>
@@ -4531,7 +4531,7 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>4</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 am CDT</update_time>
+        <update_time>At 4:00 am CDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
@@ -4552,7 +4552,7 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>1</maximum_lanes>
       <standard_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 3:00 am CDT</update_time>
+        <update_time>At 4:00 am CDT</update_time>
         <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </standard_lanes>
