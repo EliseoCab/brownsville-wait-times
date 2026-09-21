@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; connect-src 'self' https://brownsville-bwt.borderwait.workers.dev https://bwt.cbp.gov https://raw.githubusercontent.com https://proxy.cors.sh https://api.allorigins.win https://www.google-analytics.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://pbs.twimg.com https://*.twimg.com; frame-src https://g3.ipcamlive.com https://*.ipcamlive.com; upgrade-insecure-requests" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; connect-src 'self' https://brownsville-bwt.borderwait.workers.dev https://bwt.cbp.gov https://raw.githubusercontent.com https://www.google-analytics.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://pbs.twimg.com https://*.twimg.com; frame-src https://g3.ipcamlive.com https://*.ipcamlive.com; upgrade-insecure-requests" />
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
   <meta name="referrer" content="no-referrer" />
   <!-- Google tag (gtag.js) -->
@@ -7181,7 +7181,6 @@
       // 1) Cloudflare Worker → live CBP XML + CORS
       // 2) Same-origin GitHub Pages mirror (fast, may lag a few minutes)
       // 3) GitHub raw mirror
-      // 4) Public CORS proxies / direct CBP (last resort only)
       const sources = [];
 
       if (FEED_PROXY_URL && String(FEED_PROXY_URL).trim()) {
@@ -7213,34 +7212,6 @@
         live: false,
         timeoutMs: 6000
       });
-
-      sources.push(
-        {
-          url: "https://proxy.cors.sh/" + FEED_URL,
-          id: "liveCbp",
-          live: true,
-          timeoutMs: 4000
-        },
-        {
-          url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(FEED_URL),
-          id: "liveCbp",
-          live: true,
-          timeoutMs: 4000
-        },
-        {
-          url: "https://api.allorigins.win/get?url=" + encodeURIComponent(FEED_URL),
-          id: "liveCbp",
-          live: true,
-          unwrap: "allorigins",
-          timeoutMs: 4000
-        },
-        {
-          url: FEED_URL,
-          id: "liveDirect",
-          live: true,
-          timeoutMs: 4000
-        }
-      );
 
       return sources;
     }

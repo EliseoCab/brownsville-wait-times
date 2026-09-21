@@ -2,9 +2,9 @@ name: Check data freshness (lag alarm)
 
 on:
   schedule:
-    # Frequent (every 5 min) checks + Worker kicks to catch 10-min pending promptly. GitHub can still delay.
+    # Frequent (every 5 min) checks. Worker provides backup kicks at :10/:25/:40.
     - cron: "*/5 * * * *"
-  # Cloudflare Worker also POSTs workflow_dispatch at :17 and :47 UTC when
+  # Cloudflare Worker also POSTs workflow_dispatch at :10/:25/:40 when
   # GITHUB_DISPATCH_TOKEN is set (backup if this Actions schedule stalls).
   workflow_dispatch:
 

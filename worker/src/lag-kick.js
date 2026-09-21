@@ -1,14 +1,13 @@
 /**
  * Backup kick for Check data freshness (lag alarm).
  *
- * GitHub Actions cron (10,25,40,55) + Worker kicks at same times provide redundancy.
- * The Worker posts workflow_dispatch at :10/:25/:40/:55 UTC (aligned with Actions) so
- * B&M / Gateway Update Pending still gets checked.
+ * GitHub Actions runs */5. Worker kicks the lag alarm at :10/:25/:40 only
+ * (three times per hour) to avoid double-triggering and race conditions.
  *
  * Secret: GITHUB_DISPATCH_TOKEN (never commit a token).
  */
 
-export const LAG_ALARM_KICK_CRONS = ["10 * * * *", "25 * * * *", "40 * * * *", "55 * * * *"];
+export const LAG_ALARM_KICK_CRONS = ["10 * * * *", "25 * * * *", "40 * * * *"];
 export const GITHUB_OWNER = "EliseoCab";
 export const GITHUB_REPO = "brownsville-wait-times";
 export const LAG_ALARM_WORKFLOW = "check-data-freshness.yml";

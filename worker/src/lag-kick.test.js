@@ -13,10 +13,11 @@ import {
 } from "./lag-kick.js";
 
 describe("isLagAlarmKickCron", () => {
-  it("matches the :17 and :47 UTC backup crons", () => {
-    assert.deepEqual(LAG_ALARM_KICK_CRONS, ["17 * * * *", "47 * * * *"]);
-    assert.equal(isLagAlarmKickCron("17 * * * *"), true);
-    assert.equal(isLagAlarmKickCron("47 * * * *"), true);
+  it("matches the 10/25/40 lag alarm kick crons", () => {
+    assert.deepEqual(LAG_ALARM_KICK_CRONS, ["10 * * * *", "25 * * * *", "40 * * * *"]);
+    assert.equal(isLagAlarmKickCron("10 * * * *"), true);
+    assert.equal(isLagAlarmKickCron("25 * * * *"), true);
+    assert.equal(isLagAlarmKickCron("40 * * * *"), true);
   });
 
   it("does not match the cache-warm cron or Actions lag minutes", () => {

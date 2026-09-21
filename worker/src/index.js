@@ -4,7 +4,7 @@
  * Deploy:  cd worker && npx wrangler deploy
  * Secret:  npx wrangler secret put X_BEARER_TOKEN
  * Secret:  npx wrangler secret put GITHUB_DISPATCH_TOKEN  (lag-alarm backup kick)
- * Cron:    every 5 minutes warms the CBP cache; :17/:47 UTC kick the lag alarm
+ * Cron:    every 5 min warms cache; lag alarm kicks at :10/:25/:40 only
  *
  * Security: CORS allowlist, security headers, per-IP rate limits (Cache API).
  */
