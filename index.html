@@ -3793,11 +3793,6 @@
         <div class="stat" id="statLong">—</div>
         <div class="hint" id="statLongHint" data-i18n="statLongHint">Plan extra time if needed</div>
       </div>
-      <div class="stat-card">
-        <div class="kicker" id="statTrustedKicker" data-i18n="statTrusted">Best SENTRI</div>
-        <div class="stat" id="statTrusted">—</div>
-        <div class="hint" id="statTrustedHint" data-i18n="statTrustedHint">SENTRI lanes only</div>
-      </div>
       <div class="stat-card leave-card" id="leaveCard">
         <div class="kicker" data-i18n="statLeave">Leave Now (Vehicles)</div>
         <div class="stat" id="statLeave">—</div>
@@ -3806,47 +3801,6 @@
     </section>
 
     <div class="alert" id="alertBox" role="status"></div>
-
-    <section class="nearby-section" aria-label="Nearby amenities by bridge" data-i18n-aria="nearbyAria">
-      <div class="nearby-head">
-        <h2 data-i18n="nearbyTitle">Near each bridge</h2>
-        <span class="nearby-sub" data-i18n="nearbySub">Gas, food, hotels &amp; Starbase</span>
-      </div>
-      <div class="nearby-bridges">
-        <a class="nearby-chip" href="bm/">
-          <span class="nearby-chip-top">
-            <span class="nearby-chip-name">B&amp;M</span>
-            <span class="nearby-chip-go" aria-hidden="true">→</span>
-          </span>
-          <span class="nearby-chip-mx" hidden>México: Puente Viejo</span>
-          <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
-        </a>
-        <a class="nearby-chip" href="gateway/">
-          <span class="nearby-chip-top">
-            <span class="nearby-chip-name">Gateway</span>
-            <span class="nearby-chip-go" aria-hidden="true">→</span>
-          </span>
-          <span class="nearby-chip-mx" hidden>México: Puente Nuevo</span>
-          <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
-        </a>
-        <a class="nearby-chip" href="los-indios/">
-          <span class="nearby-chip-top">
-            <span class="nearby-chip-name">Los Indios</span>
-            <span class="nearby-chip-go" aria-hidden="true">→</span>
-          </span>
-          <span class="nearby-chip-mx" hidden>México: Puente Los Indios</span>
-          <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
-        </a>
-        <a class="nearby-chip" href="veterans/">
-          <span class="nearby-chip-top">
-            <span class="nearby-chip-name">Veterans</span>
-            <span class="nearby-chip-go" aria-hidden="true">→</span>
-          </span>
-          <span class="nearby-chip-mx" hidden>México: Puente Los Tomates</span>
-          <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
-        </a>
-      </div>
-    </section>
 
     <section class="live-cams" id="liveCams" data-state="checking" aria-label="Live bridge cameras" data-i18n-aria="liveCamsAria">
       <div class="live-cams-head">
@@ -3973,6 +3927,47 @@
       </div>
     </section>
 
+    <section class="nearby-section" aria-label="Nearby amenities by bridge" data-i18n-aria="nearbyAria">
+      <div class="nearby-head">
+        <h2 data-i18n="nearbyTitle">Near each bridge</h2>
+        <span class="nearby-sub" data-i18n="nearbySub">Gas, food, hotels &amp; Starbase</span>
+      </div>
+      <div class="nearby-bridges">
+        <a class="nearby-chip" href="bm/">
+          <span class="nearby-chip-top">
+            <span class="nearby-chip-name">B&amp;M</span>
+            <span class="nearby-chip-go" aria-hidden="true">→</span>
+          </span>
+          <span class="nearby-chip-mx" hidden>México: Puente Viejo</span>
+          <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
+        </a>
+        <a class="nearby-chip" href="gateway/">
+          <span class="nearby-chip-top">
+            <span class="nearby-chip-name">Gateway</span>
+            <span class="nearby-chip-go" aria-hidden="true">→</span>
+          </span>
+          <span class="nearby-chip-mx" hidden>México: Puente Nuevo</span>
+          <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
+        </a>
+        <a class="nearby-chip" href="los-indios/">
+          <span class="nearby-chip-top">
+            <span class="nearby-chip-name">Los Indios</span>
+            <span class="nearby-chip-go" aria-hidden="true">→</span>
+          </span>
+          <span class="nearby-chip-mx" hidden>México: Puente Los Indios</span>
+          <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
+        </a>
+        <a class="nearby-chip" href="veterans/">
+          <span class="nearby-chip-top">
+            <span class="nearby-chip-name">Veterans</span>
+            <span class="nearby-chip-go" aria-hidden="true">→</span>
+          </span>
+          <span class="nearby-chip-mx" hidden>México: Puente Los Tomates</span>
+          <span class="nearby-chip-hint" data-i18n="nearbyChipHint">Amenities guide</span>
+        </a>
+      </div>
+    </section>
+
     <p class="disclaimer" data-i18n="disclaimer">
       Wait times are CBP estimates for primary inspection. Actual delays can change quickly. This is an independent viewer of the public CBP feed and is not affiliated with CBP or DHS.
     </p>
@@ -4032,9 +4027,6 @@
         statLongPedestrian: "Longest pedestrian wait",
         statShortCommercial: "Shortest commercial wait",
         statLongCommercial: "Longest commercial wait",
-        statTrusted: "Best SENTRI",
-        statTrustedReady: "Best Ready",
-        statTrustedFast: "Best FAST",
         statLeave: "Leave Now (Vehicles)",
         statLeaveHint: "Nearest vehicle bridge",
         statLeaveNeedLoc: "Allow location for nearest-bridge leave time",
@@ -4044,9 +4036,6 @@
         leaveDriveWait: "{bridge} · {drive} min drive + {wait} min wait + {buffer} min buffer",
         statShortHint: "Across open general lanes",
         statLongHint: "Plan extra time if needed",
-        statTrustedHint: "SENTRI lanes only",
-        statTrustedHintReady: "Pedestrian Ready lanes only",
-        statTrustedHintFast: "Commercial FAST lanes only",
         autoRefresh: "Auto-refresh · every ~5 min",
         autoRefreshTitle: "While this tab is open, re-checks live CBP about every 5 minutes (not GitHub)",
         nextCheckIn: "Next check in",
@@ -4218,9 +4207,6 @@
         statLongPedestrian: "Espera más larga (peatonal)",
         statShortCommercial: "Espera más corta (comercial)",
         statLongCommercial: "Espera más larga (comercial)",
-        statTrusted: "Mejor SENTRI",
-        statTrustedReady: "Mejor carril Ready",
-        statTrustedFast: "Mejor FAST",
         statLeave: "Salga ahora (Vehículos)",
         statLeaveHint: "Puente vehicular más cercano",
         statLeaveNeedLoc: "Permita la ubicación para la hora de salida",
@@ -4230,9 +4216,6 @@
         leaveDriveWait: "{bridge} · {drive} min de manejo + {wait} min de espera + {buffer} min de margen",
         statShortHint: "En carriles generales abiertos",
         statLongHint: "Planea tiempo extra si hace falta",
-        statTrustedHint: "Solo carriles SENTRI",
-        statTrustedHintReady: "Solo carriles Ready peatonales",
-        statTrustedHintFast: "Solo carriles FAST comerciales",
         autoRefresh: "Auto-actualización · cada ~5 min",
         autoRefreshTitle: "Con esta pestaña abierta, vuelve a consultar CBP cada 5 minutos",
         nextCheckIn: "Próxima revisión en",
@@ -4933,27 +4916,18 @@
       if (currentFilter === "pedestrian") {
         return {
           short: "statShortPedestrian",
-          long: "statLongPedestrian",
-          trusted: "statTrustedReady",
-          trustedHint: "statTrustedHintReady",
-          noTrusted: "noReady"
+          long: "statLongPedestrian"
         };
       }
       if (currentFilter === "commercial") {
         return {
           short: "statShortCommercial",
-          long: "statLongCommercial",
-          trusted: "statTrustedFast",
-          trustedHint: "statTrustedHintFast",
-          noTrusted: "noFast"
+          long: "statLongCommercial"
         };
       }
       return {
         short: "statShort",
-        long: "statLong",
-        trusted: "statTrusted",
-        trustedHint: "statTrustedHint",
-        noTrusted: "noTrusted"
+        long: "statLong"
       };
     }
 
@@ -4961,7 +4935,6 @@
       const keys = statLabelKeys();
       const shortK = document.getElementById("statShortKicker");
       const longK = document.getElementById("statLongKicker");
-      const trustedK = document.getElementById("statTrustedKicker");
       if (shortK) {
         shortK.setAttribute("data-i18n", keys.short);
         shortK.textContent = t(keys.short);
@@ -4969,10 +4942,6 @@
       if (longK) {
         longK.setAttribute("data-i18n", keys.long);
         longK.textContent = t(keys.long);
-      }
-      if (trustedK) {
-        trustedK.setAttribute("data-i18n", keys.trusted);
-        trustedK.textContent = t(keys.trusted);
       }
     }
 
@@ -5100,10 +5069,8 @@
 
     function updateSummary(data) {
       applyStatCardLabels();
-      const keys = statLabelKeys();
       const mode = filterGeneralMode();
       const generalWaits = [];
-      const trustedWaits = [];
 
       const items = data && data.items ? data.items : [];
       for (const port of items) {
@@ -5113,27 +5080,14 @@
             if (sec.key === mode && /general/i.test(lane.name) && !/sentri|ready|fast/i.test(lane.name)) {
               generalWaits.push({ mins: lane.wait.minutes, port: port.meta.short });
             }
-            if (currentFilter === "pedestrian") {
-              if (sec.key === "pedestrian" && /ready/i.test(lane.name)) {
-                trustedWaits.push({ mins: lane.wait.minutes, port: port.meta.short, name: lane.name });
-              }
-            } else if (currentFilter === "commercial") {
-              if (/fast/i.test(lane.name) && !/ready/i.test(lane.name)) {
-                trustedWaits.push({ mins: lane.wait.minutes, port: port.meta.short, name: lane.name });
-              }
-            } else if (/sentri/i.test(lane.name) && !/ready/i.test(lane.name)) {
-              trustedWaits.push({ mins: lane.wait.minutes, port: port.meta.short, name: lane.name });
-            }
           }
         }
       }
 
       const shortEl = document.getElementById("statShort");
       const longEl = document.getElementById("statLong");
-      const trustedEl = document.getElementById("statTrusted");
       const shortHint = document.getElementById("statShortHint");
       const longHint = document.getElementById("statLongHint");
-      const trustedHint = document.getElementById("statTrustedHint");
 
       if (generalWaits.length) {
         generalWaits.sort((a, b) => a.mins - b.mins);
@@ -5152,18 +5106,6 @@
         longEl.textContent = "—";
         longEl.className = "stat";
         longHint.textContent = t("statLongHint");
-      }
-
-      if (trustedWaits.length) {
-        trustedWaits.sort((a, b) => a.mins - b.mins);
-        const bestTrustedWait = trustedWaits[0];
-        trustedEl.textContent = bestTrustedWait.mins + " min";
-        trustedEl.className = "stat " + waitToneClass(bestTrustedWait.mins);
-        trustedHint.textContent = bestTrustedWait.port + " · " + laneTypeLabel(bestTrustedWait.name);
-      } else {
-        trustedEl.textContent = t("na");
-        trustedEl.className = "stat";
-        trustedHint.textContent = t(keys.noTrusted);
       }
 
       updateLeaveCard(data);
