@@ -1842,7 +1842,7 @@
       }
 
       .main {
-        padding: 0 0.9rem calc(5.5rem + env(safe-area-inset-bottom, 0px));
+        padding: 0 0.9rem calc(2.75rem + env(safe-area-inset-bottom, 0px));
       }
       .summary {
         margin-top: -1.25rem;
@@ -1931,6 +1931,34 @@
       }
       .table-wrap.table-cards .mobile-cards {
         display: none !important;
+      }
+
+      /* Ensure consistent 1.5rem gap after table cards to Laredo updates in mobile */
+      .table-wrap.table-cards,
+      #portGrid {
+        margin-bottom: 1.5rem;
+      }
+
+      /* Tighter padding for Laredo updates and below on phone */
+      .x-updates {
+        padding: 0.85rem 0.95rem 1rem;
+      }
+      .nearby-section {
+        padding: 0.65rem 0.75rem 0.7rem;
+      }
+      .disclaimer {
+        padding: 0.85rem 0.95rem;
+      }
+
+      /* Reduce large gaps in mobile for Laredo Updates and below (iPhone 16 Pro Max etc.) */
+      .nearby-section {
+        margin-bottom: 1rem;
+      }
+      .disclaimer {
+        margin-bottom: 0.75rem;
+      }
+      footer {
+        margin-top: 0.5rem;
       }
     }
 
