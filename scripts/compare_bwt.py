@@ -34,6 +34,7 @@ from bwt_rss import (
     channel_pubdate,
     empty_item,
     hours_status,
+    is_fully_lanes_closed,
     minutes_open_so_far,
     parse_bridge_items,
     parse_clock_to_minutes,
@@ -60,6 +61,7 @@ __all__ = [
     "parse_hours",
     "pending_only",
     "summarize",
+    "is_fully_lanes_closed",
 ]
 
 # Minutes to wait before Update Pending / first-post checks are stale:
@@ -136,6 +138,8 @@ class BridgeCheck:
     worker_pending: bool
     lag_minutes: float | None
     cbp_age_minutes: float | None
+    cbp_closed: bool = False
+    site_closed: bool = False
     problems: list[str] = field(default_factory=list)
     skipped: bool = False
     skip_reason: str = ""
@@ -209,6 +213,8 @@ def evaluate_bridges(
                 if cbp.newest
                 else None
             ),
+            cbp_closed=is_fully_lanes_closed(cbp.plain),
+            site_closed=is_fully_lanes_closed(site.plain),
         )
 
         if status in ("closed", "grace"):
@@ -235,7 +241,11 @@ def evaluate_bridges(
             if not cbp.present:
                 check.problems.append("cbp_missing")
             elif cbp.newest is None:
-                check.problems.append("cbp_missing_stamp")
+                # Do not treat as missing stamp if the feed shows Lanes Closed
+                # (common for limited-hours bridges like Los Indios near/after close,
+                # even if the nominal Hours window is still "open").
+                if not is_fully_lanes_closed(cbp.plain):
+                    check.problems.append("cbp_missing_stamp")
             elif hourly_post_overdue(now, cbp.newest):
                 check.problems.append("cbp_stuck")
             elif check.cbp_age_minutes is not None and check.cbp_age_minutes > max_lag:
@@ -250,7 +260,8 @@ def evaluate_bridges(
             check.problems.append("site_missing")
         elif site.newest is None:
             if cbp.newest is not None or cbp_self_ready:
-                check.problems.append("site_missing_stamp")
+                if not is_fully_lanes_closed(site.plain):
+                    check.problems.append("site_missing_stamp")
         elif (
             cbp.newest is not None
             and site.newest is not None
@@ -334,6 +345,10 @@ def print_report(
             cbp_s = "Pending"
         if r.site_pending and r.site_stamp is not None:
             site_s = "Pending"
+        if (not r.cbp_stamp and not r.cbp_pending) and r.cbp_closed:
+            cbp_s = "Lanes Closed"
+        if (not r.site_stamp and not r.site_pending) and r.site_closed:
+            site_s = "Lanes Closed"
         lag_s = "—" if r.lag_minutes is None else f"{r.lag_minutes:.0f}m"
         if r.skipped:
             result = f"SKIP ({r.skip_reason})"

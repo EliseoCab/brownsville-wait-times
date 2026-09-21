@@ -393,3 +393,23 @@ def passenger_sentri(description: str) -> LaneReading | None:
         if re.search(r"sentri", lane.name, re.I):
             return lane
     return None
+
+
+def is_fully_lanes_closed(plain: str) -> bool:
+    """True if the feed shows Lanes Closed (no active wait times or timestamps).
+
+    Used to avoid false 'missing stamp' alerts for limited-hours bridges
+    (e.g. Los Indios) when the schedule or data indicates closed lanes
+    even if the nominal Hours: window is still 'open'.
+    """
+    if not plain:
+        return False
+    p = plain_text(plain).lower()
+    # If there's any delay time or explicit stamp, it's not fully closed
+    if DELAY_RE.search(p) or STAMP_RE.search(p):
+        return False
+    if PENDING_RE.search(p):
+        return False
+    # Multiple "Lanes Closed" mentions indicate no active service
+    closed = LANES_CLOSED_RE.findall(p)
+    return len(closed) >= 2
