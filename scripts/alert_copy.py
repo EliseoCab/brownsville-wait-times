@@ -5,10 +5,11 @@ Messages are designed to be clear, actionable, and clearly marked as automated."
 
 from __future__ import annotations
 
-import html
 import re
 from datetime import datetime
 from zoneinfo import ZoneInfo
+
+from bwt_rss import lanes_in_section, parse_bridge_items, section_body
 
 CHICAGO = ZoneInfo("America/Chicago")
 AT_CLOCK_RE = re.compile(
@@ -157,49 +158,130 @@ def _is_pending(check) -> bool:
     return "cbp_pending" in (getattr(check, "problems", None) or [])
 
 
-def _extract_lagging_rss(raw_feed: str, bad: list) -> str:
-    """Return only the <item>...</item> blocks for the lagging bridges.
-    This trims the RSS to just the bridge(s) that are lagging so the email
-    log is short and easy to read. Preserves the original raw XML structure
-    for those items only.
-    """
-    if not raw_feed or not bad:
-        return (raw_feed or "").strip()
-    bad_names = [getattr(r, "name", "") for r in bad if getattr(r, "name", "")]
-    if not bad_names:
-        raw = raw_feed.strip()
-        if len(raw) > 8000:
-            raw = raw[:4000] + "\n... [trimmed] ...\n" + raw[-2000:]
-        return raw
+_LANE_ORDER = (
+    ("general lanes", "Gen"),
+    ("sentri lanes", "SENTRI"),
+    ("ready lanes", "Ready"),
+)
+_VERIFY_SECTIONS = (
+    ("Passenger", r"Passenger\s+Vehicles"),
+    ("Pedestrian", r"Pedestrian"),
+)
 
-    items: list[str] = []
-    for m in re.finditer(r"<item>(.*?)</item>", raw_feed, flags=re.I | re.S):
-        block = "<item>" + m.group(1) + "</item>"
-        title_m = re.search(r"<title>\s*([^<]+)", block, flags=re.I)
-        if not title_m:
+
+def lagging_text_source(check) -> str:
+    """Which feed's text matches the stamp the verify log calls last posted.
+
+    Site text when the mirror is behind CBP (that stamp is last posted).
+    Otherwise the CBP item, including Update Pending with no stamp.
+    """
+    ps = set(getattr(check, "problems", None) or [])
+    if "site_behind" in ps and getattr(check, "site_stamp", None):
+        return "site"
+    if getattr(check, "cbp_stamp", None) or any(p.startswith("cbp_") for p in ps):
+        return "cbp"
+    if any(p.startswith("site_") for p in ps):
+        return "site"
+    return "cbp"
+
+
+def _lagging_stamp(check) -> datetime | None:
+    ps = set(getattr(check, "problems", None) or [])
+    if "site_behind" in ps and getattr(check, "site_stamp", None):
+        return check.site_stamp
+    if getattr(check, "cbp_stamp", None):
+        return check.cbp_stamp
+    if getattr(check, "site_stamp", None):
+        return check.site_stamp
+    return None
+
+
+def _minutes_behind(stamp: datetime | None, now: datetime | None) -> int | None:
+    if stamp is None:
+        return None
+    now_c = _chicago(now).replace(second=0, microsecond=0)
+    local = stamp.replace(tzinfo=CHICAGO) if stamp.tzinfo is None else stamp.astimezone(CHICAGO)
+    local = local.replace(second=0, microsecond=0)
+    return int((now_c - local).total_seconds() // 60)
+
+
+def _lane_bit(lane) -> str | None:
+    label = dict(_LANE_ORDER).get((lane.name or "").lower())
+    if not label or lane.na:
+        return None
+    if lane.delay_minutes is None:
+        if lane.pending and not lane.closed:
+            return f"{label} Update Pending"
+        return None
+    if lane.lanes_open is None:
+        return f"{label} {lane.delay_minutes} min"
+    word = "lane" if lane.lanes_open == 1 else "lanes"
+    return f"{label} {lane.delay_minutes} min / {lane.lanes_open} {word}"
+
+
+def _section_excerpt(description: str, title: str, pattern: str) -> str | None:
+    body = section_body(description, pattern)
+    if not body:
+        return None
+    by_name: dict[str, object] = {}
+    for lane in lanes_in_section(body):
+        by_name.setdefault(lane.name.lower(), lane)
+    bits = []
+    for key, _short in _LANE_ORDER:
+        lane = by_name.get(key)
+        if lane is None:
             continue
-        title = html.unescape(title_m.group(1)).lower()
-        for name in bad_names:
-            n = name.lower()
-            # tolerant match for "B&M", "Gateway", "Veterans", "Los Indios"
-            if (
-                n in title
-                or n.replace("&", "and") in title
-                or n.replace(" ", "") in title.replace(" ", "").replace("-", "")
-            ):
-                items.append(block)
-                break
-    if items:
-        return "\n".join(items)
-    # fallback to trimmed full
-    raw = raw_feed.strip()
-    if len(raw) > 8000:
-        raw = raw[:4000] + "\n... [trimmed] ...\n" + raw[-2000:]
-    return raw
+        bit = _lane_bit(lane)
+        if bit:
+            bits.append(bit)
+    if not bits:
+        return None
+    return f"  {title}: " + " · ".join(bits)
+
+
+def _description_for(check, raw_feed: str, now: datetime | None) -> str:
+    stored = getattr(check, "lane_description", "") or ""
+    if stored:
+        return stored
+    # Raw CBP XML is only a fallback for the CBP stamp. Never pair a site
+    # stamp with the CBP item, and never paste the XML itself.
+    if lagging_text_source(check) != "cbp" or not raw_feed:
+        return ""
+    items = parse_bridge_items(raw_feed, _chicago(now))
+    item = items.get(getattr(check, "bridge_id", ""))
+    if item is None:
+        return ""
+    return item.description or ""
+
+
+def _bridge_verify_block(check, description: str, now: datetime | None) -> tuple[str, int | None]:
+    name = getattr(check, "name", "") or "Bridge"
+    stamp = _lagging_stamp(check)
+    behind = _minutes_behind(stamp, now)
+    ps = set(getattr(check, "problems", None) or [])
+    if stamp is None and ({"cbp_pending", "site_pending"} & ps):
+        lines = [f"{name} — Update Pending"]
+    elif stamp is None:
+        lines = [f"{name} — last posted unavailable"]
+    elif behind is None:
+        lines = [f"{name} — last posted {stamp_label(stamp)}"]
+    else:
+        lines = [f"{name} — last posted {stamp_label(stamp)} ({behind} min behind)"]
+    if description:
+        for title, pattern in _VERIFY_SECTIONS:
+            excerpt = _section_excerpt(description, title, pattern)
+            if excerpt:
+                lines.append(excerpt)
+    return "\n".join(lines), behind
 
 
 def format_lag_alert(results, now: datetime | None = None, cbp_http: str = "", site_http: str = "", cbp_pubdate: str = "", raw_feed: str = "", lag_minutes: str = "") -> tuple[str, str]:
-    """Subject + body for wait-times alerts. Empty if nothing is failing."""
+    """Subject + body for wait-times alerts. Empty if nothing is failing.
+
+    cbp_http and site_http stay in the signature for callers. They are not
+    written into the mail; the verify log has no HTTP lines and no links.
+    """
+    del cbp_http, site_http
     bad = [r for r in results if getattr(r, "problems", None)]
     if not bad:
         return "", ""
@@ -250,21 +332,24 @@ def format_lag_alert(results, now: datetime | None = None, cbp_http: str = "", s
             "This report is based on public information from the Border Wait Times official CBP website."
         )
 
-    # Append diagnostic log (no source URLs in mail)
-    # RSS is now trimmed to *only* the lagging bridge(s) for easy reading.
-    ts = checked_at_label(now)
-    lag = lag_minutes or "?"
-    http = f"CBP={cbp_http or '—'} Site={site_http or '—'}"
-    pub = cbp_pubdate or "—"
-    raw = _extract_lagging_rss(raw_feed, bad)
+    # Verify log under --- only. No raw RSS, no <link>, no HTTP status.
+    pub = (cbp_pubdate or "").strip() or "—"
+    blocks: list[str] = []
+    behinds: list[int] = []
+    for r in bad:
+        block, behind = _bridge_verify_block(r, _description_for(r, raw_feed, now), now)
+        blocks.append(block)
+        if behind is not None:
+            behinds.append(behind)
+    lag = (lag_minutes or "").strip() or (str(max(behinds)) if behinds else "?")
     log = (
         "\n\n---\n"
-        f"Timestamp: {ts}\n"
-        f"Lag: {lag} min\n"
-        f"HTTP: {http}\n"
+        f"Checked: {checked_at}\n"
+        f"Overall lag: {lag} min\n"
         f"CBP pubDate: {pub}\n"
-        "Raw RSS (lagging bridge only):\n"
-        f"{raw}\n"
+        "\n"
+        + "\n\n".join(blocks)
+        + "\n"
     )
     body = body + log
     return subject, body

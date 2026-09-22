@@ -488,25 +488,280 @@ class PerBridgeEvaluateTests(unittest.TestCase):
         self.assertIsNotNone(self.by_id(ordered)["veterans"].worker_stamp)
 
 
+def _assert_verify_log_has_no_rss(test, body: str):
+    lowered = body.lower()
+    test.assertNotIn("<item", lowered)
+    test.assertNotIn("<link", lowered)
+    test.assertNotIn("</item>", lowered)
+    test.assertNotIn("http", lowered)
+    test.assertNotIn("raw rss", lowered)
+    test.assertNotIn("http:", body.lower())
+    head, sep, log = body.partition("\n\n---\n")
+    test.assertTrue(sep)
+    test.assertNotIn("---", head)
+    test.assertIn("Automated Alert:", head)
+    test.assertNotIn("Checked:", head)
+    test.assertTrue(log.startswith("Checked:"))
+    test.assertIn("CBP pubDate:", log)
+    test.assertNotIn("HTTP:", log)
+
+
+def _rss_item(title: str, hours: str, inner: str, date: str = "9/22/2026") -> str:
+    return (
+        f"<item><title>{title}</title>"
+        "<link>https://bwt.cbp.gov/detail</link>"
+        f"<description>Hours: {hours} <br/> Date: {date} <br/> {inner}</description>"
+        "</item>"
+    )
+
+
+def _linked_feed(*items: str, pub: str = "Tue, 22 Sep 2026 17:00:53 EST") -> str:
+    return (
+        "<?xml version='1.0' encoding='UTF-8'?>"
+        "<rss version='2.0'><channel>"
+        "<title>CBP Border Wait Times</title>"
+        "<link>https://bwt.cbp.gov</link>"
+        f"<pubDate>{pub}</pubDate>"
+        + "".join(items)
+        + "</channel></rss>"
+    )
+
+
 class AlertCopyTests(unittest.TestCase):
     def test_pending_groups_24h_bridges(self):
         xml = four_bridges(bm=PENDING, gw=PENDING, date="9/11/2026")
         results = c.evaluate_bridges(xml, xml, "", 75, 45, now=chicago(2026, 9, 11, 2, 20))
         from alert_copy import format_lag_alert
-        subject, body = format_lag_alert(results, now=chicago(2026, 9, 11, 2, 20))
-        self.assertEqual(subject, "2:00 am CDT — update wait times (B&M, Gateway)")
-        self.assertIn("2:00 am CDT — B&M, Gateway wait times not posted (Update Pending).", body)
-        self.assertIn("If already updated, disregard.", body)
+        subject, body = format_lag_alert(
+            results,
+            now=chicago(2026, 9, 11, 2, 20),
+            cbp_http="200",
+            site_http="200",
+            raw_feed=xml,
+        )
+        self.assertEqual(
+            subject,
+            "Brownsville Wait Times Alert — Update Pending (B&M, Gateway) as of 2:00 am CDT",
+        )
+        self.assertIn("As of 2:20 am CDT, CBP is still showing 'Update Pending'", body)
+        self.assertIn("B&M, Gateway", body)
+        self.assertIn("If the data has already been updated, you may disregard this notification.", body)
+        _assert_verify_log_has_no_rss(self, body)
+        self.assertIn("Checked: 2:20 am CDT", body)
+        self.assertIn("Overall lag: ? min", body)
+        self.assertIn("CBP pubDate: —", body)
+        self.assertIn("B&M — Update Pending", body)
+        self.assertIn("Gateway — Update Pending", body)
 
     def test_stale_uses_update_template(self):
         from alert_copy import format_lag_alert
         cbp = four_bridges()
         site = four_bridges(gw=OLD)
         results = c.evaluate_bridges(cbp, site, "", 75, 45, now=AFTERNOON)
-        subject, body = format_lag_alert(results, now=AFTERNOON)
-        self.assertEqual(subject, "2:00 pm CDT — update wait times (Gateway)")
-        self.assertIn("2:00 pm CDT — Gateway wait times are old or missing (last posted 11:00 am CDT).", body)
-        self.assertIn("If already updated, disregard.", body)
+        subject, body = format_lag_alert(
+            results,
+            now=AFTERNOON,
+            cbp_http="200",
+            site_http="304",
+            cbp_pubdate="Thu, 10 Sep 2026 16:00:00 EST",
+            raw_feed=cbp,
+            lag_minutes="180",
+        )
+        self.assertEqual(
+            subject,
+            "Brownsville Wait Times Alert — No New Data Since 11:00 am CDT (Gateway)",
+        )
+        self.assertIn("the latest published data is still from 11:00 am CDT", body)
+        self.assertIn("If the data has already been updated, you may disregard this notification.", body)
+        _assert_verify_log_has_no_rss(self, body)
+        self.assertIn("Checked: 2:30 pm CDT", body)
+        self.assertIn("Overall lag: 180 min", body)
+        self.assertIn("CBP pubDate: Thu, 10 Sep 2026 16:00:00 EST", body)
+        self.assertIn("Gateway — last posted 11:00 am CDT (210 min behind)", body)
+        self.assertNotIn("B&M —", body)
+        self.assertNotIn("Veterans —", body)
+
+    def test_verify_log_lists_only_lagging_bridges_without_links(self):
+        from alert_copy import format_lag_alert
+        bm = (
+            "<h4><b> Passenger Vehicles </b></h4> Maximum Lanes: 4 <br/>"
+            "General Lanes: At 3:00 pm CDT 60 min delay 1 lane(s) open <br/>"
+            "Sentri Lanes: N/A <br/>"
+            "Ready Lanes: At 3:00 pm CDT 60 min delay 3 lane(s) open <br/>"
+            "<h4><b> Pedestrian </b></h4> Maximum Lanes: 2 <br/>"
+            "General Lanes: At 3:00 pm CDT 0 min delay 1 lane(s) open <br/>"
+            "Ready Lanes: N/A <br/>"
+        )
+        gw = (
+            "<h4><b> Passenger Vehicles </b></h4> Maximum Lanes: 5 <br/>"
+            "General Lanes: At 3:00 pm CDT 75 min delay 1 lane(s) open <br/>"
+            "Sentri Lanes: N/A <br/>"
+            "Ready Lanes: At 3:00 pm CDT 75 min delay 3 lane(s) open <br/>"
+            "<h4><b> Pedestrian </b></h4> Maximum Lanes: 4 <br/>"
+            "General Lanes: At 3:00 pm CDT 15 min delay 3 lane(s) open <br/>"
+            "Ready Lanes: At 3:00 pm CDT 5 min delay 1 lane(s) open <br/>"
+        )
+        fresh = "General Lanes: At 4:00 pm CDT 10 min delay 1 lane(s) open"
+        xml = _linked_feed(
+            _rss_item(BM, "24 hrs/day", bm),
+            _rss_item(GW, "24 hrs/day", gw),
+            _rss_item(VA, "6 am-Midnight", fresh),
+            _rss_item(LI, "6 am-10 pm", fresh),
+        )
+        now = chicago(2026, 9, 22, 16, 11)
+        results = c.evaluate_bridges(xml, xml, "", 75, 45, now=now)
+        subject, body = format_lag_alert(
+            results,
+            now=now,
+            cbp_http="200",
+            site_http="200",
+            cbp_pubdate="Tue, 22 Sep 2026 17:00:53 EST",
+            raw_feed=xml,
+            lag_minutes="71",
+        )
+        self.assertIn("Brownsville Wait Times Alert", subject)
+        self.assertIn("B&M", subject)
+        self.assertIn("Gateway", subject)
+        self.assertNotIn("Veterans", subject)
+        _assert_verify_log_has_no_rss(self, body)
+        log = body.split("\n\n---\n", 1)[1]
+        self.assertEqual(
+            log,
+            "\n".join(
+                [
+                    "Checked: 4:11 pm CDT",
+                    "Overall lag: 71 min",
+                    "CBP pubDate: Tue, 22 Sep 2026 17:00:53 EST",
+                    "",
+                    "B&M — last posted 3:00 pm CDT (71 min behind)",
+                    "  Passenger: Gen 60 min / 1 lane · Ready 60 min / 3 lanes",
+                    "  Pedestrian: Gen 0 min / 1 lane",
+                    "",
+                    "Gateway — last posted 3:00 pm CDT (71 min behind)",
+                    "  Passenger: Gen 75 min / 1 lane · Ready 75 min / 3 lanes",
+                    "  Pedestrian: Gen 15 min / 3 lanes · Ready 5 min / 1 lane",
+                    "",
+                ]
+            ),
+        )
+        self.assertNotIn("Veterans", log)
+        self.assertNotIn("Los Indios", log)
+        self.assertNotIn("bwt.cbp.gov", body)
+        for r in results:
+            r.lane_description = ""
+        _subject, fallback = format_lag_alert(
+            results,
+            now=now,
+            cbp_http="200",
+            site_http="200",
+            cbp_pubdate="Tue, 22 Sep 2026 17:00:53 EST",
+            raw_feed=xml,
+            lag_minutes="71",
+        )
+        self.assertEqual(fallback.split("\n\n---\n", 1)[1], log)
+        _assert_verify_log_has_no_rss(self, fallback)
+
+    def test_sentri_excerpt_skips_closed_ready_and_commercial(self):
+        from alert_copy import format_lag_alert
+        veterans = (
+            "<h4><b> Commercial Vehicles </b></h4> "
+            "Fast Lanes: At 3:00 pm CDT 90 min delay 1 lane(s) open <br/>"
+            "<h4><b> Passenger Vehicles </b></h4> "
+            "General Lanes: At 3:00 pm CDT 120 min delay 1 lane(s) open <br/>"
+            "Sentri Lanes: At 3:00 pm CDT 15 min delay 2 lane(s) open <br/>"
+            "Ready Lanes: Lanes Closed <br/>"
+            "<h4><b> Pedestrian </b></h4> "
+            "General Lanes: At 3:00 pm CDT 0 min delay 1 lane(s) open <br/>"
+            "Ready Lanes: N/A <br/>"
+        )
+        fresh = "General Lanes: At 4:00 pm CDT 10 min delay 1 lane(s) open"
+        xml = _linked_feed(
+            _rss_item(BM, "24 hrs/day", fresh),
+            _rss_item(GW, "24 hrs/day", fresh),
+            _rss_item(VA, "6 am-Midnight", veterans),
+            _rss_item(LI, "6 am-10 pm", fresh),
+        )
+        now = chicago(2026, 9, 22, 16, 11)
+        results = c.evaluate_bridges(xml, xml, "", 75, 45, now=now)
+        _subject, body = format_lag_alert(
+            results,
+            now=now,
+            cbp_http="200",
+            site_http="200",
+            cbp_pubdate="Tue, 22 Sep 2026 17:00:53 EST",
+            raw_feed=xml,
+            lag_minutes="71",
+        )
+        _assert_verify_log_has_no_rss(self, body)
+        log = body.split("\n\n---\n", 1)[1]
+        self.assertIn("Veterans — last posted 3:00 pm CDT (71 min behind)", log)
+        self.assertIn("  Passenger: Gen 120 min / 1 lane · SENTRI 15 min / 2 lanes", log)
+        self.assertIn("  Pedestrian: Gen 0 min / 1 lane", log)
+        self.assertNotIn("Ready", log)
+        self.assertNotIn("90 min", log)
+        self.assertNotIn("Fast", log)
+        self.assertNotIn("B&M —", log)
+
+    def test_site_behind_uses_mirror_lanes_not_cbp_item(self):
+        from alert_copy import format_lag_alert
+        cbp_gw = (
+            "<h4><b> Passenger Vehicles </b></h4> "
+            "General Lanes: At 2:00 pm CDT 5 min delay 1 lane(s) open <br/>"
+            "Ready Lanes: At 2:00 pm CDT 5 min delay 2 lane(s) open <br/>"
+        )
+        site_gw = (
+            "<h4><b> Passenger Vehicles </b></h4> "
+            "General Lanes: At 11:00 am CDT 99 min delay 2 lane(s) open <br/>"
+            "Ready Lanes: At 11:00 am CDT 40 min delay 1 lane(s) open <br/>"
+            "<link>https://bwt.cbp.gov/should-not-appear</link>"
+        )
+        fresh = FRESH
+        day = "9/10/2026"
+        cbp = _linked_feed(
+            _rss_item(BM, "24 hrs/day", fresh, day),
+            _rss_item(GW, "24 hrs/day", cbp_gw, day),
+            _rss_item(VA, "6 am-Midnight", fresh, day),
+            _rss_item(LI, "6 am-10 pm", fresh, day),
+            pub="Thu, 10 Sep 2026 16:00:00 EST",
+        )
+        site = _linked_feed(
+            _rss_item(BM, "24 hrs/day", fresh, day),
+            _rss_item(GW, "24 hrs/day", site_gw, day),
+            _rss_item(VA, "6 am-Midnight", fresh, day),
+            _rss_item(LI, "6 am-10 pm", fresh, day),
+        )
+        results = c.evaluate_bridges(cbp, site, "", 75, 45, now=AFTERNOON)
+        _subject, body = format_lag_alert(
+            results,
+            now=AFTERNOON,
+            cbp_http="200",
+            site_http="200",
+            cbp_pubdate="Thu, 10 Sep 2026 16:00:00 EST",
+            raw_feed=cbp,
+            lag_minutes="180",
+        )
+        _assert_verify_log_has_no_rss(self, body)
+        log = body.split("\n\n---\n", 1)[1]
+        self.assertIn("Gateway — last posted 11:00 am CDT (210 min behind)", log)
+        self.assertIn("  Passenger: Gen 99 min / 2 lanes · Ready 40 min / 1 lane", log)
+        self.assertNotIn("5 min", log)
+        self.assertNotIn("B&M —", log)
+        for r in results:
+            r.lane_description = ""
+        _subject, stripped = format_lag_alert(
+            results,
+            now=AFTERNOON,
+            cbp_http="200",
+            site_http="200",
+            cbp_pubdate="Thu, 10 Sep 2026 16:00:00 EST",
+            raw_feed=cbp,
+            lag_minutes="180",
+        )
+        stripped_log = stripped.split("\n\n---\n", 1)[1]
+        self.assertIn("Gateway — last posted 11:00 am CDT (210 min behind)", stripped_log)
+        self.assertNotIn("99 min", stripped_log)
+        self.assertNotIn("5 min", stripped_log)
+        _assert_verify_log_has_no_rss(self, stripped)
 
     def test_sentri_copy(self):
         from alert_copy import format_sentri_alert
