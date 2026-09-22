@@ -1,8 +1,8 @@
 /**
  * Backup kick for Check data freshness (lag alarm).
  *
- * GitHub Actions cron is 10,25,40. Worker kicks the same minutes if that
- * schedule stalls. */5 only warms the CBP cache and does not dispatch.
+ * GitHub Actions cron is 10, 25, 40. Worker kicks the same minutes if that
+ * schedule stalls. The every-5-minute cron only warms the CBP cache.
  *
  * Secret: GITHUB_DISPATCH_TOKEN (never commit a token).
  */
