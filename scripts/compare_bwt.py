@@ -27,7 +27,7 @@ import sys
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 
-from alert_copy import format_lag_alert
+from alert_copy import format_lag_alert, lagging_text_source
 from bwt_rss import (
     BRIDGES,
     CHICAGO,
@@ -144,6 +144,9 @@ class BridgeCheck:
     problems: list[str] = field(default_factory=list)
     skipped: bool = False
     skip_reason: str = ""
+    # Description of the feed whose stamp the lag email calls "last posted".
+    # Used only to build the no-XML verify log (lane excerpts, no links).
+    lane_description: str = ""
 
     @property
     def ok(self) -> bool:
@@ -271,6 +274,8 @@ def evaluate_bridges(
         ):
             check.problems.append("site_behind")
 
+        source = site if lagging_text_source(check) == "site" else cbp
+        check.lane_description = getattr(source, "description", "") or ""
         results.append(check)
     return results
 
