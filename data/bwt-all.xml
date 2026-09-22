@@ -1,6 +1,6 @@
 <border_wait_time>
   <last_updated_date>2026-9-22</last_updated_date>
-  <last_updated_time>08:19:47</last_updated_time>
+  <last_updated_time>08:29:35</last_updated_time>
   <number_of_ports>85</number_of_ports>
   <port>
     <port_number>070801</port_number>
@@ -5038,35 +5038,35 @@ Go to www.GetYouHome.gov for more information.]]&gt;</construction_notice>
       <maximum_lanes>34</maximum_lanes>
       <standard_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 5:00 am PDT</update_time>
-        <delay_minutes>90</delay_minutes>
-        <lanes_open>4</lanes_open>
+        <update_time>At 6:00 am PDT</update_time>
+        <delay_minutes>105</delay_minutes>
+        <lanes_open>5</lanes_open>
       </standard_lanes>
       <NEXUS_SENTRI_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 5:00 am PDT</update_time>
+        <update_time>At 6:00 am PDT</update_time>
         <delay_minutes>30</delay_minutes>
-        <lanes_open>9</lanes_open>
+        <lanes_open>11</lanes_open>
       </NEXUS_SENTRI_lanes>
       <ready_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 5:00 am PDT</update_time>
-        <delay_minutes>75</delay_minutes>
-        <lanes_open>9</lanes_open>
+        <update_time>At 6:00 am PDT</update_time>
+        <delay_minutes>90</delay_minutes>
+        <lanes_open>12</lanes_open>
       </ready_lanes>
     </passenger_vehicle_lanes>
     <pedestrian_lanes>
       <maximum_lanes>22</maximum_lanes>
       <standard_lanes>
         <operational_status>delay</operational_status>
-        <update_time>At 5:00 am PDT</update_time>
+        <update_time>At 6:00 am PDT</update_time>
         <delay_minutes>15</delay_minutes>
-        <lanes_open>15</lanes_open>
+        <lanes_open>20</lanes_open>
       </standard_lanes>
       <ready_lanes>
         <operational_status>no delay</operational_status>
-        <update_time>At 5:00 am PDT</update_time>
-        <delay_minutes>5</delay_minutes>
+        <update_time>At 6:00 am PDT</update_time>
+        <delay_minutes>0</delay_minutes>
         <lanes_open>1</lanes_open>
       </ready_lanes>
     </pedestrian_lanes>
