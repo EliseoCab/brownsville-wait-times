@@ -45,6 +45,24 @@ self.addEventListener("fetch", (event) => {
         }
         return res;
       })
-      .catch(() => caches.match(event.request).then((hit) => hit || caches.match("./index.html")))
+      .catch(() => {
+        const p = url.pathname;
+        const scopePath = new URL(self.registration.scope).pathname.replace(/\/$/, "");
+        const isShell =
+          p === "/" ||
+          p === "/index.html" ||
+          p === scopePath ||
+          p === scopePath + "/" ||
+          p === scopePath + "/index.html";
+        return caches.match(event.request).then((hit) => {
+          if (hit) return hit;
+          if (isShell) return caches.match("./index.html");
+          // Do not serve homepage HTML for other assets (CSS, JS, sub-pages, etc.)
+          return new Response("Not available offline", {
+            status: 503,
+            headers: { "Content-Type": "text/plain" }
+          });
+        });
+      })
   );
 });

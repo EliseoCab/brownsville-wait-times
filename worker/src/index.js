@@ -130,6 +130,7 @@ async function enforceRateLimit(request, bucket) {
 
   count += 1;
 
+  let writeFailed = false;
   try {
     await cache.put(
       cacheReq,
@@ -141,7 +142,8 @@ async function enforceRateLimit(request, bucket) {
       })
     );
   } catch (_) {
-    /* ignore cache write errors — fail open */
+    writeFailed = true;
+    /* cache write failed — fail closed for non-feed buckets below */
   }
 
   const remaining = Math.max(0, cfg.limit - count);
@@ -151,11 +153,14 @@ async function enforceRateLimit(request, bucket) {
     "X-RateLimit-Window": String(cfg.windowSeconds),
   };
 
-  if (count > cfg.limit) {
+  const isFeed = bucket === "feed" || bucket === "all" || bucket === "health";
+  if (count > cfg.limit || (writeFailed && !isFeed)) {
     return new Response(
       JSON.stringify({
         ok: false,
-        error: "Rate limit exceeded. Try again shortly.",
+        error: writeFailed 
+          ? "Rate limit enforcement unavailable. Try again shortly."
+          : "Rate limit exceeded. Try again shortly.",
         bucket: bucket,
         retryAfterSeconds: cfg.windowSeconds,
       }),
