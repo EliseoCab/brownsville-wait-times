@@ -22,6 +22,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
@@ -398,7 +399,10 @@ def compare(
         feed_pubdate=channel_pubdate(cbp),
     )
     lagging, reason, lag_s, names = summarize(results)
-    subject, body = format_lag_alert(results, now=now)
+    cbp_http = os.environ.get("CBP_HTTP", "")
+    site_http = os.environ.get("SITE_HTTP", "")
+    cbp_pub = os.environ.get("CBP_PUBDATE", "")
+    subject, body = format_lag_alert(results, now=now, cbp_http=cbp_http, site_http=site_http, cbp_pubdate=cbp_pub, raw_feed=cbp, lag_minutes=lag_s)
     print()
     if not lagging:
         print("OK: every in-hours Brownsville bridge is fresh enough.")
@@ -444,7 +448,10 @@ def recheck(
         feed_pubdate=channel_pubdate(cbp),
     )
     lagging, reason, lag_s, names = summarize(results)
-    subject, body = format_lag_alert(results, now=now)
+    cbp_http = os.environ.get("CBP_HTTP", "")
+    site_http = os.environ.get("SITE_HTTP", "")
+    cbp_pub = os.environ.get("CBP_PUBDATE", "")
+    subject, body = format_lag_alert(results, now=now, cbp_http=cbp_http, site_http=site_http, cbp_pubdate=cbp_pub, raw_feed=cbp, lag_minutes=lag_s)
     print()
     if not lagging:
         write_out(

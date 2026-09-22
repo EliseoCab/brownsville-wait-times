@@ -5,6 +5,7 @@ Messages are designed to be clear, actionable, and clearly marked as automated."
 
 from __future__ import annotations
 
+import html
 import re
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -156,7 +157,48 @@ def _is_pending(check) -> bool:
     return "cbp_pending" in (getattr(check, "problems", None) or [])
 
 
-def format_lag_alert(results, now: datetime | None = None) -> tuple[str, str]:
+def _extract_lagging_rss(raw_feed: str, bad: list) -> str:
+    """Return only the <item>...</item> blocks for the lagging bridges.
+    This trims the RSS to just the bridge(s) that are lagging so the email
+    log is short and easy to read. Preserves the original raw XML structure
+    for those items only.
+    """
+    if not raw_feed or not bad:
+        return (raw_feed or "").strip()
+    bad_names = [getattr(r, "name", "") for r in bad if getattr(r, "name", "")]
+    if not bad_names:
+        raw = raw_feed.strip()
+        if len(raw) > 8000:
+            raw = raw[:4000] + "\n... [trimmed] ...\n" + raw[-2000:]
+        return raw
+
+    items: list[str] = []
+    for m in re.finditer(r"<item>(.*?)</item>", raw_feed, flags=re.I | re.S):
+        block = "<item>" + m.group(1) + "</item>"
+        title_m = re.search(r"<title>\s*([^<]+)", block, flags=re.I)
+        if not title_m:
+            continue
+        title = html.unescape(title_m.group(1)).lower()
+        for name in bad_names:
+            n = name.lower()
+            # tolerant match for "B&M", "Gateway", "Veterans", "Los Indios"
+            if (
+                n in title
+                or n.replace("&", "and") in title
+                or n.replace(" ", "") in title.replace(" ", "").replace("-", "")
+            ):
+                items.append(block)
+                break
+    if items:
+        return "\n".join(items)
+    # fallback to trimmed full
+    raw = raw_feed.strip()
+    if len(raw) > 8000:
+        raw = raw[:4000] + "\n... [trimmed] ...\n" + raw[-2000:]
+    return raw
+
+
+def format_lag_alert(results, now: datetime | None = None, cbp_http: str = "", site_http: str = "", cbp_pubdate: str = "", raw_feed: str = "", lag_minutes: str = "") -> tuple[str, str]:
     """Subject + body for wait-times alerts. Empty if nothing is failing."""
     bad = [r for r in results if getattr(r, "problems", None)]
     if not bad:
@@ -187,26 +229,44 @@ def format_lag_alert(results, now: datetime | None = None) -> tuple[str, str]:
             last_posted = ""
 
     if pending and not stale:
-        return template_wait_pending(pending, when, checked_at=checked_at)
-    if stale and not pending:
-        return template_wait_stale(stale, when, last_posted=last_posted, checked_at=checked_at)
+        subject, body = template_wait_pending(pending, when, checked_at=checked_at)
+    elif stale and not pending:
+        subject, body = template_wait_stale(stale, when, last_posted=last_posted, checked_at=checked_at)
+    else:
+        who = _names([r.name for r in bad])
+        subject = f"Brownsville Wait Times Alert — Action Required ({who}) as of {when}"
+        bits = []
+        if pending:
+            bits.append(f"{_names(pending)} show 'Update Pending'")
+        if stale:
+            last = f" (latest published still {last_posted})" if last_posted else ""
+            bits.append(f"{_names(stale)} have no newer data{last}")
+        body = (
+            "Automated Alert: Brownsville Border Wait Times\n\n"
+            f"As of {checked_at}: " + "; ".join(bits) + ".\n\n"
+            "Please update the wait times at the earliest opportunity.\n\n"
+            "This is an automated message from the Brownsville Wait Times monitoring system. "
+            "If the data has already been updated, you may disregard this notification.\n\n"
+            "This report is based on public information from the Border Wait Times official CBP website."
+        )
 
-    who = _names([r.name for r in bad])
-    subject = f"Brownsville Wait Times Alert — Action Required ({who}) as of {when}"
-    bits = []
-    if pending:
-        bits.append(f"{_names(pending)} show 'Update Pending'")
-    if stale:
-        last = f" (latest published still {last_posted})" if last_posted else ""
-        bits.append(f"{_names(stale)} have no newer data{last}")
-    body = (
-        "Automated Alert: Brownsville Border Wait Times\n\n"
-        f"As of {checked_at}: " + "; ".join(bits) + ".\n\n"
-        "Please update the wait times at the earliest opportunity.\n\n"
-        "This is an automated message from the Brownsville Wait Times monitoring system. "
-        "If the data has already been updated, you may disregard this notification.\n\n"
-        "This report is based on public information from the Border Wait Times official CBP website."
+    # Append diagnostic log (no source URLs in mail)
+    # RSS is now trimmed to *only* the lagging bridge(s) for easy reading.
+    ts = checked_at_label(now)
+    lag = lag_minutes or "?"
+    http = f"CBP={cbp_http or '—'} Site={site_http or '—'}"
+    pub = cbp_pubdate or "—"
+    raw = _extract_lagging_rss(raw_feed, bad)
+    log = (
+        "\n\n---\n"
+        f"Timestamp: {ts}\n"
+        f"Lag: {lag} min\n"
+        f"HTTP: {http}\n"
+        f"CBP pubDate: {pub}\n"
+        "Raw RSS (lagging bridge only):\n"
+        f"{raw}\n"
     )
+    body = body + log
     return subject, body
 
 

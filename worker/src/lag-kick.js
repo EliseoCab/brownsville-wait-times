@@ -1,13 +1,13 @@
 /**
  * Backup kick for Check data freshness (lag alarm).
  *
- * GitHub Actions cron is 10, 25, 40. Worker kicks the same minutes if that
+ * GitHub Actions cron is 15, 30, 45. Worker kicks the same minutes if that
  * schedule stalls. The every-5-minute cron only warms the CBP cache.
  *
  * Secret: GITHUB_DISPATCH_TOKEN (never commit a token).
  */
 
-export const LAG_ALARM_KICK_CRONS = ["10 * * * *", "25 * * * *", "40 * * * *"];
+export const LAG_ALARM_KICK_CRONS = ["15 * * * *", "30 * * * *", "45 * * * *"];
 export const GITHUB_OWNER = "EliseoCab";
 export const GITHUB_REPO = "brownsville-wait-times";
 export const LAG_ALARM_WORKFLOW = "check-data-freshness.yml";

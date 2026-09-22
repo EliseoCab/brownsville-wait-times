@@ -61,7 +61,7 @@ On the live page, after hard-refresh, **Refresh times** should show **Live · CB
 - `GET /checkins/heat` — recent location pins for the queue heatmap
 - `OPTIONS` — CORS preflight
 - **Cron every 5 min** — re-fetch CBP so the cache stays warm
-- **Cron at :10/:25/:40** — backup `workflow_dispatch` of **Check data freshness (lag alarm)** (see below)
+- **Cron at :15/:30/:45** — backup `workflow_dispatch` of **Check data freshness (lag alarm)** (see below)
 - If CBP is down, serves the last good feed (up to ~30 minutes old) instead of failing
 
 ## Security
@@ -134,7 +134,7 @@ If you see `401 Unauthorized`, the secret name is fine but the token value is wr
 
 GitHub Actions cron for **Check data freshness (lag alarm)** (`7,22,37,52 * * * *`) is still the **primary** schedule. It can stall for hours, which leaves overnight B&M / Gateway **Update Pending** unalerted until someone runs the workflow by hand.
 
-This Worker is the **backup kick**: at **:10/:25/:40** it POSTs GitHub `workflow_dispatch` for `.github/workflows/check-data-freshness.yml` on `EliseoCab/brownsville-wait-times` (`ref: main`). The lag workflow’s email path is unchanged — this only starts a run. If a lag-alarm job is already queued or in progress, the Worker skips the POST so it does not cancel that run (`cancel-in-progress: true`).
+This Worker is the **backup kick**: at **:15/:30/:45** it POSTs GitHub `workflow_dispatch` for `.github/workflows/check-data-freshness.yml` on `EliseoCab/brownsville-wait-times` (`ref: main`). The lag workflow’s email path is unchanged — this only starts a run. If a lag-alarm job is already queued or in progress, the Worker skips the POST so it does not cancel that run (`cancel-in-progress: true`).
 
 ### Secret (required for the backup kick)
 
@@ -153,9 +153,9 @@ cd worker
 npx wrangler secret put GITHUB_DISPATCH_TOKEN
 # paste the fine-grained PAT when prompted (no quotes)
 npx wrangler secret list   # should show GITHUB_DISPATCH_TOKEN and X_BEARER_TOKEN
-npx wrangler deploy        # pick up the :10/:25/:40 cron triggers if not deployed yet
+npx wrangler deploy        # pick up the :15/:30/:45 cron triggers if not deployed yet
 ```
 
 `/health` reports `hasGithubDispatchToken` (boolean only) and `lagAlarmKickCrons`. If the secret is missing, cache warming still runs; the kick is skipped.
 
-Redeploy after this code lands so Cloudflare installs the extra cron triggers (propagation can take several minutes). Then confirm in the Worker dashboard: **Settings → Triggers** shows `*/5 * * * *`, `10 * * * *`, `25 * * * *`, and `40 * * * *`. Past cron events / `wrangler tail` should log `lag-kick dispatched check-data-freshness.yml` around those times (or `lag-kick skipped: already-running` if Actions already has a job).
+Redeploy after this code lands so Cloudflare installs the extra cron triggers (propagation can take several minutes). Then confirm in the Worker dashboard: **Settings → Triggers** shows `*/5 * * * *`, `15 * * * *`, `30 * * * *`, and `45 * * * *`. Past cron events / `wrangler tail` should log `lag-kick dispatched check-data-freshness.yml` around those times (or `lag-kick skipped: already-running` if Actions already has a job).

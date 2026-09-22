@@ -2,9 +2,9 @@ name: Check data freshness (lag alarm)
 
 on:
   schedule:
-    # :10, :25, and :40 only. Worker kicks the same minutes if this schedule stalls.
-    - cron: "10,25,40 * * * *"
-  # Cloudflare Worker also POSTs workflow_dispatch at :10/:25/:40 when
+    # :15, :30, and :45 only. Worker kicks the same minutes if this schedule stalls.
+    - cron: "15,30,45 * * * *"
+  # Cloudflare Worker also POSTs workflow_dispatch at :15/:30/:45 when
   # GITHUB_DISPATCH_TOKEN is set (backup if this Actions schedule stalls).
   workflow_dispatch:
 
@@ -16,6 +16,7 @@ on:
 # The live page prefers the Cloudflare Worker; this alarm keeps the Actions
 # mirror honest. Worker feed is logged only (not pass/fail).
 # On lag: auto-run Update workflow, wait, re-check. Email only if still lagging.
+# Fires at :15/:30/:45. Body includes log with timestamp, lag, HTTP, pubDate + raw RSS trimmed to the lagging bridge(s) only (easy to read).
 
 permissions:
   contents: read
@@ -45,10 +46,14 @@ jobs:
         run: |
           set -euo pipefail
 
-          curl -fsSL "$CBP_URL" -o /tmp/cbp.xml
-          curl -fsSL "$SITE_URL" -o /tmp/site.xml
+          CBP_HTTP=$(curl -s -o /tmp/cbp.xml -w "%{http_code}" "$CBP_URL" || echo "000")
+          SITE_HTTP=$(curl -s -o /tmp/site.xml -w "%{http_code}" "$SITE_URL" || echo "000")
           # Best-effort: worker is primary for the open page (not required for pass/fail)
           curl -fsSL --max-time 20 "$WORKER_URL" -o /tmp/worker.xml || true
+
+          CBP_PUBDATE=$(sed -n 's/.*<pubDate>\(.*\)<\/pubDate>.*/\1/p' /tmp/cbp.xml | head -1 || echo "")
+
+          export CBP_HTTP SITE_HTTP CBP_PUBDATE
 
           python3 scripts/compare_bwt.py \
             --mode compare \
@@ -141,9 +146,14 @@ jobs:
           POST_CLOSE_GRACE_MINUTES: "45"
         run: |
           set -euo pipefail
-          curl -fsSL "$CBP_URL" -o /tmp/cbp2.xml
+          CBP_HTTP=$(curl -s -o /tmp/cbp2.xml -w "%{http_code}" "$CBP_URL" || echo "000")
+          SITE_HTTP=$(curl -s -o /tmp/site2.xml -w "%{http_code}" "$SITE_URL" || echo "000")
           # Bust any intermediary caches
           curl -fsSL "${SITE_URL}?t=$(date +%s)" -o /tmp/site2.xml || curl -fsSL "$SITE_URL" -o /tmp/site2.xml
+
+          CBP_PUBDATE=$(sed -n 's/.*<pubDate>\(.*\)<\/pubDate>.*/\1/p' /tmp/cbp2.xml | head -1 || echo "")
+
+          export CBP_HTTP SITE_HTTP CBP_PUBDATE
 
           python3 scripts/compare_bwt.py \
             --mode recheck \

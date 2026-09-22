@@ -14,9 +14,9 @@ main = "src/index.js"
 compatibility_date = "2025-08-01"
 
 # Warm the edge cache every 5 min.
-# Lag alarm kicks only at :10/:25/:40 (three per hour). */5 is cache warming only.
+# Lag alarm kicks only at :15/:30/:45 (three per hour). */5 is cache warming only.
 [triggers]
-crons = ["*/5 * * * *", "10 * * * *", "25 * * * *", "40 * * * *"]
+crons = ["*/5 * * * *", "15 * * * *", "30 * * * *", "45 * * * *"]
 
 [[d1_databases]]
 binding = "DB"
