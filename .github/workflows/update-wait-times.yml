@@ -2,9 +2,9 @@ name: Update CBP wait times
 
 on:
   schedule:
-    # Single expression is more reliable than dual dense crons on free runners
-    # (GitHub may delay or skip schedules under load — lag check self-heals)
-    - cron: "*/10 * * * *"
+    # Runs just before lag checks (at :10, :25, :40) so the mirror is fresh when lag is evaluated at :15/:30/:45.
+    # Single expression for reliability.
+    - cron: "10,25,40 * * * *"
   workflow_dispatch:
   # Allow lag-check / external cron to kick a run without sharing the schedule queue
   repository_dispatch:
