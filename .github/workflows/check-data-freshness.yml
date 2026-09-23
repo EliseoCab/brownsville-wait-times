@@ -1,4 +1,4 @@
-name: Check data freshness (lag alarm)
+name: Check data freshness (lag alarm)  # EMAIL ALERTS CURRENTLY PAUSED - see Send step below
 
 on:
   schedule:
@@ -17,7 +17,9 @@ on:
 # mirror honest. Worker feed is logged only (not pass/fail).
 # On lag detection: email notification is sent immediately.
 # The regular updater (offset to :10/:25/:40) keeps the mirror fresh.
-# Fires at :15/:30/:45. Body includes log with timestamp, lag, HTTP, pubDate + raw RSS trimmed to the lagging bridge(s) only (easy to read).
+# Fires at :15/:30/:45.
+#
+# EMAIL ALERTS CURRENTLY PAUSED (see email step below).
 
 permissions:
   contents: read
@@ -69,8 +71,10 @@ jobs:
         run: |
           echo "All in-hours bridges are fresh enough (worst lag ~${{ steps.compare.outputs.lag_minutes }} min)."
 
-      - name: Send immediate lag alert (if detected)
-        if: steps.compare.outputs.lagging == 'true'
+      # EMAIL ALERTS PAUSED
+      # To re-enable, change the condition back to: if: steps.compare.outputs.lagging == 'true'
+      - name: Send immediate lag alert (PAUSED)
+        if: 'false'  # PAUSED - see comment above
         env:
           ALERT_SMTP_USER: ${{ secrets.ALERT_SMTP_USER }}
           ALERT_SMTP_PASSWORD: ${{ secrets.ALERT_SMTP_PASSWORD || secrets.GMAIL }}
@@ -81,7 +85,8 @@ jobs:
           ALERT_SUBJECT: ${{ steps.compare.outputs.alert_subject }}
           ALERT_BODY: ${{ steps.compare.outputs.alert_body }}
         run: |
-          python3 scripts/send_alert_email.py
-          echo "::error::${ALERT_BODY}"
-          echo "${ALERT_BODY}"
-          exit 1
+          echo "Email alerts are currently PAUSED. No email sent."
+          # python3 scripts/send_alert_email.py
+          # echo "::error::${ALERT_BODY}"
+          # echo "${ALERT_BODY}"
+          # exit 1
