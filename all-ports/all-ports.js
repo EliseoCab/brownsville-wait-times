@@ -16,6 +16,7 @@
       geoPrompt: "Using your location to show nearest crossings…",
       geoOff: "Location off — browse with filters, or enable location for nearest.",
       geoDenied: "Location permission denied — use Border / State / Port filters.",
+      useMyLocation: "Use my location",
       empty: "No crossings match these filters.",
       showMore: "Show more",
       showLess: "Show fewer",
@@ -62,6 +63,7 @@
       geoPrompt: "Usando su ubicación para mostrar los cruces más cercanos…",
       geoOff: "Ubicación desactivada — use los filtros, o actívela para ver los más cercanos.",
       geoDenied: "Permiso de ubicación denegado — use Borde / Estado / Puerto.",
+      useMyLocation: "Usar mi ubicación",
       empty: "Ningún cruce coincide con estos filtros.",
       showMore: "Mostrar más",
       showLess: "Mostrar menos",
@@ -111,7 +113,7 @@
     feedDate: "",
     feedTime: "",
     userPos: null,
-    geoStatus: "pending", // pending | ok | denied | unavailable
+    geoStatus: "", // "" | pending | ok | denied | unavailable
     prefs: {
       view: "nearest",
       border: "all",
@@ -1147,9 +1149,14 @@
 
     if (status) {
       if (state.geoStatus === "pending") status.textContent = t("geoPrompt");
-      else if (state.geoStatus === "denied") status.textContent = t("geoDenied");
+      else if (state.geoStatus === "denied") status.textContent = t("geoOff");
       else if (state.geoStatus === "unavailable" && state.prefs.view === "nearest") status.textContent = t("geoOff");
       else status.textContent = "";
+    }
+    var geoBtn = document.getElementById("geoOptIn");
+    if (geoBtn) {
+      geoBtn.hidden = state.geoStatus !== "denied";
+      geoBtn.textContent = t("useMyLocation");
     }
 
     if (countEl) {
@@ -1297,30 +1304,121 @@
     el.textContent = "—";
   }
 
-  function requestGeo() {
-    if (!navigator.geolocation) {
-      state.geoStatus = "unavailable";
-      if (state.prefs.view === "nearest") state.prefs.view = "browse";
-      syncViewButtons();
-      render();
-      return;
+  var geoStore = window.BwtGeo ? window.BwtGeo.createStore(localStorage) : null;
+  var geoInFlight = null;
+
+  function applyAllPortsFix(fix) {
+    state.userPos = { lat: fix.lat, lng: fix.lng };
+    state.geoStatus = "ok";
+    render();
+  }
+
+  function markAllPortsOff(status) {
+    state.userPos = null;
+    state.geoStatus = status || "denied";
+    if ((state.geoStatus === "denied" || state.geoStatus === "unavailable") && state.prefs.view === "nearest") {
+      state.prefs.view = "browse";
+      savePrefs();
     }
-    state.geoStatus = "pending";
-    navigator.geolocation.getCurrentPosition(
-      function (pos) {
-        state.userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    syncViewButtons();
+    render();
+  }
+
+  function requestGeo(manual) {
+    var bwt = window.BwtGeo;
+    if (!bwt || !geoStore) {
+      markAllPortsOff("unavailable");
+      return Promise.resolve(null);
+    }
+    if (geoInFlight) return geoInFlight;
+    var isManual = !!manual;
+    if (!isManual) {
+      var savedChoice = geoStore.readChoice();
+      var savedFix = geoStore.readCache();
+      if (savedChoice === "granted" && savedFix) {
+        state.userPos = { lat: savedFix.lat, lng: savedFix.lng };
         state.geoStatus = "ok";
-        render();
-      },
-      function () {
+        if (state.items.length) render();
+      } else if (savedChoice === "denied" || savedChoice === "asked") {
+        state.userPos = null;
         state.geoStatus = "denied";
-        if (state.prefs.view === "nearest") state.prefs.view = "browse";
-        savePrefs();
-        syncViewButtons();
+        if (state.prefs.view === "nearest") {
+          state.prefs.view = "browse";
+          savePrefs();
+          syncViewButtons();
+        }
+        if (state.items.length) render();
+      }
+    }
+    geoInFlight = bwt.queryPermission().then(function (permission) {
+      var choice = geoStore.readChoice();
+      var cached = geoStore.readCache();
+      var plan = bwt.planGeoRequest({
+        permission: permission,
+        choice: choice,
+        manual: isManual,
+        available: !!navigator.geolocation,
+        cached: cached
+      });
+      if (plan.persist) geoStore.writeChoice(plan.persist);
+      if (plan.action === "use-cache" && cached) {
+        applyAllPortsFix(cached);
+        return cached;
+      }
+      if (plan.action === "skip") {
+        if (permission !== "denied" && choice === "granted" && cached) {
+          applyAllPortsFix(cached);
+          return cached;
+        }
+        markAllPortsOff(plan.reason === "unavailable" ? "unavailable" : "denied");
+        return null;
+      }
+      if (plan.action === "prompt") {
+        state.geoStatus = "pending";
         render();
-      },
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
-    );
+      }
+      return new Promise(function (resolve) {
+        navigator.geolocation.getCurrentPosition(function (pos) {
+          var fix = bwt.fixFromPosition(pos);
+          if (!fix) {
+            markAllPortsOff("denied");
+            resolve(null);
+            return;
+          }
+          geoStore.writeChoice("granted");
+          geoStore.writeCache(fix);
+          if (isManual) {
+            state.prefs.view = "nearest";
+            savePrefs();
+            syncViewButtons();
+          }
+          applyAllPortsFix(fix);
+          resolve(fix);
+        }, function (err) {
+          var next = bwt.outcomeFromError(err, geoStore.readChoice());
+          geoStore.writeChoice(next);
+          if (next === "granted") {
+            var again = geoStore.readCache();
+            if (again) {
+              applyAllPortsFix(again);
+              resolve(again);
+              return;
+            }
+          }
+          markAllPortsOff("denied");
+          resolve(null);
+        }, plan.action === "prompt"
+          ? { enableHighAccuracy: false, timeout: 20000, maximumAge: 0 }
+          : { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 });
+      });
+    }).then(function (fix) {
+      geoInFlight = null;
+      return fix;
+    }, function () {
+      geoInFlight = null;
+      return null;
+    });
+    return geoInFlight;
   }
 
   function syncViewButtons() {
@@ -1339,7 +1437,7 @@
       btn.addEventListener("click", function () {
         state.prefs.view = btn.getAttribute("data-view");
         if (state.prefs.view === "nearest" && !state.userPos && state.geoStatus !== "pending") {
-          requestGeo();
+          requestGeo(false);
         }
         savePrefs();
         syncViewButtons();
@@ -1399,6 +1497,10 @@
     if (es) es.addEventListener("click", function () { setLang("es"); });
     var themeBtn = document.getElementById("themeToggle");
     if (themeBtn) themeBtn.addEventListener("click", toggleTheme);
+    var geoBtn = document.getElementById("geoOptIn");
+    if (geoBtn) {
+      geoBtn.addEventListener("click", function () { requestGeo(true); });
+    }
   }
 
   function setLang(lang) {
@@ -1463,8 +1565,15 @@
     var status = document.getElementById("statusLine");
     if (status) status.textContent = String(err && err.message ? err.message : err);
   });
-  if (state.prefs.view === "nearest") requestGeo();
-  else {
+  var savedGeoChoice = geoStore ? geoStore.readChoice() : null;
+  if (state.prefs.view === "nearest" || savedGeoChoice === "granted" || savedGeoChoice === "denied" || savedGeoChoice === "asked") {
+    requestGeo(false);
+  } else {
     state.geoStatus = "unavailable";
   }
+  window.addEventListener("storage", function (event) {
+    if (!event || (event.key !== "bwt-geo-choice" && event.key !== "bwt-geo-cache")) return;
+    if (geoInFlight) return;
+    if (state.prefs.view === "nearest" || event.newValue === "granted") requestGeo(false);
+  });
 })();

@@ -202,6 +202,30 @@
       margin: 0.35rem 0 0.65rem;
       min-height: 1.2em;
     }
+    .geo-opt-in:not([hidden]) {
+      display: inline-flex;
+      align-items: center;
+      margin: -0.25rem 0 0.75rem;
+      padding: 0.28rem 0.7rem;
+      min-height: 2rem;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--white);
+      color: var(--navy);
+      font: inherit;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .geo-opt-in:focus-visible {
+      outline: 2px solid var(--sky);
+      outline-offset: 2px;
+    }
+    html[data-theme="dark"] .geo-opt-in {
+      background: #243656;
+      color: #f4f7fb;
+      border-color: #6b82a3;
+    }
     .meta-row {
       display: flex;
       flex-wrap: wrap;
@@ -694,6 +718,7 @@
     </section>
 
     <p class="status" id="statusLine">Loading all ports…</p>
+    <button type="button" id="geoOptIn" class="geo-opt-in" hidden>Use my location</button>
     <div class="meta-row">
       <span id="resultCount"></span>
     </div>
@@ -711,6 +736,7 @@
   </footer>
 
   <script src="port-meta.js"></script>
-  <script src="all-ports.js?v=28"></script>
+  <script src="../geo-opt-in.js?v=1"></script>
+  <script src="all-ports.js?v=29"></script>
 </body>
 </html>
