@@ -2,7 +2,16 @@
 "use strict";
 
 var assert = require("assert");
+var fs = require("fs");
+var path = require("path");
 var geo = require("../geo-opt-in.js");
+
+var root = path.join(__dirname, "..");
+var stage = fs.readFileSync(path.join(root, "scripts/stage-site.sh"), "utf8");
+assert(stage.indexOf("geo-opt-in.js") !== -1, "stage-site.sh must copy geo-opt-in.js into the Pages artifact");
+var sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
+assert(sw.indexOf("geo-opt-in.js?v=1") !== -1, "service worker must precache geo-opt-in.js");
+assert(/bwt-shell-v79/.test(sw), "service worker cache must be bumped past the build that 404'd the helper");
 
 function plan(partial) {
   return geo.planGeoRequest(Object.assign({ available: true, cached: null, choice: null, permission: null, manual: false }, partial));

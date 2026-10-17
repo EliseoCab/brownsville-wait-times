@@ -1325,13 +1325,56 @@
   }
 
   function requestGeo(manual) {
+    var isManual = !!manual;
     var bwt = window.BwtGeo;
     if (!bwt || !geoStore) {
-      markAllPortsOff("unavailable");
-      return Promise.resolve(null);
+      if (!navigator.geolocation) {
+        markAllPortsOff("unavailable");
+        return Promise.resolve(null);
+      }
+      var savedChoice = null;
+      var savedFix = null;
+      try { savedChoice = localStorage.getItem("bwt-geo-choice"); } catch (e) { /* ignore */ }
+      try { savedFix = JSON.parse(localStorage.getItem("bwt-geo-cache") || "null"); } catch (e) { /* ignore */ }
+      if (!isManual && savedChoice === "granted" && savedFix && isFinite(savedFix.lat) && isFinite(savedFix.lng)) {
+        applyAllPortsFix(savedFix);
+        return Promise.resolve(savedFix);
+      }
+      if (!isManual && (savedChoice === "denied" || savedChoice === "asked")) {
+        markAllPortsOff("denied");
+        return Promise.resolve(null);
+      }
+      try { localStorage.setItem("bwt-geo-choice", "asked"); } catch (e) { /* ignore */ }
+      state.geoStatus = "pending";
+      if (state.items.length) render();
+      return new Promise(function (resolve) {
+        navigator.geolocation.getCurrentPosition(function (pos) {
+          var coords = pos && pos.coords;
+          if (!coords || !isFinite(coords.latitude) || !isFinite(coords.longitude)) {
+            markAllPortsOff("denied");
+            resolve(null);
+            return;
+          }
+          var fix = { lat: coords.latitude, lng: coords.longitude, acc: coords.accuracy, t: Date.now() };
+          try {
+            localStorage.setItem("bwt-geo-choice", "granted");
+            localStorage.setItem("bwt-geo-cache", JSON.stringify(fix));
+          } catch (e) { /* ignore */ }
+          if (isManual) {
+            state.prefs.view = "nearest";
+            savePrefs();
+            syncViewButtons();
+          }
+          applyAllPortsFix(fix);
+          resolve(fix);
+        }, function (err) {
+          try { localStorage.setItem("bwt-geo-choice", err && err.code === 1 ? "denied" : "asked"); } catch (e) { /* ignore */ }
+          markAllPortsOff("denied");
+          resolve(null);
+        }, { enableHighAccuracy: false, timeout: 20000, maximumAge: 60000 });
+      });
     }
     if (geoInFlight) return geoInFlight;
-    var isManual = !!manual;
     if (!isManual) {
       var savedChoice = geoStore.readChoice();
       var savedFix = geoStore.readCache();
