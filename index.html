@@ -622,6 +622,30 @@
     .stat-card.leave-card .hint {
       max-width: none;
     }
+    .geo-opt-in:not([hidden]) {
+      display: inline-flex;
+      align-items: center;
+      margin-top: 0.45rem;
+      padding: 0.28rem 0.7rem;
+      min-height: 2rem;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--navy);
+      font: inherit;
+      font-size: 0.72rem;
+      font-weight: 700;
+      line-height: 1.2;
+      cursor: pointer;
+    }
+    .geo-opt-in:focus-visible {
+      outline: 2px solid var(--sky);
+      outline-offset: 2px;
+    }
+    html[data-theme="dark"] .geo-opt-in {
+      color: #e8eef8;
+      border-color: #6b82a3;
+    }
 
     html[data-view="drive"] .summary .stat-card:not(.leave-card),
     html[data-view="drive"] .nearby-section,
@@ -3823,6 +3847,7 @@
         <div class="kicker" data-i18n="statLeave">Leave Now (Vehicles)</div>
         <div class="stat" id="statLeave">—</div>
         <div class="hint" id="statLeaveHint" data-i18n="statLeaveHint">Nearest vehicle bridge</div>
+        <button type="button" class="geo-opt-in" id="geoOptIn" data-i18n="useMyLocation" hidden>Use my location</button>
       </div>
     </section>
 
@@ -4020,6 +4045,7 @@
     </div>
   </footer>
 
+  <script src="geo-opt-in.js?v=1"></script>
   <script>
     const FEED_URL = "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43";
     // Same-origin mirror updated by GitHub Actions (backup if the Worker is down)
@@ -4056,6 +4082,7 @@
         statLeaveHint: "Nearest vehicle bridge",
         statLeaveNeedLoc: "Allow location for nearest-bridge leave time",
         statLeaveDenied: "Location off — enable it for a leave time",
+        useMyLocation: "Use my location",
         statLeaveNoWait: "No vehicle wait at the nearest bridge",
         leaveAtBooth: "Leave at {leave} for a {booth} booth.",
         leaveDriveWait: "{bridge} · {drive} min drive + {wait} min wait + {buffer} min buffer",
@@ -4236,6 +4263,7 @@
         statLeaveHint: "Puente vehicular más cercano",
         statLeaveNeedLoc: "Permita la ubicación para la hora de salida",
         statLeaveDenied: "Ubicación desactivada — actívela para una hora de salida",
+        useMyLocation: "Usar mi ubicación",
         statLeaveNoWait: "No hay espera vehicular en el puente más cercano",
         leaveAtBooth: "Salga a las {leave} para caseta a las {booth}.",
         leaveDriveWait: "{bridge} · {drive} min de manejo + {wait} min de espera + {buffer} min de margen",
@@ -4513,7 +4541,10 @@
     let lastData = null;
     let lastXmlText = null;
     let lastSourceId = null;
-    let userGeo = null; // { lat, lng } | "denied" | null
+    let userGeo = null; // { lat, lng, acc, heading } | "denied" | null
+    const geoStore = window.BwtGeo ? window.BwtGeo.createStore(localStorage) : null;
+    let geoOptInVisible = false;
+    let geoInFlight = null;
     const LEAVE_BUFFER_MIN = 5;
     let lastIsLive = false;
     let lastFromAuto = false;
@@ -5034,15 +5065,15 @@
         stat.className = "stat";
         hint.textContent = hintText;
         if (kicker) kicker.textContent = kickerText || t("statLeave");
-        card.classList.toggle("is-action", !!actionable);
+        syncGeoOptIn(!!actionable);
       }
 
       if (userGeo === "denied") {
-        setLeave("—", t("statLeaveDenied"), true);
+        setLeave("—", t("statLeaveDenied"), geoOptInVisible);
         return;
       }
       if (!userGeo) {
-        setLeave("—", t("statLeaveNeedLoc"), true);
+        setLeave("—", t("statLeaveNeedLoc"), false);
         return;
       }
       const pick = nearestVehicleLeave(data, userGeo);
@@ -5063,33 +5094,128 @@
         pick.short +
         " · " +
         t("leaveAtBooth").replace("{leave}", leaveStr).replace("{booth}", boothStr);
-      card.classList.remove("is-action");
+      syncGeoOptIn(false);
     }
 
-    function requestUserGeo(forcePrompt) {
-      if (!navigator.geolocation) {
-        userGeo = "denied";
-        if (lastData) updateLeaveCard(lastData);
-        return;
+    function syncGeoOptIn(show) {
+      const btn = document.getElementById("geoOptIn");
+      if (btn) btn.hidden = !show;
+      const card = document.getElementById("leaveCard");
+      if (card) card.classList.toggle("is-action", !!show);
+    }
+
+    function asCrowdFix(fix) {
+      if (!fix || fix === "denied" || fix.lat == null || fix.lng == null) return null;
+      return {
+        lat: fix.lat,
+        lng: fix.lng,
+        acc: fix.acc == null ? null : fix.acc,
+        heading: fix.heading == null ? null : fix.heading
+      };
+    }
+
+    function currentGeoFix() {
+      if (crowdGeo && crowdGeo.lat != null) return crowdGeo;
+      return asCrowdFix(userGeo);
+    }
+
+    function publishGeoFix(fix, preserveMap) {
+      const next = asCrowdFix(fix);
+      if (!next) return null;
+      userGeo = next;
+      crowdGeo = next;
+      geoOptInVisible = false;
+      if (lastData) {
+        updateLeaveCard(lastData);
+        if (!preserveMap) renderPorts(lastData);
       }
-      if (userGeo && userGeo !== "denied" && !forcePrompt) return;
-      navigator.geolocation.getCurrentPosition(
-        function (pos) {
-          userGeo = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          if (lastData) {
-            updateLeaveCard(lastData);
-            renderPorts(lastData);
+      return next;
+    }
+
+    function markGeoOff(showOptIn) {
+      userGeo = "denied";
+      geoOptInVisible = !!showOptIn;
+      if (lastData) {
+        updateLeaveCard(lastData);
+        renderPorts(lastData);
+      } else {
+        updateLeaveCard({ items: [] });
+      }
+      return null;
+    }
+
+    function readGeoPosition(options) {
+      return new Promise(function (resolve, reject) {
+        navigator.geolocation.getCurrentPosition(resolve, reject, options);
+      });
+    }
+
+    function runGeoRequest(manual, preserveMap) {
+      const bwt = window.BwtGeo;
+      if (!bwt || !geoStore) return Promise.resolve(markGeoOff(false));
+      if (!manual) {
+        const saved = geoStore.readChoice();
+        const cached = geoStore.readCache();
+        if (saved === "granted" && cached) publishGeoFix(cached, true);
+        else if (saved === "denied" || saved === "asked") markGeoOff(true);
+      }
+      return bwt.queryPermission().then(function (permission) {
+        const choice = geoStore.readChoice();
+        const cached = geoStore.readCache();
+        const plan = bwt.planGeoRequest({
+          permission: permission,
+          choice: choice,
+          manual: !!manual,
+          available: !!navigator.geolocation,
+          cached: cached
+        });
+        if (plan.persist) geoStore.writeChoice(plan.persist);
+        if (plan.action === "use-cache") return publishGeoFix(cached, preserveMap);
+        if (plan.action === "skip") {
+          if (permission !== "denied" && choice === "granted" && cached) return publishGeoFix(cached, preserveMap);
+          return markGeoOff(plan.showOptIn);
+        }
+        geoOptInVisible = false;
+        if (userGeo === "denied") userGeo = null;
+        if (lastData) updateLeaveCard(lastData);
+        const prompting = plan.action === "prompt";
+        return readGeoPosition(prompting
+          ? { enableHighAccuracy: false, timeout: 20000, maximumAge: 0 }
+          : { enableHighAccuracy: false, timeout: 8000, maximumAge: 5 * 60 * 1000 }
+        ).then(function (pos) {
+          const fix = bwt.fixFromPosition(pos);
+          if (!fix) return markGeoOff(true);
+          geoStore.writeChoice("granted");
+          geoStore.writeCache(fix);
+          const published = publishGeoFix(fix, preserveMap);
+          if (typeof crowdRefreshNear === "function") crowdRefreshNear();
+          return published;
+        }, function (err) {
+          const next = bwt.outcomeFromError(err, geoStore.readChoice());
+          geoStore.writeChoice(next);
+          if (next === "granted") {
+            const again = geoStore.readCache();
+            if (again) return publishGeoFix(again, preserveMap);
           }
-        },
-        function () {
-          userGeo = "denied";
-          if (lastData) {
-            updateLeaveCard(lastData);
-            renderPorts(lastData);
-          }
-        },
-        { enableHighAccuracy: false, timeout: 8000, maximumAge: 5 * 60 * 1000 }
-      );
+          return markGeoOff(true);
+        });
+      });
+    }
+
+    function requestUserGeo(manual, opts) {
+      const preserveMap = !!(opts && opts.preserveMap);
+      const isManual = !!manual;
+      if (geoInFlight) return geoInFlight;
+      geoInFlight = Promise.resolve().then(function () {
+        return runGeoRequest(isManual, preserveMap);
+      }).then(function (fix) {
+        geoInFlight = null;
+        return fix;
+      }, function () {
+        geoInFlight = null;
+        return null;
+      });
+      return geoInFlight;
     }
 
     function updateSummary(data) {
@@ -5992,31 +6118,41 @@
         crowdPollTimer = null;
       }
     }
+    function refreshGeoIfGranted(options) {
+      const bwt = window.BwtGeo;
+      if (!bwt || !navigator.geolocation) return Promise.resolve(currentGeoFix());
+      return bwt.queryPermission().then(function (perm) {
+        if (perm !== "granted") return currentGeoFix();
+        return new Promise(function (resolve) {
+          navigator.geolocation.getCurrentPosition(function (pos) {
+            const fix = bwt.fixFromPosition(pos);
+            if (fix && geoStore) {
+              geoStore.writeChoice("granted");
+              geoStore.writeCache(fix);
+              publishGeoFix(fix, true);
+            }
+            resolve(currentGeoFix());
+          }, function () { resolve(currentGeoFix()); }, options);
+        });
+      });
+    }
     function crowdAskGeo(highAcc) {
-      if (!navigator.geolocation) return;
-      navigator.geolocation.getCurrentPosition(
-        function (pos) {
-          crowdGeo = {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-            acc: pos.coords.accuracy,
-            heading: pos.coords.heading
-          };
-          crowdRefreshNear();
-        },
-        function () { /* keep last */ },
-        {
-          enableHighAccuracy: !!highAcc,
-          timeout: highAcc ? 12000 : 8000,
-          maximumAge: highAcc ? 0 : 30000
-        }
-      );
+      refreshGeoIfGranted({
+        enableHighAccuracy: !!highAcc,
+        timeout: highAcc ? 12000 : 8000,
+        maximumAge: highAcc ? 0 : 30000
+      }).then(function () { crowdRefreshNear(); });
     }
     function crowdStartPoll() {
       crowdStopPoll();
       const geo = crowdGeo || (userGeo && userGeo !== "denied" ? userGeo : null);
       if (geo) {
-        crowdGeo = crowdGeo || { lat: geo.lat, lng: geo.lng, acc: null, heading: null };
+        crowdGeo = crowdGeo || {
+          lat: geo.lat,
+          lng: geo.lng,
+          acc: geo.acc == null ? null : geo.acc,
+          heading: geo.heading == null ? null : geo.heading
+        };
         crowdRefreshNear();
       }
       crowdAskGeo(false);
@@ -6407,25 +6543,9 @@
             if (msg) msg.textContent = t("crowdErr");
           });
       }
-      if (!navigator.geolocation) {
-        sendPin(crowdGeo || (userGeo && userGeo !== "denied" ? userGeo : null));
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(
-        function (pos) {
-          crowdGeo = {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-            acc: pos.coords.accuracy,
-            heading: pos.coords.heading
-          };
-          sendPin(crowdGeo);
-        },
-        function () {
-          sendPin(crowdGeo || (userGeo && userGeo !== "denied" ? userGeo : null));
-        },
-        { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
-      );
+      refreshGeoIfGranted({ enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }).then(function (fix) {
+        sendPin(fix || (userGeo && userGeo !== "denied" ? userGeo : null));
+      });
     }
     let crowdMap = null;
     let crowdHeatLayer = null;
@@ -6439,39 +6559,41 @@
         crowdYouMarker = null;
       }
     }
+    function crowdMarkHere(lat, lng) {
+      if (!crowdMap || lat == null || lng == null) return;
+      crowdMap.setView([lat, lng], 15);
+      if (crowdYouMarker) {
+        try { crowdMap.removeLayer(crowdYouMarker); } catch (_) { /* ignore */ }
+      }
+      crowdYouMarker = L.circleMarker([lat, lng], {
+        radius: 9,
+        color: "#1d4ed8",
+        weight: 2,
+        fillColor: "#3b82f6",
+        fillOpacity: 0.95
+      }).addTo(crowdMap);
+      crowdYouMarker.bindPopup(t("crowdCenterOn"));
+    }
+    function crowdFallbackMapCenter() {
+      if (!crowdMap || !crowdMapPoints.length) return;
+      const last = crowdMapPoints.slice().sort(function (a, b) { return (b.t || 0) - (a.t || 0); })[0];
+      crowdMap.setView([last.lat, last.lng], 14);
+    }
     function crowdCenterOnMe() {
       if (!crowdMap) return;
-      function go(lat, lng) {
-        crowdMap.setView([lat, lng], 15);
-        if (crowdYouMarker) {
-          try { crowdMap.removeLayer(crowdYouMarker); } catch (_) { /* ignore */ }
-        }
-        crowdYouMarker = L.circleMarker([lat, lng], {
-          radius: 9,
-          color: "#1d4ed8",
-          weight: 2,
-          fillColor: "#3b82f6",
-          fillOpacity: 0.95
-        }).addTo(crowdMap);
-        crowdYouMarker.bindPopup(t("crowdCenterOn"));
-      }
-      if (!navigator.geolocation) {
-        if (crowdMapPoints.length) {
-          const last = crowdMapPoints.slice().sort(function (a, b) { return (b.t || 0) - (a.t || 0); })[0];
-          crowdMap.setView([last.lat, last.lng], 14);
-        }
+      const known = currentGeoFix();
+      if (known) {
+        crowdMarkHere(known.lat, known.lng);
+        refreshGeoIfGranted({ enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 }).then(function (fix) {
+          if (fix && crowdMap) crowdMarkHere(fix.lat, fix.lng);
+        });
         return;
       }
-      navigator.geolocation.getCurrentPosition(
-        function (pos) { go(pos.coords.latitude, pos.coords.longitude); },
-        function () {
-          if (crowdMapPoints.length) {
-            const last = crowdMapPoints.slice().sort(function (a, b) { return (b.t || 0) - (a.t || 0); })[0];
-            crowdMap.setView([last.lat, last.lng], 14);
-          }
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 }
-      );
+      requestUserGeo(true, { preserveMap: true }).then(function (fix) {
+        if (!crowdMap) return;
+        if (fix && fix.lat != null) crowdMarkHere(fix.lat, fix.lng);
+        else crowdFallbackMapCenter();
+      });
     }
     function crowdAddCenterControl() {
       if (!crowdMap || !window.L) return;
@@ -6563,15 +6685,17 @@
         );
         bounds.push([p.lat, p.lng]);
       });
-      const here = crowdGeo || (userGeo && userGeo !== "denied" ? userGeo : null);
-      if (here && here.lat != null && here.lng != null) {
-        crowdMap.setView([here.lat, here.lng], 15);
+      const here = currentGeoFix();
+      if (here) {
+        crowdMarkHere(here.lat, here.lng);
       } else if (bounds.length === 1) {
         crowdMap.setView(bounds[0], 14);
       } else if (bounds.length > 1) {
         crowdMap.fitBounds(bounds, { padding: [24, 24], maxZoom: 15 });
       }
-      crowdCenterOnMe();
+      refreshGeoIfGranted({ enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 }).then(function (fix) {
+        if (fix && crowdMap) crowdMarkHere(fix.lat, fix.lng);
+      });
       setTimeout(function () {
         if (crowdMap) crowdMap.invalidateSize();
       }, 250);
@@ -8050,6 +8174,18 @@
         if (leaveCard.classList.contains("is-action")) requestUserGeo(true);
       });
     }
+    const geoOptIn = document.getElementById("geoOptIn");
+    if (geoOptIn) {
+      geoOptIn.addEventListener("click", function (event) {
+        event.stopPropagation();
+        requestUserGeo(true);
+      });
+    }
+    window.addEventListener("storage", function (event) {
+      if (!event || (event.key !== "bwt-geo-choice" && event.key !== "bwt-geo-cache")) return;
+      if (geoInFlight) return;
+      requestUserGeo(false);
+    });
   </script>
 </body>
 </html>

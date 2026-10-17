@@ -1,7 +1,8 @@
-const CACHE = "bwt-shell-v77";
+const CACHE = "bwt-shell-v78";
 const PRECACHE = [
   "./",
   "./index.html",
+  "./geo-opt-in.js?v=1",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
