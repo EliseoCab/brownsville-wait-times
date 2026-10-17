@@ -5150,9 +5150,59 @@
       });
     }
 
+    function rawGeoChoice() {
+      try { return localStorage.getItem("bwt-geo-choice"); } catch (e) { return null; }
+    }
+
+    function rawGeoCache() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem("bwt-geo-cache") || "null");
+        if (!parsed || !isFinite(parsed.lat) || !isFinite(parsed.lng)) return null;
+        return parsed;
+      } catch (e) { return null; }
+    }
+
+    function writeRawGeo(choice, fix) {
+      try {
+        if (choice) localStorage.setItem("bwt-geo-choice", choice);
+        if (fix) localStorage.setItem("bwt-geo-cache", JSON.stringify(fix));
+      } catch (e) { /* private mode */ }
+    }
+
+    function runGeoWithoutHelper(manual, preserveMap) {
+      if (!navigator.geolocation) return Promise.resolve(markGeoOff(false));
+      const saved = rawGeoChoice();
+      const cached = rawGeoCache();
+      if (!manual && saved === "granted" && cached) return Promise.resolve(publishGeoFix(cached, preserveMap));
+      if (!manual && (saved === "denied" || saved === "asked")) return Promise.resolve(markGeoOff(true));
+      writeRawGeo("asked", null);
+      if (userGeo === "denied") userGeo = null;
+      geoOptInVisible = false;
+      if (lastData) updateLeaveCard(lastData);
+      return readGeoPosition({ enableHighAccuracy: false, timeout: 20000, maximumAge: 60000 }).then(function (pos) {
+        const coords = pos && pos.coords;
+        if (!coords || !isFinite(coords.latitude) || !isFinite(coords.longitude)) return markGeoOff(true);
+        const fix = {
+          lat: coords.latitude,
+          lng: coords.longitude,
+          acc: coords.accuracy,
+          heading: coords.heading,
+          t: Date.now()
+        };
+        writeRawGeo("granted", fix);
+        return publishGeoFix(fix, preserveMap);
+      }, function (err) {
+        writeRawGeo(err && err.code === 1 ? "denied" : "asked", null);
+        return markGeoOff(true);
+      });
+    }
+
     function runGeoRequest(manual, preserveMap) {
       const bwt = window.BwtGeo;
-      if (!bwt || !geoStore) return Promise.resolve(markGeoOff(false));
+      if (!bwt || !geoStore) {
+        // geo-opt-in.js failed to load. Still ask once. A browser grant returns a fix with no dialog.
+        return runGeoWithoutHelper(manual, preserveMap);
+      }
       if (!manual) {
         const saved = geoStore.readChoice();
         const cached = geoStore.readCache();
