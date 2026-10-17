@@ -22,3 +22,8 @@ crons = ["*/5 * * * *", "15 * * * *", "30 * * * *", "45 * * * *"]
 binding = "DB"
 database_name = "brownsville-checkins"
 database_id = "0117edea-be6c-4add-b42e-c503fec76844"
+
+# Workers Logs: request counts, status, paths, cron vs. fetch
+[observability]
+enabled = true
+head_sampling_rate = 1
