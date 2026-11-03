@@ -46,6 +46,7 @@
       trafficPed: "Pedestrian",
       trafficComm: "Commercial",
       back: "← Brownsville wait times",
+      reportWait: "Report Wait Times",
       title: "All U.S. land ports",
       sub: "Live CBP wait times · nearest to you, with optional filters",
       latest: "Latest report:",
@@ -93,6 +94,7 @@
       trafficPed: "Peatonal",
       trafficComm: "Comercial",
       back: "← Tiempos en Brownsville",
+      reportWait: "Reportar tiempos de espera",
       title: "Todos los puertos terrestres de EE. UU.",
       sub: "Tiempos CBP en vivo · más cercanos a usted, con filtros opcionales",
       latest: "Último reporte:",
@@ -160,6 +162,8 @@
     if (title) title.textContent = t("title");
     if (sub) sub.textContent = t("sub");
     if (back) back.textContent = t("back");
+    var report = document.getElementById("reportWaitLink");
+    if (report) report.textContent = t("reportWait");
     if (footerBrand) footerBrand.textContent = t("footerBrand");
     if (footerLead) footerLead.textContent = t("footerContactLead");
     document.title = t("title") + " · BWT";

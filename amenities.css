@@ -103,6 +103,25 @@ html[lang="es"] .lang-es { display: inline; }
 }
 .back:hover { text-decoration: underline; color: var(--navy); }
 
+.report-wait {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0.28rem 0.75rem;
+  border-radius: 999px;
+  background: var(--navy);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+.report-wait:hover { background: #123056; color: #fff; }
+html[data-theme="dark"] .report-wait {
+  background: #38bdf8;
+  color: #041018;
+}
+html[data-theme="dark"] .report-wait:hover { background: #7dd3fc; color: #041018; }
+
 .topbar-controls {
   display: inline-flex;
   align-items: center;
