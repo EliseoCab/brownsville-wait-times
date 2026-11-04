@@ -14,6 +14,7 @@ import {
   isLagAlarmKickCron,
   kickLagAlarmWorkflow,
 } from "./lag-kick.js";
+import { NORTHBOUND_ANCHORS, northboundIntoUs } from "./northbound.js";
 
 const CBP_URL =
   "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43";
@@ -501,16 +502,6 @@ const CHECKIN_WINDOW_MS = 45 * 60 * 1000;
 const CHECKIN_COOLDOWN_MS = 10 * 60 * 1000;
 const CHECKIN_TTL_MS = 24 * 60 * 60 * 1000;
 
-function checkinMiles(a, b) {
-  const toRad = function (d) { return (d * Math.PI) / 180; };
-  const dLat = toRad(b.lat - a.lat);
-  const dLng = toRad(b.lng - a.lng);
-  const s =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-  return 2 * 3958.8 * Math.asin(Math.min(1, Math.sqrt(s)));
-}
-
 function roundCoord(n) {
   return Math.round(Number(n) * 10000) / 10000;
 }
@@ -582,17 +573,15 @@ async function handleCheckinPost(request, env) {
   }
   let storeLat = lat;
   let storeLng = lng;
-  if (lat != null && lng != null && Number.isFinite(lat) && Number.isFinite(lng)) {
-    const miles = checkinMiles({ lat: lat, lng: lng }, CHECKIN_BRIDGES[bridge]);
-    if (kind === "pin" && miles > 8) {
-      return jsonResponse(request, { ok: false, error: "Too far from that bridge" }, 400, 0);
-    }
-    if (kind === "wait" && miles > 3) {
-      storeLat = null;
-      storeLng = null;
-    }
-    if (acc != null && Number.isFinite(acc) && acc > 150) lowAcc = 1;
+  const onApproach = northboundIntoUs(
+    NORTHBOUND_ANCHORS[bridge],
+    { lat: lat, lng: lng, acc: acc },
+    heading
+  );
+  if (!onApproach) {
+    return jsonResponse(request, { ok: false, error: "Northbound only" }, 400, 0);
   }
+  if (acc != null && Number.isFinite(acc) && acc > 150) lowAcc = 1;
   const ipHash = await hashIpDay(clientIp(request));
   const now = Date.now();
   const recent = await env.DB.prepare(
@@ -626,10 +615,13 @@ async function handleCheckinSummary(request, env) {
   }
   const since = Date.now() - CHECKIN_WINDOW_MS;
   const res = await env.DB.prepare(
-    "SELECT bridge, lane, wait_min, created_at FROM checkins WHERE created_at > ? AND status = 'wait'"
+    "SELECT bridge, lane, wait_min, created_at, lat, lng, heading FROM checkins WHERE created_at > ? AND status = 'wait'"
   ).bind(since).all();
   const groups = {};
   (res && res.results ? res.results : []).forEach(function (row) {
+    if (!northboundIntoUs(NORTHBOUND_ANCHORS[row.bridge], { lat: row.lat, lng: row.lng }, row.heading)) {
+      return;
+    }
     const key = row.bridge + "|" + row.lane;
     if (!groups[key]) {
       groups[key] = { bridge: row.bridge, lane: row.lane, waits: [], latest: 0 };
@@ -656,9 +648,11 @@ async function handleCheckinHeat(request, env) {
   }
   const since = Date.now() - CHECKIN_WINDOW_MS;
   const res = await env.DB.prepare(
-    "SELECT lat, lng, bridge, lane, created_at FROM checkins WHERE created_at > ? AND status = 'pin' AND lat IS NOT NULL AND lng IS NOT NULL"
+    "SELECT lat, lng, bridge, lane, heading, created_at FROM checkins WHERE created_at > ? AND status = 'pin' AND lat IS NOT NULL AND lng IS NOT NULL"
   ).bind(since).all();
-  const points = (res && res.results ? res.results : []).map(function (row) {
+  const points = (res && res.results ? res.results : []).filter(function (row) {
+    return northboundIntoUs(NORTHBOUND_ANCHORS[row.bridge], { lat: row.lat, lng: row.lng }, row.heading);
+  }).map(function (row) {
     return {
       lat: row.lat,
       lng: row.lng,
