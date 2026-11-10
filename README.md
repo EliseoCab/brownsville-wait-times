@@ -60,8 +60,10 @@ Commit & push. After deploy, **Refresh times** should show **Live · CBP proxy**
 
 Workflow **Update CBP wait times**:
 
-- Fetches Brownsville RSS and the national all-ports XML about every **10 minutes**
-- Commits and redeploys Pages **only when wait times actually change**
+- Fetches Brownsville RSS and the national all-ports XML at **:10, :25, and :40** (about every 15 minutes, inside a ~20 minute window) plus **Run workflow**
+- Commits `data/bwt.xml` to `main` **only when the feed changes**
+- On every run, bakes the four bridges' wait times and an updated timestamp into the Pages HTML artifact so search engines can read the numbers without JavaScript. That generated HTML is **not** committed
+- The open page still refreshes from the Cloudflare Worker and replaces the baked text
 - Manual: **Actions → Update CBP wait times → Run workflow**
 - GitHub sometimes **skips or delays** schedules; the lag check self-heals when that happens
 

@@ -5,6 +5,11 @@ cd "$(dirname "$0")/.."
 
 mkdir -p _site/data _site/icons
 cp index.html README.md manifest.webmanifest sw.js geo-opt-in.js amenities.css amenities.js sitemap.xml robots.txt 404.html _site/
+# Fill crawler-visible wait times from the feed just copied into the artifact.
+# Source index.html on main keeps placeholders; this does not create a commit.
+if [[ -f data/bwt.xml ]]; then
+  python3 scripts/bake_static_waits.py _site/index.html data/bwt.xml
+fi
 cp -R gateway bm veterans los-indios all-ports privacy _site/
 cp icons/icon-192.png icons/icon-512.png icons/apple-touch-icon.png _site/icons/
 cp data/bwt.xml _site/data/bwt.xml

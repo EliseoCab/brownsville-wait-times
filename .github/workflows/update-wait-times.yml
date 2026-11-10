@@ -10,7 +10,10 @@ on:
   repository_dispatch:
     types: [refresh-bwt]
 
-# Fetch CBP every run. Commit + deploy Pages only when the XML changed.
+# Fetch CBP about every 15 minutes (:10, :25, :40), which keeps the published
+# snapshot inside a ~20 minute window. Commit data files only when the feed
+# changed. Always publish the Pages artifact, with wait times baked into the
+# HTML, and never commit that generated HTML to main.
 # GITHUB_TOKEN pushes do not trigger other workflows.
 
 permissions:
@@ -34,17 +37,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Fetch CBP Brownsville + national feeds
-        id: fetch
         run: |
           set -euo pipefail
-          mkdir -p data
-          # Retry CBP a few times (occasional blips)
+          # Retry CBP a few times (occasional blips). Keep the download out of
+          # the worktree until we have the latest main.
           ok=0
           for i in 1 2 3 4 5; do
             if curl -fsSL --retry 2 --retry-delay 2 \
               "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43" \
-              -o data/bwt.xml; then
-              if grep -q "<item>" data/bwt.xml; then
+              -o /tmp/bwt-deploy.xml; then
+              if grep -q "<item>" /tmp/bwt-deploy.xml; then
                 ok=1
                 break
               fi
@@ -56,19 +58,18 @@ jobs:
             echo "Failed to fetch a valid CBP feed"
             exit 1
           fi
-          echo "Feed size: $(wc -c < data/bwt.xml) bytes"
-          echo "pubDate: $(grep -o '<pubDate>[^<]*' data/bwt.xml | head -1)"
+          echo "Feed size: $(wc -c < /tmp/bwt-deploy.xml) bytes"
+          echo "pubDate: $(grep -o '<pubDate>[^<]*' /tmp/bwt-deploy.xml | head -1)"
           echo "Sample times:"
-          grep -oE 'At [0-9:]+ [ap]m C[DS]T|[0-9]+ min delay|Update Pending' data/bwt.xml | head -20
+          grep -oE 'At [0-9:]+ [ap]m C[DS]T|[0-9]+ min delay|Update Pending' /tmp/bwt-deploy.xml | head -20
 
           # National land-border XML for all-ports/ (Worker /all backup on Pages)
           all_ok=0
           for i in 1 2 3 4 5; do
             if curl -fsSL --retry 2 --retry-delay 2 \
               "https://bwt.cbp.gov/xml/bwt.xml" \
-              -o /tmp/bwt-all.xml; then
-              if grep -q "<port>" /tmp/bwt-all.xml; then
-                cp /tmp/bwt-all.xml data/bwt-all.xml
+              -o /tmp/bwt-all-deploy.xml; then
+              if grep -q "<port>" /tmp/bwt-all-deploy.xml; then
                 all_ok=1
                 break
               fi
@@ -77,56 +78,67 @@ jobs:
             sleep 3
           done
           if [ "$all_ok" != "1" ]; then
+            rm -f /tmp/bwt-all-deploy.xml
             echo "National all-ports feed fetch failed; keeping previous data/bwt-all.xml if present."
           else
-            echo "National feed size: $(wc -c < data/bwt-all.xml) bytes"
-            echo "National last_updated: $(grep -oE '<last_updated_date>[^<]+' data/bwt-all.xml | head -1) $(grep -oE '<last_updated_time>[^<]+' data/bwt-all.xml | head -1)"
+            echo "National feed size: $(wc -c < /tmp/bwt-all-deploy.xml) bytes"
+            echo "National last_updated: $(grep -oE '<last_updated_date>[^<]+' /tmp/bwt-all-deploy.xml | head -1) $(grep -oE '<last_updated_time>[^<]+' /tmp/bwt-all-deploy.xml | head -1)"
           fi
 
-          # last-fetch.txt used to change every run and force a commit even when
-          # wait times were identical — that produced hundreds of empty history entries.
-          if git diff --quiet -- data/bwt.xml data/bwt-all.xml; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "Feed unchanged; skip commit and Pages deploy."
-          else
-            date -u +"%Y-%m-%dT%H:%M:%SZ" > data/last-fetch.txt
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "Feed changed; will commit and deploy."
-          fi
-
-      - name: Commit updated data (if changed)
-        if: steps.fetch.outputs.changed == 'true'
+      - name: Publish fresh feed without a main commit every run
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/bwt.xml data/bwt-all.xml data/last-fetch.txt
-          git commit -m "chore: refresh Brownsville CBP wait times"
-          git push
-          echo "Committed and pushed new data/bwt.xml"
+          set -euo pipefail
+          # Schedule runs on main. Pick up code pushed while this job waited,
+          # then commit only data files when the feed itself changed.
+          if [[ "${GITHUB_REF_NAME:-main}" == "main" ]]; then
+            git fetch --depth=1 origin main
+            git reset --hard origin/main
+          fi
+          mkdir -p data
+          changed=false
+          if ! cmp -s /tmp/bwt-deploy.xml data/bwt.xml; then
+            changed=true
+            cp /tmp/bwt-deploy.xml data/bwt.xml
+          fi
+          if [[ -f /tmp/bwt-all-deploy.xml ]] && ! cmp -s /tmp/bwt-all-deploy.xml data/bwt-all.xml; then
+            changed=true
+            cp /tmp/bwt-all-deploy.xml data/bwt-all.xml
+          fi
+          if [[ "$changed" == true ]]; then
+            # last-fetch.txt used to change every run and force a commit even when
+            # wait times were identical — that produced hundreds of empty history entries.
+            date -u +"%Y-%m-%dT%H:%M:%SZ" > data/last-fetch.txt
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/bwt.xml data/bwt-all.xml data/last-fetch.txt
+            git commit -m "chore: refresh Brownsville CBP wait times"
+            git push origin HEAD:main
+            echo "Committed data files only."
+          else
+            echo "Feed matches main. Skipping the data commit."
+          fi
+          cp /tmp/bwt-deploy.xml data/bwt.xml
+          if [[ -f /tmp/bwt-all-deploy.xml ]]; then
+            cp /tmp/bwt-all-deploy.xml data/bwt-all.xml
+          fi
 
       - name: Stage site files
-        if: steps.fetch.outputs.changed == 'true'
         run: |
           bash scripts/stage-site.sh
           echo "Deploying feed:"
           grep -o '<pubDate>[^<]*' _site/data/bwt.xml | head -1
           grep -oE 'At [0-9:]+ [ap]m C[DS]T' _site/data/bwt.xml | sort | uniq -c | head -5
+          echo "Baked timestamp:"
+          grep -o 'id="staticWaits"><p class="static-waits-updated"><time[^>]*>[^<]*' _site/index.html | head -1
 
       - name: Configure Pages
-        if: steps.fetch.outputs.changed == 'true'
         uses: actions/configure-pages@v5
 
       - name: Upload artifact
-        if: steps.fetch.outputs.changed == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
 
       - name: Deploy to GitHub Pages
-        if: steps.fetch.outputs.changed == 'true'
         id: deployment
         uses: actions/deploy-pages@v4
-
-      - name: Nothing to publish
-        if: steps.fetch.outputs.changed != 'true'
-        run: echo "CBP feed matches the last committed mirror. Job succeeds without a deploy."
