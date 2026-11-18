@@ -11,7 +11,7 @@
   --navy: #0b1f3a;
   --navy-mid: #123056;
   --sky: #0ea5e9;
-  --sky-deep: #0284c7;
+  --sky-deep: #075985;
   --sky-soft: #e0f2fe;
   --green: #059669;
   --amber: #d97706;
@@ -74,6 +74,42 @@ html[data-theme="dark"] a:hover { color: #e0f2fe; }
 .lang-es { display: none; }
 html[lang="es"] .lang-en { display: none; }
 html[lang="es"] .lang-es { display: inline; }
+
+
+    .skip-link {
+      position: absolute;
+      inset-inline-start: max(0.75rem, env(safe-area-inset-left, 0px));
+      top: max(0.75rem, env(safe-area-inset-top, 0px));
+      z-index: 10000;
+      padding: 0.55rem 0.9rem;
+      border-radius: 10px;
+      background: #0b1f3a;
+      color: #fff;
+      font-weight: 750;
+      font-size: 0.9rem;
+      line-height: 1.2;
+      text-decoration: none;
+      white-space: nowrap;
+      transform: translateY(-150%);
+    }
+    .skip-link:hover,
+    .skip-link:focus,
+    .skip-link:focus-visible {
+      transform: translateY(0);
+      color: #fff;
+      text-decoration: none;
+      outline: 2px solid #7dd3fc;
+      outline-offset: 3px;
+    }
+    .skip-link .lang-es { display: none; }
+    html[lang="es"] .skip-link .lang-en { display: none; }
+    html[lang="es"] .skip-link .lang-es { display: inline; }
+    #content { scroll-margin-top: 5rem; }
+    #content:focus { outline: none; }
+    #content:focus-visible {
+      outline: 2px solid var(--sky-deep, #075985);
+      outline-offset: 3px;
+    }
 
 .topbar {
   max-width: 1080px;

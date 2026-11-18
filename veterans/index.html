@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-src https://g3.ipcamlive.com https://*.ipcamlive.com; upgrade-insecure-requests" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; img-src 'self' data: https: blob:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-src https://g3.ipcamlive.com https://*.ipcamlive.com; upgrade-insecure-requests" />
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
   <meta name="referrer" content="no-referrer" />
   <!-- Google tag (gtag.js) -->
@@ -57,12 +57,11 @@
   <link rel="apple-touch-icon" sizes="180x180" href="../icons/apple-touch-icon.png?v=2" />
   <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png?v=2" />
   <link rel="icon" type="image/x-icon" href="../icons/favicon.ico?v=2" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&amp;family=Instrument+Serif:ital@0;1&amp;display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../amenities.css?v=12" />
+  <link rel="stylesheet" href="../fonts/fonts.css?v=1" />
+  <link rel="stylesheet" href="../amenities.css?v=13" />
 </head>
 <body>
+  <a class="skip-link" href="#content"><span class="lang-en">Skip to content</span><span class="lang-es">Saltar al contenido</span></a>
   <div class="topbar">
     <a class="back" href="../"><span class="lang-en">← Back to wait times</span><span class="lang-es">← Volver a tiempos de espera</span></a>
     <a class="report-wait" href="../#crowdSource"><span class="lang-en">Report Wait Times</span><span class="lang-es">Reportar tiempos de espera</span></a>
@@ -83,7 +82,7 @@
     </div>
   </div>
 
-  <main class="shell">
+  <main id="content" class="shell" tabindex="-1">
     <p class="eyebrow" data-i18n-en="Nearby amenities" data-i18n-es="Servicios cercanos">Nearby amenities</p>
     <h1>Veterans</h1>
     <p class="bridge-aka"><span class="lang-en">Veterans Bridge at Los Tomates</span><span class="lang-es">Puente Internacional de Veteranos en Los Tomates</span></p>
@@ -100,7 +99,7 @@
     <div class="grid" id="amenityGrid">
         <article class="poi poi-has-photo poi-hero" data-cats="spacex">
           <figure class="poi-photo">
-            <img src="../images/starbase-boca-chica.jpg?v=4" data-full-src="../images/starbase-boca-chica-full.jpg?v=4" width="1200" height="497" loading="lazy" decoding="async" alt="Starship stacked on the launch tower at SpaceX Starbase in Boca Chica at night" />
+            <picture><source type="image/webp" srcset="../images/starbase-boca-chica-thumb.webp?v=1" /><img src="../images/starbase-boca-chica-thumb.jpg?v=1" data-full-src="../images/starbase-boca-chica-full.jpg?v=4" width="640" height="265" loading="lazy" decoding="async" alt="Starship stacked on the launch tower at SpaceX Starbase in Boca Chica at night" /></picture>
             <figcaption>
               <span class="lang-en">Starship on the launch tower · Starbase, Boca Chica · hover or tap to expand</span>
               <span class="lang-es">Starship en la torre de lanzamiento · Starbase, Boca Chica · pase el cursor o toque para ampliar</span>
@@ -121,7 +120,7 @@
         </article>
         <article class="poi poi-has-photo poi-has-thumb poi-contain" data-cats="food">
           <figure class="poi-photo">
-            <img src="../images/food/taco-palenque.jpg" width="900" height="802" loading="lazy" decoding="async" alt="Taco Palenque sign: fajitas, breakfast, drive thru" />
+            <picture><source type="image/webp" srcset="../images/food/taco-palenque-thumb.webp?v=1" /><img src="../images/food/taco-palenque-thumb.jpg?v=1" data-full-src="../images/food/taco-palenque.jpg" width="640" height="570" loading="lazy" decoding="async" alt="Taco Palenque sign: fajitas, breakfast, drive thru" /></picture>
           </figure>
           <div class="poi-body">
           <div class="tags"><span class="tag">Food</span></div>
@@ -132,7 +131,7 @@
         </article>
         <article class="poi poi-has-photo poi-has-thumb" data-cats="food">
           <figure class="poi-photo">
-            <img src="../images/food/whataburger.jpg" width="900" height="609" loading="lazy" decoding="async" alt="Whataburger restaurant exterior" />
+            <picture><source type="image/webp" srcset="../images/food/whataburger-thumb.webp?v=1" /><img src="../images/food/whataburger-thumb.jpg?v=1" data-full-src="../images/food/whataburger.jpg" width="640" height="433" loading="lazy" decoding="async" alt="Whataburger restaurant exterior" /></picture>
           </figure>
           <div class="poi-body">
           <div class="tags"><span class="tag">Food</span></div>
@@ -143,7 +142,7 @@
         </article>
         <article class="poi poi-has-photo poi-has-thumb" data-cats="food">
           <figure class="poi-photo">
-            <img src="../images/food/jolie-petite.jpg" width="675" height="900" loading="lazy" decoding="async" alt="Jolie Petite dining room with pink chairs, chandeliers, and brunch menus" />
+            <picture><source type="image/webp" srcset="../images/food/jolie-petite-thumb.webp?v=1" /><img src="../images/food/jolie-petite-thumb.jpg?v=1" data-full-src="../images/food/jolie-petite.jpg" width="480" height="640" loading="lazy" decoding="async" alt="Jolie Petite dining room with pink chairs, chandeliers, and brunch menus" /></picture>
           </figure>
           <div class="poi-body">
           <div class="tags"><span class="tag">Food</span></div>

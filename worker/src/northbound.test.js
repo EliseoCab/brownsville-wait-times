@@ -71,7 +71,7 @@ describe("nearestNorthboundBridge", () => {
 
 describe("homepage copies the same booth anchors", () => {
   it("keeps the page filter on the same U.S. booths", () => {
-    const html = fs.readFileSync(new URL("../../index.html", import.meta.url), "utf8");
+    const html = fs.readFileSync(new URL("../../assets/home.js", import.meta.url), "utf8");
     for (const point of Object.values(NORTHBOUND_ANCHORS)) {
       assert.match(html, new RegExp(String(point.lat)));
       assert.match(html, new RegExp(String(point.lng).replace("-", "\\-")));
