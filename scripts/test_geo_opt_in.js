@@ -11,7 +11,10 @@ var stage = fs.readFileSync(path.join(root, "scripts/stage-site.sh"), "utf8");
 assert(stage.indexOf("geo-opt-in.js") !== -1, "stage-site.sh must copy geo-opt-in.js into the Pages artifact");
 var sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
 assert(sw.indexOf("geo-opt-in.js?v=1") !== -1, "service worker must precache geo-opt-in.js");
-assert(/bwt-shell-v83/.test(sw), "service worker cache must be bumped past the build that 404'd the helper");
+assert(/bwt-shell-v84/.test(sw), "service worker cache must be bumped past the build that 404'd the helper");
+assert(sw.indexOf("assets/home.css?v=84") !== -1, "service worker must precache homepage CSS");
+assert(sw.indexOf("assets/home.js?v=84") !== -1, "service worker must precache homepage JS");
+assert(sw.indexOf("icons/icon-512-maskable.png?v=1") !== -1, "service worker must precache the maskable icon");
 
 function plan(partial) {
   return geo.planGeoRequest(Object.assign({ available: true, cached: null, choice: null, permission: null, manual: false }, partial));

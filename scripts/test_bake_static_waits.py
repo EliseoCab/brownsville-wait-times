@@ -114,7 +114,10 @@ class BakeStaticWaitsTest(unittest.TestCase):
         self.assertIn("Vehicles 8 min", grid)
         self.assertIn("Updated Nov 9, 2026 · 9:00 am CST", grid)
         self.assertIn('datetime="2026-11-09T09:00-06:00"', grid)
-        self.assertLess(baked.find("Vehicles 17 min"), baked.find("FALLBACK_RSS"))
+        self.assertIn("Vehicles 17 min", baked)
+        self.assertNotIn("FALLBACK_RSS", baked)
+        home_js = (ROOT / "assets/home.js").read_text(encoding="utf-8")
+        self.assertIn("FALLBACK_RSS", home_js)
 
         asof = baked.split('id="asofStamp"', 1)[1].split("</strong>", 1)[0]
         self.assertIn("Nov 9, 2026 · 9:00 am CST", asof)
@@ -137,7 +140,8 @@ class BakeStaticWaitsTest(unittest.TestCase):
             self.assertEqual(bake.main(["bake", str(html_path), str(xml_path)]), 0)
             text = html_path.read_text(encoding="utf-8")
             self.assertIn("Vehicles 17 min", text)
-            self.assertLess(text.find("Vehicles 17 min"), text.find("FALLBACK_RSS"))
+            self.assertIn("Vehicles 17 min", text)
+            self.assertNotIn("FALLBACK_RSS", text)
 
     def test_committed_mirror_bakes_four_bridges(self) -> None:
         xml = (ROOT / "data" / "bwt.xml").read_text(encoding="utf-8")
@@ -165,7 +169,8 @@ class BakeStaticWaitsTest(unittest.TestCase):
         self.assertIn("stage-site.sh", deploy)
 
     def test_crowd_toggle_contract(self) -> None:
-        html = self.page
+        html = (ROOT / "assets/home.js").read_text(encoding="utf-8")
+        css = (ROOT / "assets/home.css").read_text(encoding="utf-8")
         summary = html.split("function crowdSectionHtml()", 1)[1].split("function ensureCrowdSection", 1)[0]
         summary_open = summary.split("<summary", 1)[1].split("</summary>", 1)[0]
         self.assertNotIn("crowd-collapse", summary_open)
@@ -177,10 +182,10 @@ class BakeStaticWaitsTest(unittest.TestCase):
         self.assertIn("box.open = willOpen", toggle)
         self.assertIn("function openCrowdFromHash(", toggle)
         self.assertIn("syncCrowdAria", html)
-        self.assertIn('aria-controls="crowdSource"', html)
+        self.assertIn('aria-controls="crowdSource"', self.page)
         self.assertIn("crowdCollapse", html)
         self.assertIn("Contraer", html)
-        self.assertIn(".crowd-source:not([open]) > .crowd-collapse { display: none; }", html)
+        self.assertIn(".crowd-source:not([open]) > .crowd-collapse { display: none; }", css)
 
 
 if __name__ == "__main__":
