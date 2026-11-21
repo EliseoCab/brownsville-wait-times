@@ -4355,7 +4355,7 @@
         lanesClosed: "Lanes closed",
         asOf: "As of",
         lanesOpen: "lane(s) open",
-        lanesOf: "{open} of {total} Open",
+        lanesOf: "Open {open} of {total}",
         open: "Open",
         gen: "Gen",
         ready: "Ready",
@@ -4542,7 +4542,7 @@
         lanesClosed: "Carriles cerrados",
         asOf: "A las",
         lanesOpen: "carril(es) abierto(s)",
-        lanesOf: "{open} de {total} Abiertos",
+        lanesOf: "Abiertos {open} de {total}",
         open: "Abiertos",
         gen: "Gen",
         ready: "Ready",
@@ -6074,9 +6074,18 @@
       };
     }
 
+    /** Put the "Open X of Y" pool total above the Gen/Ready breakdown. */
+    function ofLineFirst(lines) {
+      const tpl = t("lanesOf").replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+        .replace("\\{open\\}", "\\d+").replace("\\{total\\}", "\\d+");
+      const re = new RegExp("^" + tpl + "$");
+      const of = lines.filter(function (l) { return re.test(l); });
+      return of.concat(lines.filter(function (l) { return !re.test(l); }));
+    }
+
     function openLineMarkup(text) {
       if (text) {
-        return String(text).split("\n").filter(Boolean).map(function (line) {
+        return ofLineFirst(String(text).split("\n").filter(Boolean)).map(function (line) {
           return `<span class="wait-extra open-line">${escapeHtml(line)}</span>`;
         }).join("");
       }
@@ -7163,8 +7172,8 @@
     }
     function driveWaitPillHtml(topHtml, mid, bot) {
       let body = topHtml || "";
-      if (mid) body += `<div class="drive-wait-mid">${escapeHtml(mid)}</div>`;
       if (bot) body += `<div class="drive-wait-bot">${escapeHtml(bot)}</div>`;
+      if (mid) body += `<div class="drive-wait-mid">${escapeHtml(mid)}</div>`;
       if (!body) return "—";
       return `<div class="drive-wait-tile">${body}</div>`;
     }
