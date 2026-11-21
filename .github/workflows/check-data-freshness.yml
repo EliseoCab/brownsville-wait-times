@@ -40,7 +40,7 @@ jobs:
         id: compare
         env:
           CBP_URL: "https://bwt.cbp.gov/api/bwtRss/HTML/44,43/42,45,44,43/42,45,43"
-          SITE_URL: "https://eliseocab.github.io/brownsville-wait-times/data/bwt.xml"
+          SITE_URL: "https://brownsvillewaittimes.com/data/bwt.xml"
           WORKER_URL: "https://brownsville-bwt.borderwait.workers.dev/?fresh=1"
           # Alert if an in-hours bridge lags CBP by this many minutes (one CBP hour + buffer)
           MAX_LAG_MINUTES: "75"
