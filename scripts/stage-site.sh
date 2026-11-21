@@ -11,7 +11,7 @@ if [[ -f data/bwt.xml ]]; then
   python3 scripts/bake_static_waits.py _site/index.html data/bwt.xml
 fi
 cp -R gateway bm veterans los-indios all-ports privacy _site/
-cp icons/icon-192.png icons/icon-512.png icons/apple-touch-icon.png _site/icons/
+cp icons/icon-192.png icons/icon-512.png icons/apple-touch-icon.png icons/favicon-32.png icons/favicon.ico _site/icons/
 cp data/bwt.xml _site/data/bwt.xml
 if [[ -f data/bwt-all.xml ]]; then
   cp data/bwt-all.xml _site/data/bwt-all.xml

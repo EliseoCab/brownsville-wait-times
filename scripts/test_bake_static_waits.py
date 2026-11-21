@@ -163,6 +163,8 @@ class BakeStaticWaitsTest(unittest.TestCase):
         self.assertNotIn("git add index.html", workflow)
         self.assertNotIn("index.html", workflow.split("git add", 1)[1].split("\n", 1)[0])
         self.assertIn("stage-site.sh", deploy)
+        self.assertIn("icons/favicon.ico", stage)
+        self.assertIn("icons/favicon-32.png", stage)
 
     def test_crowd_toggle_contract(self) -> None:
         html = self.page

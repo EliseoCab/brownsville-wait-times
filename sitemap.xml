@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://eliseocab.github.io/brownsville-wait-times/</loc>
+    <loc>https://brownsvillewaittimes.com/</loc>
     <changefreq>hourly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://eliseocab.github.io/brownsville-wait-times/bm/</loc>
+    <loc>https://brownsvillewaittimes.com/bm/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://eliseocab.github.io/brownsville-wait-times/gateway/</loc>
+    <loc>https://brownsvillewaittimes.com/gateway/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://eliseocab.github.io/brownsville-wait-times/veterans/</loc>
+    <loc>https://brownsvillewaittimes.com/veterans/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://eliseocab.github.io/brownsville-wait-times/los-indios/</loc>
+    <loc>https://brownsvillewaittimes.com/los-indios/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://eliseocab.github.io/brownsville-wait-times/all-ports/</loc>
+    <loc>https://brownsvillewaittimes.com/all-ports/</loc>
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://eliseocab.github.io/brownsville-wait-times/privacy/</loc>
+    <loc>https://brownsvillewaittimes.com/privacy/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
