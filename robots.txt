@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://eliseocab.github.io/brownsville-wait-times/sitemap.xml
+Sitemap: https://brownsvillewaittimes.com/sitemap.xml

@@ -6,7 +6,7 @@
 **Chrome Extensions skill:** Skimmed only to confirm the site does **not** use extension APIs.  
 **Skill freshness:** The installed `modern-web-guidance` skill pin is `2026_05_16-c5e7870`. The CLI reports a newer skill (`2026_09_04-7de96777`). Update the plugin skill before the next implementation pass.
 
-Live site: https://eliseocab.github.io/brownsville-wait-times/
+Live site: https://brownsvillewaittimes.com/
 
 This document is a prioritized recommendation list, not a rewrite plan. Each item is a small, concrete change that helps people checking Brownsville–Matamoros waits on a phone (often on the approach, on cellular, in bright sun or at night, in English or Spanish).
 

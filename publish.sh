@@ -41,6 +41,6 @@ gh api -X POST "repos/$USER/$REPO/pages" \
   || echo "If Pages API failed, enable manually: Settings → Pages → Deploy from branch → main → / (root)"
 
 echo ""
-echo "Site URL: https://$USER.github.io/$REPO/"
+echo "Site URL: https://brownsvillewaittimes.com/"
 echo "Actions will refresh data/bwt.xml about every 10 minutes (only when CBP times change)."
 echo "Trigger now: gh workflow run update-wait-times.yml -R $USER/$REPO"

@@ -9,6 +9,8 @@ var geo = require("../geo-opt-in.js");
 var root = path.join(__dirname, "..");
 var stage = fs.readFileSync(path.join(root, "scripts/stage-site.sh"), "utf8");
 assert(stage.indexOf("geo-opt-in.js") !== -1, "stage-site.sh must copy geo-opt-in.js into the Pages artifact");
+assert(stage.indexOf("icons/favicon.ico") !== -1, "stage-site.sh must copy favicon.ico into the Pages artifact");
+assert(stage.indexOf("icons/favicon-32.png") !== -1, "stage-site.sh must copy favicon-32.png into the Pages artifact");
 var sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
 assert(sw.indexOf("geo-opt-in.js?v=1") !== -1, "service worker must precache geo-opt-in.js");
 assert(/bwt-shell-v83/.test(sw), "service worker cache must be bumped past the build that 404'd the helper");

@@ -9,16 +9,16 @@ A clean viewer for CBP border wait times at Brownsville, Texas bridges:
 
 ## Live site
 
-**https://eliseocab.github.io/brownsville-wait-times/**
+**https://brownsvillewaittimes.com/**
 
-[All U.S. land ports](https://eliseocab.github.io/brownsville-wait-times/all-ports/) — live CBP times for every land crossing, nearest first, with Mexico / Northern filters.
+[All U.S. land ports](https://brownsvillewaittimes.com/all-ports/) — live CBP times for every land crossing, nearest first, with Mexico / Northern filters.
 
 Nearby amenities (static community guides, not CBP) for B&M, Gateway, Veterans International, and Los Indios:
 
-- [B&amp;M](https://eliseocab.github.io/brownsville-wait-times/bm/)
-- [Gateway](https://eliseocab.github.io/brownsville-wait-times/gateway/)
-- [Los Indios](https://eliseocab.github.io/brownsville-wait-times/los-indios/)
-- [Veterans](https://eliseocab.github.io/brownsville-wait-times/veterans/)
+- [B&amp;M](https://brownsvillewaittimes.com/bm/)
+- [Gateway](https://brownsvillewaittimes.com/gateway/)
+- [Los Indios](https://brownsvillewaittimes.com/los-indios/)
+- [Veterans](https://brownsvillewaittimes.com/veterans/)
 
 ## How data stays fresh (hybrid)
 
