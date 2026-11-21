@@ -35,6 +35,8 @@ const X_POST_COUNT = 5;
 /** Allowed browser Origins for CORS (GitHub Pages + local preview). */
 const ALLOWED_ORIGINS = [
   "https://eliseocab.github.io",
+  "https://brownsvillewaittimes.com",
+  "https://www.brownsvillewaittimes.com",
   "http://localhost",
   "http://127.0.0.1",
 ];
