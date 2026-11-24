@@ -13,7 +13,7 @@ assert(stage.indexOf("icons/favicon.ico") !== -1, "stage-site.sh must copy favic
 assert(stage.indexOf("icons/favicon-32.png") !== -1, "stage-site.sh must copy favicon-32.png into the Pages artifact");
 var sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
 assert(sw.indexOf("geo-opt-in.js?v=1") !== -1, "service worker must precache geo-opt-in.js");
-assert(/bwt-shell-v84/.test(sw), "service worker cache must be bumped past the build that 404'd the helper");
+assert(/bwt-shell-v85/.test(sw), "service worker cache must be bumped past the build that 404'd the helper");
 
 function plan(partial) {
   return geo.planGeoRequest(Object.assign({ available: true, cached: null, choice: null, permission: null, manual: false }, partial));
