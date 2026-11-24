@@ -1,0 +1,427 @@
+/* Other U.S. ports — loaded on first expand. Scoped so it does not restyle the homepage. */
+
+.ap-section .panel {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 0.85rem 0.9rem 1rem;
+  margin: 0 0 0.85rem;
+}
+.ap-section .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.55rem;
+  align-items: center;
+  margin-bottom: 0.55rem;
+}
+.ap-section .row:last-child { margin-bottom: 0; }
+.ap-section .filter-asof {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  width: fit-content;
+  max-width: 100%;
+}
+.ap-section .seg-lite {
+  display: inline-flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.15rem;
+  gap: 0.15rem;
+  background: var(--line-soft);
+}
+.ap-section .seg-lite button {
+  appearance: none;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--slate);
+  padding: 0.32rem 0.62rem;
+  min-height: 32px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.ap-section .seg-lite button.active { background: var(--navy); color: #fff; }
+.ap-section select {
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  min-height: 34px;
+  max-width: 100%;
+}
+.ap-section .asof {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 0.4rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+  padding: 0.38rem 0.7rem;
+  border-radius: 999px;
+}
+.ap-section .asof strong { color: var(--ink); font-weight: 750; }
+.ap-section .status {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0.35rem 0 0.65rem;
+  min-height: 1.2em;
+}
+.ap-section .geo-opt-in:not([hidden]) {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 0.75rem;
+  padding: 0.28rem 0.7rem;
+  min-height: 2rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--navy);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ap-section .geo-opt-in:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+}
+.ap-section .meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.65rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.ap-section .port-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  padding: 0.75rem 0.85rem 0.85rem;
+  margin-bottom: 0.65rem;
+}
+.ap-section .port-title {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.ap-section .port-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+  align-items: center;
+}
+.ap-section .pill {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.4rem;
+  border-radius: 6px;
+  background: var(--line-soft);
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+.ap-section .port-title + .maps-wrap {
+  display: inline-flex;
+  margin-top: 0.28rem;
+}
+.ap-section .maps-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+}
+.ap-section .maps-dist {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--sky-deep);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.ap-section .port-hours,
+.ap-section .port-updated {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+  margin-top: 0.3rem;
+  line-height: 1.3;
+}
+.ap-section .port-hours strong,
+.ap-section .port-updated strong {
+  font-weight: 700;
+  color: var(--sky-deep);
+}
+.ap-section .port-updated { margin-top: 0.12rem; }
+.ap-section .maps {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  margin-left: 0.1rem;
+  color: var(--sky-deep);
+  border-radius: 6px;
+  text-decoration: none;
+  line-height: 0;
+}
+.ap-section .maps:hover,
+.ap-section .maps:focus-visible {
+  background: var(--line-soft);
+  color: var(--ink);
+  outline: none;
+}
+.ap-section .maps svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: block;
+}
+.ap-section .port-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+}
+.ap-section .cell {
+  background: linear-gradient(180deg, var(--line-soft) 0%, var(--white) 55%);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.5rem 0.55rem 0.55rem;
+  min-width: 0;
+}
+.ap-section .cell-kicker {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+.ap-section .wait-empty {
+  display: inline;
+  width: auto;
+  text-align: left;
+  color: var(--muted);
+  font-size: inherit;
+  font-weight: 650;
+}
+.ap-section .wait-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.28rem;
+  width: auto;
+  margin: 0;
+  text-align: left;
+}
+.ap-section .lane-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.35rem;
+}
+.ap-section .wait-cell {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 0.12rem;
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.ap-section .wait-cell .num { font-size: 1.15rem; letter-spacing: -0.02em; }
+.ap-section .wait-cell .unit {
+  font-size: 0.72rem;
+  font-weight: 700;
+  opacity: 0.75;
+  letter-spacing: 0.06em;
+}
+.ap-section .wait-cell.low .num,
+.ap-section .wait-cell.low .unit { color: var(--green); }
+.ap-section .wait-cell.med .num,
+.ap-section .wait-cell.med .unit { color: var(--amber); }
+.ap-section .wait-cell:is(.high, .severe) .num,
+.ap-section .wait-cell:is(.high, .severe) .unit { color: var(--red); }
+.ap-section .wait-cell.na .num,
+.ap-section .wait-cell.pending .num {
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+  max-width: none;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.ap-section .wait-cell.pending .num { color: #b45309; }
+.ap-section .wait-cell.na .unit,
+.ap-section .wait-cell.pending .unit { display: none; }
+.ap-section .open-line { margin-top: 0.25rem; font-size: 0.68rem; font-weight: 650; color: var(--muted); }
+.ap-section .cell-asof {
+  margin-top: 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.3;
+}
+.ap-section .dual-label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: none;
+  text-align: left;
+  min-width: 3.2rem;
+  white-space: nowrap;
+}
+.ap-section .empty {
+  grid-column: auto;
+  text-align: center;
+  color: var(--muted);
+  padding: 1.5rem 0.5rem;
+  font-size: inherit;
+}
+.ap-section #apShowMore:not([hidden]) {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  cursor: pointer;
+  display: block;
+  margin: 0.5rem auto 0;
+  box-shadow: var(--shadow-sm);
+}
+.ap-section #apShowMore:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .ap-section .port-grid { grid-template-columns: 1fr; }
+}
+
+html:not([data-theme="dark"]) .ap-section .panel,
+html:not([data-theme="dark"]) .ap-section .port-card,
+html:not([data-theme="dark"]) .ap-section .empty {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(18px) saturate(1.55);
+  -webkit-backdrop-filter: blur(18px) saturate(1.55);
+}
+html:not([data-theme="dark"]) .ap-section .empty { border-radius: 16px; }
+html:not([data-theme="dark"]) .ap-section .asof {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 6px 16px rgba(15, 47, 84, 0.07);
+  backdrop-filter: blur(16px) saturate(1.5);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+}
+html:not([data-theme="dark"]) .ap-section .seg-lite,
+html:not([data-theme="dark"]) .ap-section select,
+html:not([data-theme="dark"]) .ap-section .pill,
+html:not([data-theme="dark"]) .ap-section #apShowMore:not([hidden]) {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.4));
+  border-color: var(--glass-border);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset;
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+}
+html:not([data-theme="dark"]) .ap-section .seg-lite button.active {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.58));
+  color: var(--ink);
+  box-shadow: 0 1px 0 #fff inset, 0 4px 12px rgba(15, 47, 84, 0.08);
+}
+html:not([data-theme="dark"]) .ap-section .cell {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.42));
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  box-shadow: 0 1px 0 #fff inset, 0 6px 16px rgba(15, 47, 84, 0.08);
+  backdrop-filter: blur(16px) saturate(1.55);
+  -webkit-backdrop-filter: blur(16px) saturate(1.55);
+}
+html:not([data-theme="dark"]) .ap-section .cell:has(.wait-empty),
+html:not([data-theme="dark"]) .ap-section .cell:has(.wait-cell.pending),
+html:not([data-theme="dark"]) .ap-section .cell:has(.wait-cell.na) {
+  background: linear-gradient(180deg, rgba(219, 227, 238, 0.7), rgba(255, 255, 255, 0.35));
+  border-color: rgba(148, 163, 184, 0.45);
+  box-shadow: none;
+}
+html:not([data-theme="dark"]) .ap-section .maps:hover,
+html:not([data-theme="dark"]) .ap-section .maps:focus-visible {
+  background: rgba(255, 255, 255, 0.55);
+}
+html[data-theme="dark"] .ap-section .geo-opt-in:not([hidden]) {
+  background: #243656;
+  color: #f4f7fb;
+  border-color: #6b82a3;
+}
+html[data-theme="dark"] .ap-section .panel,
+html[data-theme="dark"] .ap-section .port-card,
+html[data-theme="dark"] .ap-section .empty {
+  background: linear-gradient(180deg, rgba(28, 46, 72, 0.55), rgba(12, 22, 38, 0.42));
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  border-radius: 14px;
+  box-shadow: 0 1px 0 rgba(186, 230, 253, 0.18) inset, 0 12px 36px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(22px) saturate(1.45);
+  -webkit-backdrop-filter: blur(22px) saturate(1.45);
+}
+html[data-theme="dark"] .ap-section .asof,
+html[data-theme="dark"] .ap-section .seg-lite,
+html[data-theme="dark"] .ap-section select,
+html[data-theme="dark"] .ap-section .pill,
+html[data-theme="dark"] .ap-section #apShowMore:not([hidden]) {
+  background: linear-gradient(180deg, rgba(28, 46, 72, 0.55), rgba(12, 22, 38, 0.42));
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  color: var(--ink);
+}
+html[data-theme="dark"] .ap-section .seg-lite button.active {
+  background: linear-gradient(180deg, rgba(125, 211, 252, 0.95), rgba(56, 189, 248, 0.78));
+  color: #041018;
+}
+html[data-theme="dark"] .ap-section .cell {
+  background: linear-gradient(180deg, rgba(36, 56, 84, 0.62), rgba(16, 28, 46, 0.48));
+  border: 1px solid rgba(125, 211, 252, 0.14);
+}
+html[data-theme="dark"] .ap-section .cell:has(.wait-empty),
+html[data-theme="dark"] .ap-section .cell:has(.wait-cell.pending),
+html[data-theme="dark"] .ap-section .cell:has(.wait-cell.na) {
+  background: linear-gradient(180deg, rgba(51, 65, 85, 0.5), rgba(16, 28, 46, 0.4));
+}
+@media (prefers-reduced-transparency: reduce) {
+  html:not([data-theme="dark"]) .ap-section .panel,
+  html:not([data-theme="dark"]) .ap-section .port-card,
+  html:not([data-theme="dark"]) .ap-section .cell,
+  html[data-theme="dark"] .ap-section .panel,
+  html[data-theme="dark"] .ap-section .port-card,
+  html[data-theme="dark"] .ap-section .cell {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  html:not([data-theme="dark"]) .ap-section .panel,
+  html:not([data-theme="dark"]) .ap-section .port-card,
+  html:not([data-theme="dark"]) .ap-section .cell {
+    background: rgba(255, 255, 255, 0.92);
+  }
+}

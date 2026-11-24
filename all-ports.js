@@ -1,13 +1,12 @@
 (function () {
   "use strict";
+  /* Homepage loads this on first expand and calls BwtAllPorts.init(root). */
 
   var FEED_PROXY = "https://brownsville-bwt.borderwait.workers.dev";
-  var LOCAL_ALL_FEED = "../data/bwt-all.xml";
+  var LOCAL_ALL_FEED = "data/bwt-all.xml";
   var GITHUB_ALL_FEED =
     "https://raw.githubusercontent.com/EliseoCab/brownsville-wait-times/main/data/bwt-all.xml";
   var PREFS_KEY = "bwt-all-ports-prefs";
-  var LANG_KEY = "bwt-lang";
-  var THEME_KEY = "bwt-theme";
   var NEAREST_DEFAULT = 12;
 
   var STR = {
@@ -45,19 +44,13 @@
       trafficVeh: "Vehicles",
       trafficPed: "Pedestrian",
       trafficComm: "Commercial",
-      back: "← Brownsville wait times",
-      reportWait: "Report Wait Times",
-      title: "All U.S. land ports",
-      sub: "Live CBP wait times · nearest to you, with optional filters",
       latest: "Latest report:",
       hours: "Hours",
       hours24: "24 hours",
       midnight: "midnight",
       updated: "Updated",
       countLabel: "Showing",
-      lanesOf: "{open} of {total} Open",
-      footerBrand: "All U.S. land ports",
-      footerContactLead: "Questions? Contact"
+      lanesOf: "{open} of {total} Open"
     },
     es: {
       checking: "Cargando todos los puertos…",
@@ -93,19 +86,13 @@
       trafficVeh: "Vehículos",
       trafficPed: "Peatonal",
       trafficComm: "Comercial",
-      back: "← Tiempos en Brownsville",
-      reportWait: "Reportar tiempos de espera",
-      title: "Todos los puertos terrestres de EE. UU.",
-      sub: "Tiempos CBP en vivo · más cercanos a usted, con filtros opcionales",
       latest: "Último reporte:",
       hours: "Horario",
       hours24: "24 horas",
       midnight: "medianoche",
       updated: "Actualizado",
       countLabel: "Mostrando",
-      lanesOf: "{open} de {total} Abiertos",
-      footerBrand: "Todos los puertos terrestres de EE. UU.",
-      footerContactLead: "¿Preguntas? Contacte"
+      lanesOf: "{open} de {total} Abiertos"
     }
   };
 
@@ -125,6 +112,28 @@
       nearestLimit: NEAREST_DEFAULT
     }
   };
+
+  var root = null;
+  var booted = false;
+
+  function byId(id) {
+    return root ? root.querySelector("#" + id) : null;
+  }
+
+  function allIn(sel) {
+    return root ? root.querySelectorAll(sel) : [];
+  }
+
+  function readPageLang() {
+    var htmlLang = (document.documentElement.getAttribute("lang") || "").toLowerCase();
+    if (htmlLang.indexOf("es") === 0) return "es";
+    if (htmlLang.indexOf("en") === 0) return "en";
+    try {
+      var stored = localStorage.getItem("bwt-lang");
+      if (stored === "es" || stored === "en") return stored;
+    } catch (_) { /* ignore */ }
+    return "en";
+  }
 
   function t(key) {
     return (STR[state.lang] && STR[state.lang][key]) || (STR.en[key] || key);
@@ -150,27 +159,6 @@
     try {
       localStorage.setItem(PREFS_KEY, JSON.stringify(state.prefs));
     } catch (_) { /* ignore */ }
-  }
-
-  function applyChrome() {
-    document.documentElement.lang = state.lang === "es" ? "es" : "en";
-    var title = document.getElementById("pageTitle");
-    var sub = document.getElementById("pageSub");
-    var back = document.getElementById("backLink");
-    var footerBrand = document.getElementById("footerBrand");
-    var footerLead = document.getElementById("footerContactLead");
-    if (title) title.textContent = t("title");
-    if (sub) sub.textContent = t("sub");
-    if (back) back.textContent = t("back");
-    var report = document.getElementById("reportWaitLink");
-    if (report) report.textContent = t("reportWait");
-    if (footerBrand) footerBrand.textContent = t("footerBrand");
-    if (footerLead) footerLead.textContent = t("footerContactLead");
-    document.title = t("title") + " · BWT";
-    var en = document.getElementById("langEn");
-    var es = document.getElementById("langEs");
-    if (en) en.classList.toggle("active", state.lang !== "es");
-    if (es) es.classList.toggle("active", state.lang === "es");
   }
 
   function haversineMi(lat1, lon1, lat2, lon2) {
@@ -1083,8 +1071,8 @@
 
   function populateFilterOptions(items) {
     var border = state.prefs.border;
-    var stateSel = document.getElementById("filterState");
-    var portSel = document.getElementById("filterPort");
+    var stateSel = byId("apFilterState");
+    var portSel = byId("apFilterPort");
     if (!stateSel || !portSel) return;
 
     var states = {};
@@ -1138,10 +1126,10 @@
   }
 
   function render() {
-    var host = document.getElementById("portGrid");
-    var status = document.getElementById("statusLine");
-    var countEl = document.getElementById("resultCount");
-    var moreBtn = document.getElementById("showMoreBtn");
+    var host = byId("apPortGrid");
+    var status = byId("apStatus");
+    var countEl = byId("apResultCount");
+    var moreBtn = byId("apShowMore");
     if (!host) return;
 
     populateFilterOptions(state.items);
@@ -1157,7 +1145,7 @@
       else if (state.geoStatus === "unavailable" && state.prefs.view === "nearest") status.textContent = t("geoOff");
       else status.textContent = "";
     }
-    var geoBtn = document.getElementById("geoOptIn");
+    var geoBtn = byId("apGeoOptIn");
     if (geoBtn) {
       geoBtn.hidden = state.geoStatus !== "denied";
       geoBtn.textContent = t("useMyLocation");
@@ -1271,7 +1259,7 @@
   }
 
   async function loadFeed() {
-    var status = document.getElementById("statusLine");
+    var status = byId("apStatus");
     if (status) status.textContent = t("checking");
     var sources = allFeedSources();
     var lastErr = null;
@@ -1297,7 +1285,7 @@
   }
 
   function refreshAsOfStamp(items) {
-    var el = document.getElementById("asofStamp");
+    var el = byId("apAsof");
     if (!el) return;
     var list = items && items.length ? items : state.items;
     var pull = latestPull(list);
@@ -1308,7 +1296,10 @@
     el.textContent = "—";
   }
 
-  var geoStore = window.BwtGeo ? window.BwtGeo.createStore(localStorage) : null;
+  var geoStore = null;
+  try {
+    if (window.BwtGeo) geoStore = window.BwtGeo.createStore(localStorage);
+  } catch (_) { geoStore = null; }
   var geoInFlight = null;
 
   function applyAllPortsFix(fix) {
@@ -1469,20 +1460,20 @@
   }
 
   function syncViewButtons() {
-    document.querySelectorAll("[data-view]").forEach(function (btn) {
-      btn.classList.toggle("active", btn.getAttribute("data-view") === state.prefs.view);
+    allIn("[data-ap-view]").forEach(function (btn) {
+      btn.classList.toggle("active", btn.getAttribute("data-ap-view") === state.prefs.view);
     });
-    document.querySelectorAll("[data-traffic]").forEach(function (btn) {
-      btn.classList.toggle("active", btn.getAttribute("data-traffic") === state.prefs.traffic);
+    allIn("[data-ap-traffic]").forEach(function (btn) {
+      btn.classList.toggle("active", btn.getAttribute("data-ap-traffic") === state.prefs.traffic);
     });
-    var border = document.getElementById("filterBorder");
+    var border = byId("apFilterBorder");
     if (border) border.value = state.prefs.border;
   }
 
   function bindUi() {
-    document.querySelectorAll("[data-view]").forEach(function (btn) {
+    allIn("[data-ap-view]").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        state.prefs.view = btn.getAttribute("data-view");
+        state.prefs.view = btn.getAttribute("data-ap-view");
         if (state.prefs.view === "nearest" && !state.userPos && state.geoStatus !== "pending") {
           requestGeo(false);
         }
@@ -1491,17 +1482,17 @@
         render();
       });
     });
-    document.querySelectorAll("[data-traffic]").forEach(function (btn) {
+    allIn("[data-ap-traffic]").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        state.prefs.traffic = btn.getAttribute("data-traffic");
+        state.prefs.traffic = btn.getAttribute("data-ap-traffic");
         savePrefs();
         syncViewButtons();
         render();
       });
     });
-    var border = document.getElementById("filterBorder");
-    var st = document.getElementById("filterState");
-    var port = document.getElementById("filterPort");
+    var border = byId("apFilterBorder");
+    var st = byId("apFilterState");
+    var port = byId("apFilterPort");
     if (border) {
       border.addEventListener("change", function () {
         state.prefs.border = border.value;
@@ -1526,7 +1517,7 @@
         render();
       });
     }
-    var more = document.getElementById("showMoreBtn");
+    var more = byId("apShowMore");
     if (more) {
       more.addEventListener("click", function () {
         if (state.prefs.nearestLimit < state.items.length) {
@@ -1538,13 +1529,7 @@
         render();
       });
     }
-    var en = document.getElementById("langEn");
-    var es = document.getElementById("langEs");
-    if (en) en.addEventListener("click", function () { setLang("en"); });
-    if (es) es.addEventListener("click", function () { setLang("es"); });
-    var themeBtn = document.getElementById("themeToggle");
-    if (themeBtn) themeBtn.addEventListener("click", toggleTheme);
-    var geoBtn = document.getElementById("geoOptIn");
+    var geoBtn = byId("apGeoOptIn");
     if (geoBtn) {
       geoBtn.addEventListener("click", function () { requestGeo(true); });
     }
@@ -1552,15 +1537,23 @@
 
   function setLang(lang) {
     state.lang = lang === "es" ? "es" : "en";
-    try { localStorage.setItem(LANG_KEY, state.lang); } catch (_) {}
-    applyChrome();
+    if (!root) return;
     syncFilterLabels();
-    refreshAsOfStamp();
-    render();
+    var geoBtn = byId("apGeoOptIn");
+    if (geoBtn) geoBtn.textContent = t("useMyLocation");
+    if (state.items.length) {
+      refreshAsOfStamp();
+      render();
+      return;
+    }
+    var status = byId("apStatus");
+    if (!status) return;
+    var prev = status.textContent;
+    if (prev === STR.en.checking || prev === STR.es.checking) status.textContent = t("checking");
   }
 
   function syncFilterLabels() {
-    var border = document.getElementById("filterBorder");
+    var border = byId("apFilterBorder");
     if (border) {
       var cur = border.value;
       border.innerHTML =
@@ -1569,58 +1562,49 @@
         '<option value="canadian">' + t("borderCa") + "</option>";
       border.value = cur;
     }
-    document.querySelectorAll("[data-view]").forEach(function (btn) {
-      var v = btn.getAttribute("data-view");
+    allIn("[data-ap-view]").forEach(function (btn) {
+      var v = btn.getAttribute("data-ap-view");
       btn.textContent = v === "nearest" ? t("viewNearest") : t("viewBrowse");
     });
-    document.querySelectorAll("[data-traffic]").forEach(function (btn) {
-      var v = btn.getAttribute("data-traffic");
+    allIn("[data-ap-traffic]").forEach(function (btn) {
+      var v = btn.getAttribute("data-ap-traffic");
       btn.textContent =
         v === "all" ? t("trafficAll") :
         v === "passenger" ? t("trafficVeh") :
         v === "pedestrian" ? t("trafficPed") : t("trafficComm");
     });
-    var latest = document.getElementById("latestLabel");
+    var latest = byId("apLatest");
     if (latest) latest.textContent = t("latest");
   }
 
-  function toggleTheme() {
-    var next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    document.documentElement.setAttribute("data-theme", next);
-    try { localStorage.setItem(THEME_KEY, next); } catch (_) {}
+  function init(rootEl) {
+    if (booted || !rootEl) return;
+    booted = true;
+    root = rootEl;
+    state.lang = readPageLang();
+    loadPrefs();
+    syncFilterLabels();
+    syncViewButtons();
+    bindUi();
+    loadFeed().catch(function (err) {
+      var status = byId("apStatus");
+      if (status) status.textContent = String(err && err.message ? err.message : err);
+    });
+    var savedGeoChoice = geoStore ? geoStore.readChoice() : null;
+    if (state.prefs.view === "nearest" || savedGeoChoice === "granted" || savedGeoChoice === "denied" || savedGeoChoice === "asked") {
+      requestGeo(false);
+    } else {
+      state.geoStatus = "unavailable";
+    }
+    window.addEventListener("storage", function (event) {
+      if (!event || (event.key !== "bwt-geo-choice" && event.key !== "bwt-geo-cache")) return;
+      if (geoInFlight) return;
+      if (state.prefs.view === "nearest" || event.newValue === "granted") requestGeo(false);
+    });
   }
 
-  function bootThemeLang() {
-    try {
-      var lang = localStorage.getItem(LANG_KEY);
-      if (lang === "es" || lang === "en") state.lang = lang;
-      var theme = localStorage.getItem(THEME_KEY);
-      if (theme !== "light" && theme !== "dark") {
-        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-      }
-      document.documentElement.setAttribute("data-theme", theme);
-    } catch (_) {}
-  }
-
-  bootThemeLang();
-  loadPrefs();
-  applyChrome();
-  syncFilterLabels();
-  syncViewButtons();
-  bindUi();
-  loadFeed().catch(function (err) {
-    var status = document.getElementById("statusLine");
-    if (status) status.textContent = String(err && err.message ? err.message : err);
-  });
-  var savedGeoChoice = geoStore ? geoStore.readChoice() : null;
-  if (state.prefs.view === "nearest" || savedGeoChoice === "granted" || savedGeoChoice === "denied" || savedGeoChoice === "asked") {
-    requestGeo(false);
-  } else {
-    state.geoStatus = "unavailable";
-  }
-  window.addEventListener("storage", function (event) {
-    if (!event || (event.key !== "bwt-geo-choice" && event.key !== "bwt-geo-cache")) return;
-    if (geoInFlight) return;
-    if (state.prefs.view === "nearest" || event.newValue === "granted") requestGeo(false);
-  });
+  window.BwtAllPorts = {
+    init: init,
+    setLang: setLang
+  };
 })();

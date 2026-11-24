@@ -11,7 +11,7 @@ A clean viewer for CBP border wait times at Brownsville, Texas bridges:
 
 **https://brownsvillewaittimes.com/**
 
-[All U.S. land ports](https://brownsvillewaittimes.com/all-ports/) — live CBP times for every land crossing, nearest first, with Mexico / Northern filters.
+Other U.S. ports are a collapsed section on the [homepage](https://brownsvillewaittimes.com/?ports=all#all-ports) — live CBP times for every land crossing, nearest first, with Mexico / Northern filters. `/all-ports/` redirects there.
 
 Nearby amenities (static community guides, not CBP) for B&M, Gateway, Veterans International, and Los Indios:
 

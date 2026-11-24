@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 mkdir -p _site/data _site/icons
-cp index.html README.md manifest.webmanifest sw.js geo-opt-in.js amenities.css amenities.js sitemap.xml robots.txt 404.html _site/
+cp index.html README.md manifest.webmanifest sw.js geo-opt-in.js amenities.css amenities.js sitemap.xml robots.txt 404.html all-ports.js port-meta.js all-ports.css _site/
 # Fill crawler-visible wait times from the feed just copied into the artifact.
 # Source index.html on main keeps placeholders; this does not create a commit.
 if [[ -f data/bwt.xml ]]; then
