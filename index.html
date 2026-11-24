@@ -8758,6 +8758,15 @@
           history.replaceState(null, "", url.pathname + url.search + url.hash);
         } catch (e) { /* ignore */ }
       }
+      // Page CSS is scroll-behavior: smooth, which load cuts short. Jump
+      // after layout instead, same double-frame wait as setFilter.
+      function scrollToSection() {
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            section.scrollIntoView({ block: "start", behavior: "auto" });
+          });
+        });
+      }
       function loadCss(href) {
         return new Promise(function (resolve, reject) {
           var existing = document.querySelector('link[data-ap-css="1"]');
@@ -8820,7 +8829,7 @@
         if (root && root.hidden) window.BwtAllPorts.init(root);
         if (boot) boot.hidden = true;
         if (root) root.hidden = false;
-        if (openedFromUrl) section.scrollIntoView({ block: "start" });
+        if (openedFromUrl) scrollToSection();
       }
       function loadAssets() {
         if (loadPromise) return loadPromise;
@@ -8855,7 +8864,7 @@
           setExpanded(true);
           if ((location.hash || "") === "#all-ports") {
             event.preventDefault();
-            section.scrollIntoView({ block: "start" });
+            scrollToSection();
             stripEntrySignals();
           }
         });
@@ -8869,7 +8878,7 @@
       if (wantsOpen()) {
         if (entryUrlOpens()) openedFromUrl = true;
         setExpanded(true);
-        if (openedFromUrl) section.scrollIntoView({ block: "start" });
+        if (openedFromUrl) scrollToSection();
         stripEntrySignals();
       }
     }
