@@ -50,7 +50,7 @@
       midnight: "midnight",
       updated: "Updated",
       countLabel: "Showing",
-      lanesOf: "{open} of {total} Open"
+      lanesOf: "Open {open} of {total}"
     },
     es: {
       checking: "Cargando todos los puertos…",
@@ -92,7 +92,7 @@
       midnight: "medianoche",
       updated: "Actualizado",
       countLabel: "Mostrando",
-      lanesOf: "{open} de {total} Abiertos"
+      lanesOf: "Abiertos {open} de {total}"
     }
   };
 
@@ -1019,10 +1019,10 @@
       return '<span class="wait-empty">' + t("na") + "</span>";
     }
     var html = '<div class="wait-stack">' + rows.join("") + "</div>";
-    var split = genReadySplit(section);
-    if (split) html += '<div class="open-line">' + escapeHtml(split) + "</div>";
     var ofLine = sectionOfLine(section);
     if (ofLine) html += '<div class="open-line">' + escapeHtml(ofLine) + "</div>";
+    var split = genReadySplit(section);
+    if (split) html += '<div class="open-line">' + escapeHtml(split) + "</div>";
     var clock = displayStampClock(collectSectionAsOf(section, date), timeZone);
     if (clock) html += '<div class="cell-asof">' + escapeHtml(clock) + "</div>";
     return html;
