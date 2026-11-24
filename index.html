@@ -37,6 +37,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Brownsville Wait" />
   <meta name="description" content="Live U.S. Customs wait times for Brownsville–Matamoros bridges: B&amp;M (Puente Viejo), Gateway (Puente Nuevo), Veterans (Puente Los Tomates), and Los Indios (Puente Lucio Blanco) — vehicles, pedestrians, SENTRI, Ready, and commercial lanes." />
+  <link rel="canonical" href="https://brownsvillewaittimes.com/" />
   <meta property="og:title" content="Brownsville Bridge Wait Times · Live CBP Estimates" />
   <meta property="og:description" content="Live U.S. Customs wait times for Brownsville–Matamoros bridges: B&amp;M (Puente Viejo), Gateway (Puente Nuevo), Veterans (Puente Los Tomates), and Los Indios (Puente Lucio Blanco) — vehicles, pedestrians, SENTRI, Ready, and commercial lanes." />
   <meta property="og:url" content="https://brownsvillewaittimes.com/" />
@@ -4279,7 +4280,7 @@
     <div class="footer-inner">
       <div>
         <div class="footer-brand" data-i18n="footerBrand">Brownsville Border Wait Times</div>
-        <p class="footer-contact"><span data-i18n="footerContactLead">Questions? Contact</span> <a href="mailto:southtexaswaittimes@icloud.com">southtexaswaittimes@icloud.com</a></p>
+        <p class="footer-contact"><span data-i18n="footerContactLead">Questions? Contact</span> <a href="mailto:info@brownsvillewaittimes.com">info@brownsvillewaittimes.com</a></p>
       </div>
       <div class="footer-links">
         <span><span data-i18n="source">Source:</span> <a href="https://bwt.cbp.gov" target="_blank" rel="noopener">CBP Border Wait Times (bwt.cbp.gov)</a></span>
@@ -4488,7 +4489,7 @@
         lanesClosed: "Lanes closed",
         asOf: "As of",
         lanesOpen: "lane(s) open",
-        lanesOf: "{open} of {total} Open",
+        lanesOf: "Open {open} of {total}",
         open: "Open",
         gen: "Gen",
         ready: "Ready",
@@ -4678,7 +4679,7 @@
         lanesClosed: "Carriles cerrados",
         asOf: "A las",
         lanesOpen: "carril(es) abierto(s)",
-        lanesOf: "{open} de {total} Abiertos",
+        lanesOf: "Abiertos {open} de {total}",
         open: "Abiertos",
         gen: "Gen",
         ready: "Ready",
@@ -6210,9 +6211,18 @@
       };
     }
 
+    /** Put the "Open X of Y" pool total above the Gen/Ready breakdown. */
+    function ofLineFirst(lines) {
+      const tpl = t("lanesOf").replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+        .replace("\\{open\\}", "\\d+").replace("\\{total\\}", "\\d+");
+      const re = new RegExp("^" + tpl + "$");
+      const of = lines.filter(function (l) { return re.test(l); });
+      return of.concat(lines.filter(function (l) { return !re.test(l); }));
+    }
+
     function openLineMarkup(text) {
       if (text) {
-        return String(text).split("\n").filter(Boolean).map(function (line) {
+        return ofLineFirst(String(text).split("\n").filter(Boolean)).map(function (line) {
           return `<span class="wait-extra open-line">${escapeHtml(line)}</span>`;
         }).join("");
       }
@@ -7299,8 +7309,8 @@
     }
     function driveWaitPillHtml(topHtml, mid, bot) {
       let body = topHtml || "";
-      if (mid) body += `<div class="drive-wait-mid">${escapeHtml(mid)}</div>`;
       if (bot) body += `<div class="drive-wait-bot">${escapeHtml(bot)}</div>`;
+      if (mid) body += `<div class="drive-wait-mid">${escapeHtml(mid)}</div>`;
       if (!body) return "—";
       return `<div class="drive-wait-tile">${body}</div>`;
     }
