@@ -32,7 +32,7 @@ https://brownsville-bwt.<your-subdomain>.workers.dev
 const FEED_PROXY_URL = "https://brownsville-bwt.<your-subdomain>.workers.dev";
 ```
 
-5. Commit and push `index.html` (and `all-ports/all-ports.js`, which uses the same Worker + `/all`) so GitHub Pages picks it up.
+5. Commit and push `index.html` (and `all-ports.js`, which uses the same Worker + `/all`) so GitHub Pages picks it up.
 
 ## Check it works
 
@@ -53,7 +53,7 @@ On the live page, after hard-refresh, **Refresh times** should show **Live · CB
 
 - `GET /` — CBP Brownsville RSS (cached ~2 minutes at the edge)
 - `GET /?fresh=1` — skip edge cache, hit CBP now
-- `GET /all` — national land-border XML (`bwt.cbp.gov/xml/bwt.xml`, cached ~3 minutes; used by `all-ports/`)
+- `GET /all` — national land-border XML (`bwt.cbp.gov/xml/bwt.xml`, cached ~3 minutes; used by the homepage's Other U.S. ports section)
 - `GET /all?fresh=1` — skip edge cache for the national feed
 - `GET /health` — small JSON status (includes rate-limit config)
 - `POST /checkins` — `kind: wait` (minutes report) or `kind: pin` (location for the line map)

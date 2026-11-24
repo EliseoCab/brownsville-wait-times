@@ -667,6 +667,7 @@
     html[data-view="drive"] .live-cams,
     html[data-view="drive"] .x-updates,
     html[data-view="drive"] .all-ports-link,
+    html[data-view="drive"] .ap-section,
     html[data-view="drive"] .section-sub,
     html[data-view="drive"] .btn-share,
     html[data-view="drive"] .btn-install,
@@ -1126,6 +1127,84 @@
     }
     .all-ports-link:hover { text-decoration: underline; color: var(--navy); }
     html[data-theme="dark"] .all-ports-link:hover { color: #e0f2fe; }
+    .ap-section {
+      margin: 1.25rem 0 1.5rem;
+      scroll-margin-top: 0.75rem;
+    }
+    .ap-toggle {
+      appearance: none;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      text-align: left;
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
+      padding: 0.85rem 1rem;
+      border-radius: var(--radius);
+      background: var(--white);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-sm);
+    }
+    .ap-toggle:focus-visible {
+      outline: 2px solid var(--sky);
+      outline-offset: 2px;
+    }
+    .ap-toggle-title {
+      display: block;
+      font-size: 1.05rem;
+      font-weight: 750;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .ap-toggle-sub {
+      display: block;
+      margin-top: 0.12rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+    .ap-chevron {
+      width: 0.55rem;
+      height: 0.55rem;
+      margin-right: 0.35rem;
+      border-right: 2px solid var(--muted);
+      border-bottom: 2px solid var(--muted);
+      transform: rotate(45deg);
+      flex: none;
+    }
+    .ap-section.is-open .ap-chevron {
+      transform: rotate(-135deg);
+      margin-top: 0.3rem;
+    }
+    .ap-panel { margin-top: 0.65rem; }
+    .ap-boot {
+      margin: 0.15rem 0 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    html:not([data-theme="dark"]) .ap-toggle {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.34));
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.9) inset,
+        0 10px 30px rgba(15, 47, 84, 0.08);
+      backdrop-filter: blur(22px) saturate(1.7);
+      -webkit-backdrop-filter: blur(22px) saturate(1.7);
+    }
+    html[data-theme="dark"] .ap-toggle {
+      background: linear-gradient(180deg, rgba(28, 46, 72, 0.55), rgba(12, 22, 38, 0.42));
+      border: 1px solid rgba(125, 211, 252, 0.16);
+      box-shadow:
+        0 1px 0 rgba(186, 230, 253, 0.18) inset,
+        0 12px 36px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(22px) saturate(1.45);
+      -webkit-backdrop-filter: blur(22px) saturate(1.45);
+    }
     .report-wait-link {
       display: inline-flex;
       align-items: center;
@@ -4032,7 +4111,7 @@
       <h2 class="section-title">
         <span data-i18n="crossingTimes">Crossing times</span>
         <span class="section-sub" data-i18n="crossingTimesSub">Estimates to primary inspection booth · CBP updates about hourly</span>
-        <a class="all-ports-link" href="all-ports/" data-i18n="allPortsLink">All U.S. ports →</a>
+        <a class="all-ports-link" href="#all-ports" id="allPortsJump" data-i18n="allPortsLink">All U.S. ports</a>
         <a class="report-wait-link" href="#crowdSource" data-i18n="reportWaitLink" aria-controls="crowdSource" aria-expanded="false">Report Wait Times</a>
       </h2>
       <div class="toolbar-controls">
@@ -4084,6 +4163,58 @@
     </div>
     <div id="crowdMount"></div>
     <div class="ports" id="portGrid" aria-live="polite"><!--bwt:ports--><!--/bwt:ports--></div>
+
+    <section class="ap-section" id="all-ports" aria-labelledby="apToggleTitle">
+      <button type="button" class="ap-toggle" id="apToggle" aria-expanded="false" aria-controls="apPanel">
+        <span class="ap-toggle-text">
+          <span class="ap-toggle-title" id="apToggleTitle" data-i18n="allPortsTitle">Other U.S. ports</span>
+          <span class="ap-toggle-sub" data-i18n="allPortsSub">Live CBP times for every land crossing</span>
+        </span>
+        <span class="ap-chevron" aria-hidden="true"></span>
+      </button>
+      <div id="apPanel" class="ap-panel" hidden>
+        <p class="ap-boot" id="apBoot" role="status" data-i18n="allPortsLoading">Loading all ports…</p>
+        <div id="apRoot" hidden>
+          <section class="panel" aria-label="Port filters">
+            <div class="row">
+              <div class="filter-asof">
+                <div class="seg-lite" role="group" aria-label="View mode">
+                  <button type="button" data-ap-view="nearest" class="active">Nearest</button>
+                  <button type="button" data-ap-view="browse">Browse</button>
+                </div>
+                <div class="seg-lite" role="group" aria-label="Traffic type">
+                  <button type="button" data-ap-traffic="all" class="active">All</button>
+                  <button type="button" data-ap-traffic="passenger">Vehicles</button>
+                  <button type="button" data-ap-traffic="pedestrian">Pedestrian</button>
+                  <button type="button" data-ap-traffic="commercial">Commercial</button>
+                </div>
+                <div class="asof"><span id="apLatest">Latest report:</span> <strong id="apAsof">—</strong></div>
+              </div>
+            </div>
+            <div class="row">
+              <select id="apFilterBorder" aria-label="Border">
+                <option value="all">All borders</option>
+                <option value="mexican">Mexico</option>
+                <option value="canadian">Northern</option>
+              </select>
+              <select id="apFilterState" aria-label="State">
+                <option value="all">All states</option>
+              </select>
+              <select id="apFilterPort" aria-label="Port">
+                <option value="all">All ports</option>
+              </select>
+            </div>
+          </section>
+          <p class="status" id="apStatus">Loading all ports…</p>
+          <button type="button" id="apGeoOptIn" class="geo-opt-in" hidden>Use my location</button>
+          <div class="meta-row">
+            <span id="apResultCount"></span>
+          </div>
+          <div id="apPortGrid" aria-live="polite"></div>
+          <button type="button" id="apShowMore" hidden>Show more</button>
+        </div>
+      </div>
+    </section>
 
     <section class="x-updates" aria-label="CBP Laredo Field Office updates on X">
       <div class="x-updates-head">
@@ -4214,7 +4345,10 @@
         activeOnly: "Active waits only (N/A & closed hidden)",
         crossingTimes: "Crossing times",
         crossingTimesSub: "Estimates to primary inspection booth · CBP updates about hourly",
-        allPortsLink: "All U.S. ports →",
+        allPortsLink: "All U.S. ports",
+        allPortsTitle: "Other U.S. ports",
+        allPortsSub: "Live CBP times for every land crossing",
+        allPortsLoading: "Loading all ports…",
         reportWaitLink: "Report Wait Times",
         filterAll: "All",
         filterVehicles: "Vehicles",
@@ -4401,7 +4535,10 @@
         activeOnly: "Solo esperas activas (se ocultan N/D y cerrados)",
         crossingTimes: "Tiempos de cruce",
         crossingTimesSub: "Estimaciones hasta la inspección primaria · CBP actualiza cada hora aprox.",
-        allPortsLink: "Todos los puertos de EE. UU. →",
+        allPortsLink: "Todos los puertos de EE. UU.",
+        allPortsTitle: "Otros puertos de EE. UU.",
+        allPortsSub: "Tiempos CBP en vivo para cada cruce terrestre",
+        allPortsLoading: "Cargando todos los puertos…",
         reportWaitLink: "Reportar tiempos de espera",
         filterAll: "Todos",
         filterVehicles: "Vehículos",
@@ -7942,6 +8079,9 @@
       currentLang = lang;
       try { localStorage.setItem(LANG_KEY, lang); } catch (_) { /* ignore */ }
       applyStaticLang();
+      if (window.BwtAllPorts && typeof window.BwtAllPorts.setLang === "function") {
+        window.BwtAllPorts.setLang(lang);
+      }
       if (document.getElementById("crowdSource")) {
         crowdRerenderForm();
         syncCrowdAria(document.getElementById("crowdSource"));
@@ -8573,8 +8713,159 @@
       chipEqualizeTimer = setTimeout(equalizeAllFilterChipHeights, 120);
     });
 
+    function setupAllPorts() {
+      var OPEN_KEY = "bwt-allports-open";
+      var toggle = document.getElementById("apToggle");
+      var panel = document.getElementById("apPanel");
+      var section = document.getElementById("all-ports");
+      var jump = document.getElementById("allPortsJump");
+      if (!toggle || !panel || !section) return;
+
+      var loadPromise = null;
+
+      function readOpen() {
+        try { return localStorage.getItem(OPEN_KEY) === "1"; } catch (e) { return false; }
+      }
+      function writeOpen(open) {
+        try { localStorage.setItem(OPEN_KEY, open ? "1" : "0"); } catch (e) { /* ignore */ }
+      }
+      function wantsOpen() {
+        try {
+          if (new URLSearchParams(location.search).get("ports") === "all") return true;
+        } catch (e) { /* ignore */ }
+        return (location.hash || "") === "#all-ports" || readOpen();
+      }
+      // ?ports=all and #all-ports open the section once. Drop both so a
+      // close + reload stays closed. bwt-allports-open is the only memory.
+      function stripEntrySignals() {
+        var url;
+        try { url = new URL(location.href); } catch (e) { return; }
+        var hadPorts = false;
+        try { hadPorts = url.searchParams.get("ports") === "all"; } catch (e) { /* ignore */ }
+        var hadHash = url.hash === "#all-ports";
+        if (!hadPorts && !hadHash) return;
+        if (hadPorts) url.searchParams.delete("ports");
+        if (hadHash) url.hash = "";
+        try {
+          history.replaceState(null, "", url.pathname + url.search + url.hash);
+        } catch (e) { /* ignore */ }
+      }
+      function loadCss(href) {
+        return new Promise(function (resolve, reject) {
+          var existing = document.querySelector('link[data-ap-css="1"]');
+          if (existing) {
+            if (existing.sheet) { resolve(); return; }
+            existing.addEventListener("load", function () { resolve(); });
+            existing.addEventListener("error", function () { reject(new Error("css")); });
+            return;
+          }
+          var link = document.createElement("link");
+          link.rel = "stylesheet";
+          link.href = href;
+          link.setAttribute("data-ap-css", "1");
+          link.onload = function () { resolve(); };
+          link.onerror = function () {
+            if (link.parentNode) link.parentNode.removeChild(link);
+            reject(new Error("css"));
+          };
+          document.head.appendChild(link);
+        });
+      }
+      function loadScript(src) {
+        return new Promise(function (resolve, reject) {
+          var existing = document.querySelector('script[data-ap-src="' + src + '"]');
+          if (existing) {
+            if (existing.getAttribute("data-loaded") === "1") { resolve(); return; }
+            existing.addEventListener("load", function () { resolve(); });
+            existing.addEventListener("error", function () { reject(new Error(src)); });
+            return;
+          }
+          var script = document.createElement("script");
+          script.src = src;
+          script.setAttribute("data-ap-src", src);
+          script.onload = function () {
+            script.setAttribute("data-loaded", "1");
+            resolve();
+          };
+          script.onerror = function () {
+            if (script.parentNode) script.parentNode.removeChild(script);
+            reject(new Error(src));
+          };
+          document.body.appendChild(script);
+        });
+      }
+      function showFailure() {
+        var boot = document.getElementById("apBoot");
+        if (!boot) return;
+        boot.hidden = false;
+        boot.removeAttribute("data-i18n");
+        boot.textContent = currentLang === "es"
+          ? "No se pudieron cargar los otros puertos."
+          : "Could not load other ports.";
+      }
+      function reveal() {
+        var root = document.getElementById("apRoot");
+        var boot = document.getElementById("apBoot");
+        if (!window.BwtAllPorts || typeof window.BwtAllPorts.init !== "function") {
+          throw new Error("missing BwtAllPorts");
+        }
+        if (root && root.hidden) window.BwtAllPorts.init(root);
+        if (boot) boot.hidden = true;
+        if (root) root.hidden = false;
+      }
+      function loadAssets() {
+        if (loadPromise) return loadPromise;
+        var root = document.getElementById("apRoot");
+        if (root && !root.hidden && window.BwtAllPorts) return Promise.resolve();
+        var boot = document.getElementById("apBoot");
+        if (boot) boot.hidden = false;
+        loadPromise = Promise.all([
+          loadCss("all-ports.css?v=1"),
+          loadScript("port-meta.js?v=1").then(function () {
+            return loadScript("all-ports.js?v=32");
+          })
+        ]).then(reveal).catch(function () {
+          loadPromise = null;
+          showFailure();
+        });
+        return loadPromise;
+      }
+      function setExpanded(open) {
+        var isOpen = !!open;
+        toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        panel.hidden = !isOpen;
+        section.classList.toggle("is-open", isOpen);
+        writeOpen(isOpen);
+        if (isOpen) loadAssets();
+      }
+      toggle.addEventListener("click", function () {
+        setExpanded(toggle.getAttribute("aria-expanded") !== "true");
+      });
+      if (jump) {
+        jump.addEventListener("click", function (event) {
+          setExpanded(true);
+          if ((location.hash || "") === "#all-ports") {
+            event.preventDefault();
+            section.scrollIntoView({ block: "start" });
+            stripEntrySignals();
+          }
+        });
+      }
+      window.addEventListener("hashchange", function () {
+        if ((location.hash || "") === "#all-ports") {
+          setExpanded(true);
+          stripEntrySignals();
+        }
+      });
+      if (wantsOpen()) {
+        setExpanded(true);
+        stripEntrySignals();
+      }
+    }
+
     applyTheme(currentTheme(), false);
     applyStaticLang();
+    setupAllPorts();
     ensureCrowdSection();
     document.querySelectorAll("a.report-wait-link").forEach(function (link) {
       link.setAttribute("aria-controls", "crowdSource");

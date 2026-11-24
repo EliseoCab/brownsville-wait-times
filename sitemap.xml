@@ -26,11 +26,6 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://brownsvillewaittimes.com/all-ports/</loc>
-    <changefreq>hourly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://brownsvillewaittimes.com/privacy/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
