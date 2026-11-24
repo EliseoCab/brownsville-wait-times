@@ -8722,6 +8722,14 @@
       if (!toggle || !panel || !section) return;
 
       var loadPromise = null;
+      var openedFromUrl = false;
+
+      function entryUrlOpens() {
+        try {
+          if (new URLSearchParams(location.search).get("ports") === "all") return true;
+        } catch (e) { /* ignore */ }
+        return (location.hash || "") === "#all-ports";
+      }
 
       function readOpen() {
         try { return localStorage.getItem(OPEN_KEY) === "1"; } catch (e) { return false; }
@@ -8812,6 +8820,7 @@
         if (root && root.hidden) window.BwtAllPorts.init(root);
         if (boot) boot.hidden = true;
         if (root) root.hidden = false;
+        if (openedFromUrl) section.scrollIntoView({ block: "start" });
       }
       function loadAssets() {
         if (loadPromise) return loadPromise;
@@ -8858,7 +8867,9 @@
         }
       });
       if (wantsOpen()) {
+        if (entryUrlOpens()) openedFromUrl = true;
         setExpanded(true);
+        if (openedFromUrl) section.scrollIntoView({ block: "start" });
         stripEntrySignals();
       }
     }
